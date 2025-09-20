@@ -1,3 +1,32 @@
+#!/usr/bin/perl -w
+########################################################################
+#@HDR@	$Id$
+#@HDR@		Copyright 2025 by
+#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		P.O. Box 401, Bailey Island, ME 04003
+#@HDR@		All Rights Reserved
+#@HDR@
+#@HDR@	This software comprises unpublished confidential information
+#@HDR@	of Brightsands and may not be used, copied or made available
+#@HDR@	to anyone, except in accordance with the license under which
+#@HDR@	it is furnished.
+########################################################################
+
+use strict;
+
+package cpi_help;
+use Exporter;
+use AutoLoader;
+our @ISA = qw /Exporter/;
+#@ISA = qw( Exporter AutoLoader );
+##use vars qw ( @ISA @EXPORT );
+our @EXPORT_OK = qw( );
+our @EXPORT = qw();
+use lib ".";
+
+use cpi_file;
+use cpi_template;
+use cpi_vars;
 #__END__
 1;
 
@@ -14,30 +43,30 @@ sub help_strings
 	else
 	    {
 	    my $subject = $1;
-	    if( -r "$HELPDIR/$subject.cgi" )
+	    if( -r "$cpi_vars::HELPDIR/$subject.cgi" )
 	        {
 		push( @ret,
 		    ( map { " on$_='help_event(event,&quot;$subject.cgi&quot;);'" }
-			@HELP_EVENTS )  );
+			@cpi_vars::HELP_EVENTS )  );
 		}
-	    elsif( -r "$HELPDIR/$subject.html" )
+	    elsif( -r "$cpi_vars::HELPDIR/$subject.html" )
 	        {
 		push( @ret,
 		    ( map { " on$_='help_event(event,&quot;$subject.html&quot;);'" }
-			@HELP_EVENTS )  );
+			@cpi_vars::HELP_EVENTS )  );
 		}
-	    elsif( -r "$HELPDIR/help_template.cgi" )
+	    elsif( -r "$cpi_vars::HELPDIR/help_template.cgi" )
 	        {
-		&write_file( "$HELPDIR/$subject.cgi",
-		    &template( "$HELPDIR/help_template.cgi",
-			"%%MISSING%%", "$HELPDIR/$subject.cgi") );
-		system("chmod 755 $HELPDIR/$subject.cgi");
+		&cpi_file::write_file( "$cpi_vars::HELPDIR/$subject.cgi",
+		    &cpi_template::template( "$cpi_vars::HELPDIR/help_template.cgi",
+			"%%MISSING%%", "$cpi_vars::HELPDIR/$subject.cgi") );
+		system("chmod 755 $cpi_vars::HELPDIR/$subject.cgi");
 		}
-	    elsif( -r "$HELPDIR/help_template.html" )
+	    elsif( -r "$cpi_vars::HELPDIR/help_template.html" )
 	        {
-		&write_file( "$HELPDIR/$subject.html",
-		    &template( "$HELPDIR/help_template.html",
-			"%%MISSING%%", "$HELPDIR/$subject.html") );
+		&cpi_file::write_file( "$cpi_vars::HELPDIR/$subject.html",
+		    &cpi_template::template( "$cpi_vars::HELPDIR/help_template.html",
+			"%%MISSING%%", "$cpi_vars::HELPDIR/$subject.html") );
 		}
 	    }
 	}

@@ -1,3 +1,32 @@
+#!/usr/bin/perl -w
+########################################################################
+#@HDR@	$Id$
+#@HDR@		Copyright 2025 by
+#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		P.O. Box 401, Bailey Island, ME 04003
+#@HDR@		All Rights Reserved
+#@HDR@
+#@HDR@	This software comprises unpublished confidential information
+#@HDR@	of Brightsands and may not be used, copied or made available
+#@HDR@	to anyone, except in accordance with the license under which
+#@HDR@	it is furnished.
+########################################################################
+
+use strict;
+
+package cpi_send_file;
+use Exporter;
+use AutoLoader;
+our @ISA = qw /Exporter/;
+#@ISA = qw( Exporter AutoLoader );
+##use vars qw ( @ISA @EXPORT );
+our @EXPORT_OK = qw( );
+our @EXPORT = qw();
+use lib ".";
+
+use cpi_file;
+use cpi_mime;
+use cpi_vars;
 use MIME::Lite;
 #__END__
 1;
@@ -53,7 +82,7 @@ sub sendmail
 	Data	=> $msg
 	) || die("Cannot attach body of message:  $!");
 
-    &read_mime_types();
+    &cpi_mime::read_mime_types();
     foreach my $fn ( @files )
 	{
 	my $ext = ( ( $fn =~ /^[^\.].*\.([^\.]+)$/ ) ? $1 : "" );
@@ -65,8 +94,8 @@ sub sendmail
 	    }
 	$mime_msg->attach
 	    (
-	    Type		=> ($EXT_TO_MIME_TYPE{$ext}
-				? $EXT_TO_MIME_TYPE{$ext}
+	    Type		=> ($cpi_vars::EXT_TO_MIME_TYPE{$ext}
+				? $cpi_vars::EXT_TO_MIME_TYPE{$ext}
 				: "unknown/unknown"),
 	    Path		=> $fn,
 	    Filename	=> $cid_name,
@@ -75,12 +104,12 @@ sub sendmail
 	    ) || die("Cannot attach $fn:  $!");
 	}
 
-    open( OUT, "| $SENDMAIL -t -f '$src' 2>&1 > /tmp/sm.log" ) ||
-        die("Cannot run $SENDMAIL:  $!");
+    open( OUT, "| $cpi_vars::SENDMAIL -t -f '$src' 2>&1 > /tmp/sm.log" ) ||
+        die("Cannot run $cpi_vars::SENDMAIL:  $!");
     print OUT $mime_msg->as_string;
     close( OUT );
-    &write_file( "/tmp/outgoing", $mime_msg->as_string );
-    #&write_file( "/mytmp/outgoing", $mime_msg->as_string );
+    &cpi_file::write_file( "/tmp/outgoing", $mime_msg->as_string );
+    #&cpi_file::write_file( "/mytmp/outgoing", $mime_msg->as_string );
     }
 
 #########################################################################
@@ -99,22 +128,22 @@ sub sendfax
 	    $fmtmsg =~ s+>+\&gt;+gs;
 	    $fmtmsg = "<pre>$fmtmsg</pre>";
 	    }
-	my $tf = &tempfile(".pdf");
-	#open( CVT, "| tee /tmp/1.html | $HTML2PS | tee /tmp/1.ps | $PS2PDF - $tf" )
-	open( CVT, "| tee /tmp/1.html | $HTML2PDF -q - $tf" )
-	    || &fatal("Cannot convert message to pdf.");
+	my $tf = &cpi_file::tempfile(".pdf");
+	#open( CVT, "| tee /tmp/1.html | $cpi_vars::HTML2PS | tee /tmp/1.ps | $cpi_vars::PS2PDF - $tf" )
+	open( CVT, "| tee /tmp/1.html | $cpi_vars::HTML2PDF -q - $tf" )
+	    || &cpi_file::fatal("Cannot convert message to pdf.");
 	print CVT $msg;
 	close( CVT );
 	unshift( @pdf_files, $tf );
 	}
     $dest =~ s+[^\d]++g;
-#    &sendmail( $DAEMON_EMAIL,
+#    &sendmail( $cpi_vars::DAEMON_EMAIL,
 #        "$dest\@efaxsend.com", "", "{nocoverpage}\n", @pdf_files );
-#    &sendmail( $DAEMON_EMAIL,
+#    &sendmail( $cpi_vars::DAEMON_EMAIL,
 #        "chris.interim\@gmail.com", "", "{nocoverpage}\n", @pdf_files );
-    &sendmail( $DAEMON_EMAIL,
+    &sendmail( $cpi_vars::DAEMON_EMAIL,
         "$dest\@myfax.com", "?", "", @pdf_files );
-    &sendmail( $DAEMON_EMAIL,
+    &sendmail( $cpi_vars::DAEMON_EMAIL,
         "chris.interim\@gmail.com", "?", "", @pdf_files );
     }
 

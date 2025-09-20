@@ -1,3 +1,31 @@
+#!/usr/bin/perl -w
+########################################################################
+#@HDR@	$Id$
+#@HDR@		Copyright 2025 by
+#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		P.O. Box 401, Bailey Island, ME 04003
+#@HDR@		All Rights Reserved
+#@HDR@
+#@HDR@	This software comprises unpublished confidential information
+#@HDR@	of Brightsands and may not be used, copied or made available
+#@HDR@	to anyone, except in accordance with the license under which
+#@HDR@	it is furnished.
+########################################################################
+
+use strict;
+
+package cpi_file;
+use Exporter;
+use AutoLoader;
+our @ISA = qw /Exporter/;
+#@ISA = qw( Exporter AutoLoader );
+##use vars qw ( @ISA @EXPORT );
+our @EXPORT_OK = qw( );
+our @EXPORT = qw();
+use lib ".";
+
+use cpi_log;
+use cpi_vars;
 #__END__
 1;
 
@@ -111,13 +139,13 @@ my $tempfileind = 0;
 sub tempfile
     {
     my( $suffix ) = @_;
-    if( ! $TEMP_DIR )
+    if( ! $cpi_vars::TEMP_DIR )
         {
-	$TEMP_DIR = "/tmp/$PROG-$$/";
-	mkdir( $TEMP_DIR, 0700 );
+	$cpi_vars::TEMP_DIR = "/tmp/$cpi_vars::PROG-$$/";
+	mkdir( $cpi_vars::TEMP_DIR, 0700 );
 	}
     return sprintf("%s%d%s",
-        $TEMP_DIR,
+        $cpi_vars::TEMP_DIR,
 	$tempfileind++,
 	(defined($suffix)?$suffix:"")
 	);
@@ -140,7 +168,7 @@ sub cleanup
     {
     my( $excode ) = @_;
     grep( &{$_}(), @cleanups ) if( ! $in_cleanup++ );
-    system("rm -rf $TEMP_DIR") if( $TEMP_DIR );
+    system("rm -rf $cpi_vars::TEMP_DIR") if( $cpi_vars::TEMP_DIR );
     exit($excode);
     }
 
@@ -170,9 +198,9 @@ sub fatal
     $do_trace = 1 if( !defined($do_trace) || $msg eq "" );
 
     print "Content-type:  text/html; charset=\"utf-8\"\n\n"
-	if( $ENV{SCRIPT_NAME} && ! $CGIheader_has_been_printed );
+	if( $ENV{SCRIPT_NAME} && ! $cpi_vars::CGIheader_has_been_printed );
 
-    if( !defined($THIS) || $THIS eq "" )
+    if( !defined($cpi_vars::THIS) || $cpi_vars::THIS eq "" )
         { print( $msg, "\n" ); }
     else
         {
@@ -192,7 +220,7 @@ sub fatal
 		{ print STDOUT "    ${file}:$line $subname\n"; }
 	    }
 	}
-    &log( ($REALUSER||"?") ."(". ($SID||"?") . ")"
+    &cpi_log::log( ($cpi_vars::REALUSER||"?") ."(". ($cpi_vars::SID||"?") . ")"
 	. " had fatal error:  $msg");
     &cleanup(1);
     }

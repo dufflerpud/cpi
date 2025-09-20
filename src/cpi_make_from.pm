@@ -1,3 +1,32 @@
+#!/usr/bin/perl -w
+########################################################################
+#@HDR@	$Id$
+#@HDR@		Copyright 2025 by
+#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		P.O. Box 401, Bailey Island, ME 04003
+#@HDR@		All Rights Reserved
+#@HDR@
+#@HDR@	This software comprises unpublished confidential information
+#@HDR@	of Brightsands and may not be used, copied or made available
+#@HDR@	to anyone, except in accordance with the license under which
+#@HDR@	it is furnished.
+########################################################################
+
+use strict;
+
+package cpi_make_from;
+use Exporter;
+use AutoLoader;
+our @ISA = qw /Exporter/;
+#@ISA = qw( Exporter AutoLoader );
+##use vars qw ( @ISA @EXPORT );
+our @EXPORT_OK = qw( );
+our @EXPORT = qw();
+use lib ".";
+
+use cpi_db;
+use cpi_file;
+use cpi_vars;
 use GDBM_File;
 use JSON;
 use Data::Dumper;
@@ -334,7 +363,7 @@ sub mf_all_enscript_rules
 sub mf_all_sox_rules
     {
     my $defext = "au";
-    open( SOXFILES, "sox -h 2>&1 |" ) || &fatal("Cannot run sox:  $!");
+    open( SOXFILES, "sox -h 2>&1 |" ) || &cpi_file::fatal("Cannot run sox:  $!");
     my %ext_hash = ("ogg",1);
     while( $_ = <SOXFILES> )
 	{
@@ -483,11 +512,11 @@ sub mf_force_file
     my ( $ftype ) = @_;
     my $fname = "$mf_TMP.$ftype";
     if( $_ = $mf_commandmap{$ftype} )
-	{ &echodo("$_ > '$fname'"); }
+	{ &cpi_file::echodo("$_ > '$fname'"); }
     elsif( ($_ = $mf_filemap{$ftype}) ne "-" )
 	{ $fname = $_; }
     else
-	{ &echodo("cat - > '$fname'"); }
+	{ &cpi_file::echodo("cat - > '$fname'"); }
     return $fname;
     }
 
@@ -504,13 +533,13 @@ sub mf_get_obj
     my $objp;
     if( $fext eq "db" )
 	{
-	&dbread( $need_to_pop = $src );
-	$objp = $databases{$src};
+	&cpi_db::dbread( $need_to_pop = $src );
+	$objp = $cpi_vars::databases{$src};
 	}
     else
 	{
         undef $need_to_pop;
-	my $contents = &read_file( $src );
+	my $contents = &cpi_file::read_file( $src );
 	if( $fext eq "json" )
 	    {
 	    eval { $objp = decode_json($contents) };
@@ -523,9 +552,9 @@ sub mf_get_obj
 	    $objp = $VAR1;
 	    }
 	else
-	    { &fatal("Do not know how to read $fext object in $src."); }
+	    { &cpi_file::fatal("Do not know how to read $fext object in $src."); }
 	}
-    &fatal("Read of $fext object in $src failed.") unless( $objp );
+    &cpi_file::fatal("Read of $fext object in $src failed.") unless( $objp );
     return $objp;
     }
 
@@ -538,8 +567,8 @@ sub mf_put_obj
     my $dst = "$mf_TMP.db";
     if( $text eq "db" )
 	{
-	open(TOUCHFILE,">$dst") || &fatal("Cannot truncate $dst:  $!");
-	chmod( 0666, $dst ) || &fatal("Cannot chmod(0666,$dst):  $!");
+	open(TOUCHFILE,">$dst") || &cpi_file::fatal("Cannot truncate $dst:  $!");
+	chmod( 0666, $dst ) || &cpi_file::fatal("Cannot chmod(0666,$dst):  $!");
 	close(TOUCHFILE);
 	my %swallow_db;
 	tie( %swallow_db, 'GDBM_File', $dst, &GDBM_WRITER, 0666 );
@@ -554,9 +583,9 @@ sub mf_put_obj
 	elsif( $text eq "json" || $text eq "txt" )
 	    { $contents = JSON->new->ascii->pretty->encode($objp); }
 	else
-	    { &fatal("Do not know how to write $text object in $dst."); }
-	&fatal("Could not format $dst for $text.") unless $contents;
-	&write_file( $dst, $contents );
+	    { &cpi_file::fatal("Do not know how to write $text object in $dst."); }
+	&cpi_file::fatal("Could not format $dst for $text.") unless $contents;
+	&cpi_file::write_file( $dst, $contents );
 	}
     $mf_filemap{$text} = $dst;
     }
@@ -569,7 +598,7 @@ sub mf_obj2obj
     my( $rule, $cmd ) = @_;
     my( $text, $fext, @rest ) = split(/,/,$rule);
     &mf_put_obj( $text, &mf_get_obj( $fext ) );
-    &dbpop( $need_to_pop ) if( $need_to_pop );
+    &cpi_db::dbpop( $need_to_pop ) if( $need_to_pop );
     }
 
 #########################################################################
@@ -625,11 +654,11 @@ sub mf_txt2pnm
     #$srcpnmfile = "$mf_TMPDIR/ref.pnm";
 
     if( $_ = $mf_commandmap{txt} )
-	{ open( CTINF, "$_ |" ) || &fatal("Cannot run $_:  $!"); }
+	{ open( CTINF, "$_ |" ) || &cpi_file::fatal("Cannot run $_:  $!"); }
     elsif( ($_ = $mf_filemap{txt}) ne "-" )
-    	{ open( CTINF, $_ ) || &fatal("Cannot read $_:  $!"); }
+    	{ open( CTINF, $_ ) || &cpi_file::fatal("Cannot read $_:  $!"); }
 
-    open(CTOUT,"> $desttext")|| &fatal("Cannot write ${desttext}:  $!");
+    open(CTOUT,"> $desttext")|| &cpi_file::fatal("Cannot write ${desttext}:  $!");
 
     while($_=(($mf_filemap{txt} eq "-") ? <STDIN> : <CTINF>))
 	{
@@ -656,14 +685,14 @@ sub mf_txt2pnm
     $width = int( ($width+2) * $mf_TEXT_SIZE );
 
     if( ! $srcpnmfile )
-        { &echodo("ppmmake '$lbgcolor' $width $height > $scaledpnm"); }
+        { &cpi_file::echodo("ppmmake '$lbgcolor' $width $height > $scaledpnm"); }
     else
     	{
 	open(INF,"pnmfile $srcpnmfile |")
-	    || &fatal("Cannot pnmfile $srcpnmfile:  $!");
+	    || &cpi_file::fatal("Cannot pnmfile $srcpnmfile:  $!");
 	$_ = <INF>;
 	close( INF );
-	&fatal("pnmfile failed to size $srcpnmfile")
+	&cpi_file::fatal("pnmfile failed to size $srcpnmfile")
 	    if( ! / (\d+) by (\d+) / );
 	my ( $inpixelwidth, $inpixelheight ) = ( $1, $2 );
 	my( $wratio ) = $width / $inpixelwidth;
@@ -674,13 +703,13 @@ sub mf_txt2pnm
 	else
 	    {
 	    if( $mf_OUTMODE eq "tile" )
-		{ &echodo("pnmtile $width $height $srcpnmfile > $scaledpnm"); }
+		{ &cpi_file::echodo("pnmtile $width $height $srcpnmfile > $scaledpnm"); }
 	    elsif( $ratio <= 3 )
-		{ &echodo("pnmscale $ratio $srcpnmfile > $scaledpnm"); }
+		{ &cpi_file::echodo("pnmscale $ratio $srcpnmfile > $scaledpnm"); }
 	    else
 		{
 		my($efac) = 2*int($ratio/2) - 1;
-		&echodo("pnmscale $ratio $srcpnmfile | ".
+		&cpi_file::echodo("pnmscale $ratio $srcpnmfile | ".
 			"pnmsmooth -size $efac $efac > $scaledpnm");
 		}
 	    }
@@ -706,11 +735,11 @@ sub mf_movie2frame
     my $cmd = "mplayer -quiet - -vo $desttype:outdir=$destdir -frames 1 -nosound";
 
     if( $mf_commandmap{$srctype} )
-	{ &echodo( "$mf_commandmap{$srctype} | $cmd" ); }
+	{ &cpi_file::echodo( "$mf_commandmap{$srctype} | $cmd" ); }
     elsif( $mf_filemap{$srctype} eq "-" )
-	{ &echodo( $cmd ); }
+	{ &cpi_file::echodo( $cmd ); }
     else
-	{ &echodo( "$cmd < $mf_filemap{$srctype}" ); }
+	{ &cpi_file::echodo( "$cmd < $mf_filemap{$srctype}" ); }
 
     $mf_filemap{$desttype} = $destfile;
     }
@@ -729,9 +758,9 @@ sub mf_avivob
 
     my $splitfiles = "$mf_TMP.avivob";
     my $c="transcode --progress_off -V -y mpeg,mp2enc -F dn,,dvd.prof -i $src -o $splitfiles";
-    &echodo($c);
+    &cpi_file::echodo($c);
     $c = "tcmplex -o X -i $splitfiles.m2v -p $splitfiles.mpa -m d";
-    &echodo($c);
+    &cpi_file::echodo($c);
 
     $mf_filemap{$desttype} = $dst;
     }
@@ -744,7 +773,7 @@ sub mf_wavlen
     my( $srcwavfile ) = @_;
     my $file_len;
     open( PWA, "sox -q $srcwavfile -t .wav /dev/null stat 2>&1 |" )
-    	|| &fatal("Cannot sox $srcwavfile to find length");
+    	|| &cpi_file::fatal("Cannot sox $srcwavfile to find length");
     while( $_ = <PWA> )
         {
 	$file_len = $1 if( /^Length .*:\s+([\d\.]+)/ );
@@ -772,7 +801,7 @@ sub mf_pnm2mpeg
 	}
 
     open( PARAMS, ">$mf_TMP.params" )
-	|| &fatal("Cannot write $mf_TMP.params:  $!");
+	|| &cpi_file::fatal("Cannot write $mf_TMP.params:  $!");
 print PARAMS <<CEOF;
 PATTERN	$pattern
 OUTPUT			$mpgfile
@@ -796,7 +825,7 @@ END_INPUT
 CEOF
     close( PARAMS );
     my $cmd = "ppmtompeg -realquiet $mf_TMP.params";
-    &echodo( $cmd );
+    &cpi_file::echodo( $cmd );
     $mf_filemap{$desttype} = $mpgfile;
     }
 
@@ -829,7 +858,7 @@ sub mf_wavmpeg2avi
     $cmd = "transcode --progress_off -i $srcmpeg -p $srcwavfile -y mjpeg ".
 	"-o $mf_TMP.mjpeg";
     $cmd = "mencoder $srcmpeg -audiofile $srcwavfile -o $mf_TMP.mjpeg -oac copy -ovc copy";
-    &echodo( $cmd );
+    &cpi_file::echodo( $cmd );
     $mf_filemap{$desttype} = "$mf_TMP.mjpeg";
     }
 
@@ -844,8 +873,8 @@ sub mf_sxw2html
     my $srcsxwfile = &mf_force_file( "sxw" );
     
     open( INF, "unzip -qq -p -C $srcsxwfile content.xml |" )
-	|| &fatal("Cannot unzip $srcsxwfile:  $!");
-    open(OUTF,"> $destfile") || &fatal("Cannot write $destfile:  $!");
+	|| &cpi_file::fatal("Cannot unzip $srcsxwfile:  $!");
+    open(OUTF,"> $destfile") || &cpi_file::fatal("Cannot write $destfile:  $!");
     print OUTF "<html><head><title>SXW file converted to HTML</title><style>\n";
     print OUTF "<!--\n";
     print OUTF "td {font-size:14;font-family:verdana,lucida,arial}\n";
@@ -910,10 +939,10 @@ sub mf_txt2html
     my( $destfile ) = "$mf_TMP.txt.html";
 
     if( $_ = $mf_commandmap{txt} )
-	{ open( CTINF, "$_ |" ) || &fatal("Cannot run $_:  $!"); }
+	{ open( CTINF, "$_ |" ) || &cpi_file::fatal("Cannot run $_:  $!"); }
     elsif( ($_ = $mf_filemap{txt}) ne "-" )
-    	{ open( CTINF, $_ ) || &fatal("Cannot read $_:  $!"); }
-    open(CTOUT,"> $destfile") || &fatal("Cannot write $destfile:  $!");
+    	{ open( CTINF, $_ ) || &cpi_file::fatal("Cannot read $_:  $!"); }
+    open(CTOUT,"> $destfile") || &cpi_file::fatal("Cannot write $destfile:  $!");
     print CTOUT "<pre>";
     while($_=(($mf_filemap{txt} eq "-") ? <STDIN> : <CTINF>))
 	{
@@ -938,10 +967,10 @@ sub mf_xml2dxml
     my( $destfile ) = "$mf_TMP.dxml";
 
     if( $_ = $mf_commandmap{xml} )
-	{ open( CTINF, "$_ |" ) || &fatal("Cannot run $_:  $!"); }
+	{ open( CTINF, "$_ |" ) || &cpi_file::fatal("Cannot run $_:  $!"); }
     elsif( ($_ = $mf_filemap{xml}) ne "-" )
-    	{ open( CTINF, $_ ) || &fatal("Cannot read $_:  $!"); }
-    open(CTOUT,"> $destfile") || &fatal("Cannot write $destfile:  $!");
+    	{ open( CTINF, $_ ) || &cpi_file::fatal("Cannot read $_:  $!"); }
+    open(CTOUT,"> $destfile") || &cpi_file::fatal("Cannot write $destfile:  $!");
 
     my $pgraph = $/;
     undef $/;
@@ -1093,7 +1122,7 @@ sub generate_rules
     &mf_all_table_fun_rules();
     &mf_all_mf_obj2obj_rules();
 
-    &fatal("Can't generate $destfile from ".join(",",@srcfiles).".")
+    &cpi_file::fatal("Can't generate $destfile from ".join(",",@srcfiles).".")
 	if( &mf_setup_path( $destfile, @srcfiles ) < 0 );
 
     my $ind;
@@ -1129,9 +1158,9 @@ sub convert_file
     $_ = $mf_commandmap{ &mf_type_of( $destfile ) };
     my( $srcstr ) = ( $_ ? $_ : "cat $mf_filemap{$destext}" );
     my( $cmd ) = "$srcstr$deststr";
-    &echodo($cmd);
+    &cpi_file::echodo($cmd);
     opendir(TD,$mf_TMPDIR) ||
-	&fatal("Cannot opendir($mf_TMPDIR):  $!");
+	&cpi_file::fatal("Cannot opendir($mf_TMPDIR):  $!");
     my ( @torm ) = ();
     while( $_ = readdir( TD ) )
 	{

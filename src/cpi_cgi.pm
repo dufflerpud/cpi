@@ -1,3 +1,31 @@
+#!/usr/bin/perl -w
+########################################################################
+#@HDR@	$Id$
+#@HDR@		Copyright 2025 by
+#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		P.O. Box 401, Bailey Island, ME 04003
+#@HDR@		All Rights Reserved
+#@HDR@
+#@HDR@	This software comprises unpublished confidential information
+#@HDR@	of Brightsands and may not be used, copied or made available
+#@HDR@	to anyone, except in accordance with the license under which
+#@HDR@	it is furnished.
+########################################################################
+
+use strict;
+
+package cpi_cgi;
+use Exporter;
+use AutoLoader;
+our @ISA = qw /Exporter/;
+#@ISA = qw( Exporter AutoLoader );
+##use vars qw ( @ISA @EXPORT );
+our @EXPORT_OK = qw( );
+our @EXPORT = qw();
+use lib ".";
+
+use cpi_file;
+use cpi_vars;
 #__END__
 1;
 
@@ -11,13 +39,13 @@ sub show_vars
 <table cellspacing=0 cellpadding=0 bgcolor=black frame=border>
 <tr><th bgcolor="#2050d0" colspan=3><font color=white>$msg</font></th></tr>
 EOF
-    foreach my $svn ( sort keys %FORM )
+    foreach my $svn ( sort keys %cpi_vars::FORM )
         {
 	print "<tr><th align=left bgcolor='#2050d0'>" .
 	    "<font color=white>${svn}:</font></th>" .
 	    "<td width=10% bgcolor='#2050d0'></td>" .
 	    "<td bgcolor='#2050d0'>" .
-	    "<font color=white>[".$FORM{$svn}."]</font></td></tr>\n"
+	    "<font color=white>[".$cpi_vars::FORM{$svn}."]</font></td></tr>\n"
 	    unless( grep( $svn eq $_, @excludevars ) );
 	}
     print "</table></p>\n";
@@ -31,12 +59,12 @@ sub starting_CSS
     my $css = "";
     if( $ENV{HTTP_USER_AGENT} )
 	{
-	while( defined($_=shift(@CSS_PER_DEVICE_TYPE)) )
+	while( defined($_=shift(@cpi_vars::CSS_PER_DEVICE_TYPE)) )
 	    {
 	    if( $ENV{HTTP_USER_AGENT} !~ /$_/ )
-	        { shift(@CSS_PER_DEVICE_TYPE); }
+	        { shift(@cpi_vars::CSS_PER_DEVICE_TYPE); }
 	    else
-	        { $css=shift(@CSS_PER_DEVICE_TYPE); last; }
+	        { $css=shift(@cpi_vars::CSS_PER_DEVICE_TYPE); last; }
 	    }
 	}
     print <<EOF;
@@ -59,7 +87,7 @@ my $CGIheader_flag = 0;
 sub CGIheader
     {
     my( @varvals ) = @_;
-    if( ! $CGIheader_has_been_printed++ )
+    if( ! $cpi_vars::CGIheader_has_been_printed++ )
 	{
 	if(! exists &main::check_if_app_needs_header || &main::check_if_app_needs_header() )
 	    {
@@ -76,19 +104,19 @@ sub CGIheader
 	        { &app_intro(); }
 	    else
 	        {
-		print &read_file( $COMMONJS ) if( $COMMONJS && -r $COMMONJS );
-		print "<link href='$CSS_URL' rel='stylesheet' type='text/css' />\n"
-		    if( $CSS_URL );
-		print "<link href='$PROG_CSS_URL' rel='stylesheet' type='text/css' />\n"
-		    if( $PROG_CSS_URL );
-		print "<link rel='shortcut icon' href='$ICON_URL' />\n"
-		    if( $ICON_URL );
-		if( $IOS_ICON_URL )
+		print &cpi_file::read_file( $cpi_vars::COMMONJS ) if( $cpi_vars::COMMONJS && -r $cpi_vars::COMMONJS );
+		print "<link href='$cpi_vars::CSS_URL' rel='stylesheet' type='text/css' />\n"
+		    if( $cpi_vars::CSS_URL );
+		print "<link href='$cpi_vars::PROG_CSS_URL' rel='stylesheet' type='text/css' />\n"
+		    if( $cpi_vars::PROG_CSS_URL );
+		print "<link rel='shortcut icon' href='$cpi_vars::ICON_URL' />\n"
+		    if( $cpi_vars::ICON_URL );
+		if( $cpi_vars::IOS_ICON_URL )
 		    {
-		    print "<link rel='apple-touch-icon' href='$IOS_ICON_URL' />\n";
+		    print "<link rel='apple-touch-icon' href='$cpi_vars::IOS_ICON_URL' />\n";
 #		    foreach my $sz ( 57, 120, 152, 167, 180 )
 #		        {
-#		        print "<link rel='apple-touch-icon' sizes='${sz}x${sz}' href='$IOS_ICON_URL' />\n";
+#		        print "<link rel='apple-touch-icon' sizes='${sz}x${sz}' href='$cpi_vars::IOS_ICON_URL' />\n";
 #			}
 		    }
 		}
@@ -98,7 +126,7 @@ sub CGIheader
 
 
 #########################################################################
-#	Put <form> information into %FORM (from STDIN or ENV).	#
+#	Put <form> information into %cpi_vars::FORM (from STDIN or ENV).	#
 #########################################################################
 sub CGIreceive
     {
@@ -143,12 +171,12 @@ sub CGIreceive
 		next if ($val eq "");
 
 		#### Allow for multiple values of a single name
-		$FORM{$flname} .= ","
-		    if (defined($FORM{$flname})
-		        && $FORM{$flname} ne "");
+		$cpi_vars::FORM{$flname} .= ","
+		    if (defined($cpi_vars::FORM{$flname})
+		        && $cpi_vars::FORM{$flname} ne "");
 
-		$FORM{$flname} .= $val;
-		$FORM{$flname} =~ s/[\r\n]*$//s;
+		$cpi_vars::FORM{$flname} .= $val;
+		$cpi_vars::FORM{$flname} =~ s/[\r\n]*$//s;
 
 		#print STDERR "Setting [$flname] to [$val]<br>\n";
 		#### Add to ordered list if not on list already
@@ -201,23 +229,23 @@ sub CGIreceive
 	    next if ($value eq "");
 
 	    #### Allow for multiple values of a single name
-	    if( defined($FORM{$name}) )
-		{ $FORM{$name} .= ",$value"; }
+	    if( defined($cpi_vars::FORM{$name}) )
+		{ $cpi_vars::FORM{$name} .= ",$value"; }
 	    else
-		{ $FORM{$name} = $value; }
+		{ $cpi_vars::FORM{$name} = $value; }
 
 	    #### Add to ordered list if not on list already
 	    push (@fields, $name) unless (grep(/^$name$/, @fields));
 	    }
 	}
-    foreach my $ind ( sort keys %FORM )
+    foreach my $ind ( sort keys %cpi_vars::FORM )
 	{
-	my $topr = $FORM{$ind};
+	my $topr = $cpi_vars::FORM{$ind};
 	$topr = substr($topr,0,40) . " ..." if( length($topr) > 40 );
         $topr =~ s/([^ -z])/uc sprintf("\\%03o",ord($1))/eg;
 	print STDERR "    $ind = $topr\n";
 	}
-    print STDERR "Form:\n", map { "  $_ = [$FORM{$_}]\n" } sort keys %FORM;
+    print STDERR "Form:\n", map { "  $_ = [$cpi_vars::FORM{$_}]\n" } sort keys %cpi_vars::FORM;
     }
 
 #########################################################################
@@ -226,7 +254,7 @@ sub CGIreceive
 sub embed_javascript
     {
     return join("",
-        "<script TYPE='text/javascript'>\n", &read_file($_[0]), "</script>\n");
+        "<script TYPE='text/javascript'>\n", &cpi_file::read_file($_[0]), "</script>\n");
     }
 
 #########################################################################
@@ -234,7 +262,7 @@ sub embed_javascript
 #########################################################################
 sub embed_css
     {
-    return join("","<style type='text/css'>\n",&read_file($_[0]),"</style>\n");
+    return join("","<style type='text/css'>\n",&cpi_file::read_file($_[0]),"</style>\n");
     }
 
 #########################################################################

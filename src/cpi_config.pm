@@ -1,3 +1,30 @@
+#!/usr/bin/perl -w
+########################################################################
+#@HDR@	$Id$
+#@HDR@		Copyright 2025 by
+#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		P.O. Box 401, Bailey Island, ME 04003
+#@HDR@		All Rights Reserved
+#@HDR@
+#@HDR@	This software comprises unpublished confidential information
+#@HDR@	of Brightsands and may not be used, copied or made available
+#@HDR@	to anyone, except in accordance with the license under which
+#@HDR@	it is furnished.
+########################################################################
+
+use strict;
+
+package cpi_config;
+use Exporter;
+use AutoLoader;
+our @ISA = qw /Exporter/;
+#@ISA = qw( Exporter AutoLoader );
+##use vars qw ( @ISA @EXPORT );
+our @EXPORT_OK = qw( );
+our @EXPORT = qw();
+use lib ".";
+
+use cpi_file;
 #__END__
 1;
 #########################################################################
@@ -9,7 +36,7 @@ sub read_config
     my( $vtype ) = ref( $varref );
 
     if( -f $fn )
-	{ $_ = &read_file( $fn ); }
+	{ $_ = &cpi_file::read_file( $fn ); }
     else
         { $_ = "\$VAR1 = {};"; }
 
@@ -37,7 +64,7 @@ sub read_config
 	@{$varref} = @temp;
 	}
     else
-	{&fatal("read_config refers to unknown variable type:".$vtype);}
+	{&cpi_file::fatal("read_config refers to unknown variable type:".$vtype);}
     return 1;
     }
 1;
