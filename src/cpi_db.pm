@@ -346,9 +346,15 @@ sub dbput_sql
 sub dbread
     {
     my( $dbname ) = @_;
+<<<<<<< HEAD
     &stack_trace("Database not specified") if( ! $dbname );
     &db_gothere( __LINE__, "dbread begin", $dbname );
 #    &autopsy("Database $dbname already open for writing")
+=======
+    &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
+    #&db_gothere( __LINE__, "dbread begin", $dbname );
+#    &cpi_file::fatal("Database $dbname already open for writing")
+>>>>>>> refs/remotes/origin/main
 #	if( $cpi_vars::DBSTATUS{$dbname} eq "RW" );
     if(!defined($cpi_vars::DBSTATUS{$dbname}) || $cpi_vars::DBSTATUS{$dbname} eq "")
 	{
@@ -358,7 +364,7 @@ sub dbread
     push( @{$cpi_vars::db_stati{$dbname}}, $cpi_vars::DBSTATUS{$dbname} );
     use strict 'refs';
     $cpi_vars::DBSTATUS{$dbname} = "RO";
-    &db_gothere( __LINE__, "dbread end", $dbname );
+    #&db_gothere( __LINE__, "dbread end", $dbname );
     }
 
 #########################################################################
@@ -398,8 +404,13 @@ sub dbread_sql		{ return &dbopen_sql( @_ ); }
 sub dbwrite
     {
     my( $dbname ) = @_;
+<<<<<<< HEAD
     &stack_trace("Database not specified") if( ! $dbname );
     &db_gothere( __LINE__, "dbwrite begin", $dbname );
+=======
+    &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
+    #&db_gothere( __LINE__, "dbwrite begin", $dbname );
+>>>>>>> refs/remotes/origin/main
     if((($cpi_vars::DBSTATUS{$dbname}||"") ne "RW")
 	&& ! grep( ($_||"") eq "RW", @{$cpi_vars::db_stati{$dbname}}))
 	{
@@ -409,7 +420,7 @@ sub dbwrite
 	}
     push( @{$cpi_vars::db_stati{$dbname}}, $cpi_vars::DBSTATUS{$dbname} );
     $cpi_vars::DBSTATUS{$dbname} = "RW";
-    &db_gothere( __LINE__, "dbwrite end", $dbname );
+    #&db_gothere( __LINE__, "dbwrite end", $dbname );
     }
 
 #########################################################################
@@ -518,7 +529,7 @@ sub dbpop
     {
     my( $dbname ) = @_;
     my $dbt = &dbtype( $dbname );
-    &db_gothere( __LINE__, "dbpop begin", $dbname );
+    #&db_gothere( __LINE__, "dbpop begin", $dbname );
     if( $cpi_vars::DBSTATUS{$dbname} eq "RO" )
 	{
  	if( ! grep(($_||"") eq "RW", @{$cpi_vars::db_stati{$dbname}})	&&
@@ -570,10 +581,15 @@ sub dbpop
 	    }
 	}
     else
+<<<<<<< HEAD
         { &autopsy("dbpop failed:  Database $dbname not open"); }
     &db_gothere( __LINE__, "dbpop middle", $dbname );
+=======
+        { &cpi_file::fatal("dbpop failed:  Database $dbname not open"); }
+    #&db_gothere( __LINE__, "dbpop middle", $dbname );
+>>>>>>> refs/remotes/origin/main
     $cpi_vars::DBSTATUS{$dbname} = pop( @{$cpi_vars::db_stati{$dbname}} );
-    &db_gothere( __LINE__, "dbpop end", $dbname );
+    #&db_gothere( __LINE__, "dbpop end", $dbname );
     }
 
 #########################################################################
@@ -583,10 +599,10 @@ sub dbpop
 sub dbclose
     {
     my( $dbname ) = @_;
-    &db_gothere( __LINE__, "dbclose begin", $dbname );
+    #&db_gothere( __LINE__, "dbclose begin", $dbname );
     while( ($cpi_vars::DBSTATUS{$dbname}||"") ne "" )
         { &dbpop($dbname); }
-    &db_gothere( __LINE__, "dbclose end", $dbname );
+    #&db_gothere( __LINE__, "dbclose end", $dbname );
     }
 
 #########################################################################
@@ -598,12 +614,12 @@ sub dbclose
 sub dbforget
     {
     my( $dbname ) = @_;
-    &db_gothere( __LINE__, "dbforget begin", $dbname );
+    #&db_gothere( __LINE__, "dbforget begin", $dbname );
     while( $cpi_vars::DBSTATUS{$dbname} ne "" )
         { $cpi_vars::DBSTATUS{$dbname} = pop( @{$cpi_vars::db_stati{$dbname}} ); }
     $cpi_vars::DBWRITTEN{$dbname} = 0;
     %{$cpi_vars::databases{$dbname}} = ();	# (Shouldn't be necessary)
-    &db_gothere( __LINE__, "dbforget end", $dbname );
+    #&db_gothere( __LINE__, "dbforget end", $dbname );
     }
 
 #########################################################################
@@ -619,13 +635,13 @@ sub db_writable { return ( ($cpi_vars::DBSTATUS{$_[0]}||"") eq "RW" ); }
 sub db_unique
     {
     my( $dbname, $nm ) = @_;
-    &db_gothere( __LINE__, "db_unique begin", $dbname );
+    #&db_gothere( __LINE__, "db_unique begin", $dbname );
     $nm |= "unique";
     &dbwrite( $dbname );
     my( $ret ) = (&dbget( $dbname, $nm ) || 0) + 1;
     &dbput( $dbname, $nm, $ret );
     &dbpop( $dbname );
-    &db_gothere( __LINE__, "db_unique end", $dbname );
+    #&db_gothere( __LINE__, "db_unique end", $dbname );
     return $ret;
     }
 
