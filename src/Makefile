@@ -1,3 +1,4 @@
+# Makefile to build CPI
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
 MODULES=$(shell ls *.pm | sed -e 's/\.pm//')
 INSTALLDIR=/usr/local/lib/perl
@@ -50,7 +51,10 @@ all_modules:\
 	auto/cpi_user/autosplit.ix\
 	auto/cpi_make_from/autosplit.ix\
 	auto/cpi_trace/autosplit.ix\
-	auto/cpi_help/autosplit.ix
+	auto/cpi_help/autosplit.ix\
+	auto/cpi_inlist/autosplit.ix\
+	auto/cpi_arguments/autosplit.ix\
+	auto/cpi_unique_nbit_color/autosplit.ix
 auto/cpi_cache/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_filename/autosplit.ix\
@@ -79,6 +83,13 @@ auto/cpi_compress_integer/autosplit.ix:
 	sed -e 's/^#*__END__/__END__/' < cpi_compress_integer.compiling > cpi_compress_integer.pm
 	perl -MAutoSplit -e 'autosplit(cpi_compress_integer,auto,0,1,1)' || excode=0
 	mv cpi_compress_integer.compiling cpi_compress_integer.pm
+auto/cpi_unique_nbit_color/autosplit.ix:
+	perl cpi_unique_nbit_color.pm
+	[ -d auto/cpi_unique_nbit_color ] || mkdir -p auto/cpi_unique_nbit_color
+	mv cpi_unique_nbit_color.pm cpi_unique_nbit_color.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_unique_nbit_color.compiling > cpi_unique_nbit_color.pm
+	perl -MAutoSplit -e 'autosplit(cpi_unique_nbit_color,auto,0,1,1)' || excode=0
+	mv cpi_unique_nbit_color.compiling cpi_unique_nbit_color.pm
 auto/cpi_config/autosplit.ix:\
 	auto/cpi_file/autosplit.ix
 	perl cpi_config.pm
@@ -313,3 +324,19 @@ auto/cpi_vars/autosplit.ix:
 	sed -e 's/^#*__END__/__END__/' < cpi_vars.compiling > cpi_vars.pm
 	perl -MAutoSplit -e 'autosplit(cpi_vars,auto,0,1,1)' || excode=0
 	mv cpi_vars.compiling cpi_vars.pm
+auto/cpi_inlist/autosplit.ix:
+	perl cpi_inlist.pm
+	[ -d auto/cpi_inlist ] || mkdir -p auto/cpi_inlist
+	mv cpi_inlist.pm cpi_inlist.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_inlist.compiling > cpi_inlist.pm
+	perl -MAutoSplit -e 'autosplit(cpi_inlist,auto,0,1,1)' || excode=0
+	mv cpi_inlist.compiling cpi_inlist.pm
+auto/cpi_arguments/autosplit.ix:\
+	auto/cpi_file/autosplit.ix\
+	auto/cpi_inlist/autosplit.ix
+	perl cpi_arguments.pm
+	[ -d auto/cpi_arguments ] || mkdir -p auto/cpi_arguments
+	mv cpi_arguments.pm cpi_arguments.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_arguments.compiling > cpi_arguments.pm
+	perl -MAutoSplit -e 'autosplit(cpi_arguments,auto,0,1,1)' || excode=0
+	mv cpi_arguments.compiling cpi_arguments.pm
