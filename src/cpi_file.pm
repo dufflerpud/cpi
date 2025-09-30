@@ -202,7 +202,7 @@ sub death_requested
     print "Content-type:  text/html; charset=\"utf-8\"\n\n"
 	if( $ENV{SCRIPT_NAME} && ! $cpi_vars::CGIheader_has_been_printed );
 
-    if( !defined($cpi_vars::THIS) || $cpi_vars::THIS eq "" )
+    if( ! $ENV{SCRIPT_NAME} )
 	{ print STDERR join("\n",@msgs,""); }
     else
         {
