@@ -347,10 +347,13 @@ sub dbread
     {
     my( $dbname ) = @_;
 <<<<<<< HEAD
+<<<<<<< HEAD
     &stack_trace("Database not specified") if( ! $dbname );
     &db_gothere( __LINE__, "dbread begin", $dbname );
 #    &autopsy("Database $dbname already open for writing")
 =======
+=======
+>>>>>>> 1799f5de43e398ca4fda83e32a80fb8be9e0155e
     &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
     #&db_gothere( __LINE__, "dbread begin", $dbname );
 #    &cpi_file::fatal("Database $dbname already open for writing")
@@ -405,12 +408,17 @@ sub dbwrite
     {
     my( $dbname ) = @_;
 <<<<<<< HEAD
+<<<<<<< HEAD
     &stack_trace("Database not specified") if( ! $dbname );
     &db_gothere( __LINE__, "dbwrite begin", $dbname );
 =======
     &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
     #&db_gothere( __LINE__, "dbwrite begin", $dbname );
 >>>>>>> refs/remotes/origin/main
+=======
+    &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
+    #&db_gothere( __LINE__, "dbwrite begin", $dbname );
+>>>>>>> 1799f5de43e398ca4fda83e32a80fb8be9e0155e
     if((($cpi_vars::DBSTATUS{$dbname}||"") ne "RW")
 	&& ! grep( ($_||"") eq "RW", @{$cpi_vars::db_stati{$dbname}}))
 	{
@@ -582,12 +590,17 @@ sub dbpop
 	}
     else
 <<<<<<< HEAD
+<<<<<<< HEAD
         { &autopsy("dbpop failed:  Database $dbname not open"); }
     &db_gothere( __LINE__, "dbpop middle", $dbname );
 =======
         { &cpi_file::fatal("dbpop failed:  Database $dbname not open"); }
     #&db_gothere( __LINE__, "dbpop middle", $dbname );
 >>>>>>> refs/remotes/origin/main
+=======
+        { &cpi_file::fatal("dbpop failed:  Database $dbname not open"); }
+    #&db_gothere( __LINE__, "dbpop middle", $dbname );
+>>>>>>> 1799f5de43e398ca4fda83e32a80fb8be9e0155e
     $cpi_vars::DBSTATUS{$dbname} = pop( @{$cpi_vars::db_stati{$dbname}} );
     #&db_gothere( __LINE__, "dbpop end", $dbname );
     }
