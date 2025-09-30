@@ -73,11 +73,11 @@ sub read_lines
 #########################################################################
 sub write_file
     {
-    my( $fn, $contents ) = @_;
+    my( $fn, @contents ) = @_;
 
     open( OUT, ">$fn" ) || &autopsy("Cannot write $fn:  $!");
     binmode OUT;
-    print OUT $contents;
+    print OUT @contents;
     close( OUT );
     }
 
