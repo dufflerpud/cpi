@@ -21,13 +21,13 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( cache );
 use lib ".";
 
-use cpi_file;
-use cpi_filename;
-use cpi_hash;
-use cpi_magic_http;
+use cpi_file qw( autopsy read_file write_file );
+use cpi_filename qw( dirname );
+use cpi_hash qw( hashof );
+use cpi_magic_http qw( magic_http );
 use cpi_vars;
 use Data::Dumper;
 use MIME::Base64 qw( encode_base64 );
@@ -68,7 +68,7 @@ sub cache
     $result_file = "$cpi_vars::CACHEDIR/$result_file"
 	if( $result_file !~ m:^/: );
 
-    my $hash_of_request = &cpi_hash::hashof( $request );
+    my $hash_of_request = &hashof( $request );
     $result_file = sprintf( $result_file, $hash_of_request )
 	if( $result_file =~ /%s/ );
     my $regen = ! -r $result_file;
@@ -76,7 +76,7 @@ sub cache
     my $query_file = $argp->{query};
     $query_file = sprintf( $query_file, $hash_of_request )
 	if( $query_file =~ /%s/ );
-    $regen = 1 if( $query_file && (&cpi_file::read_file($query_file,"") ne $request) );
+    $regen = 1 if( $query_file && (&read_file($query_file,"") ne $request) );
 
     print STDERR "rf=$result_file qf=$query_file regen=$regen.\n";
     system("mv $query_file $query_file.old.$$") if( $regen );
@@ -85,35 +85,35 @@ sub cache
     if( $regen )
 	{
 	print STDERR "About to call dirname($result_file).\n";
-	system("mkdir -p $_") if( ! -d ($_=&cpi_filename::dirname($result_file)) );
+	system("mkdir -p $_") if( ! -d ($_=&dirname($result_file)) );
 	print STDERR "Done dirname($result_file).\n";
 	if( $argp->{pipe} )
-	    { $contents = &cpi_file::read_file($argp->{pipe}); }
+	    { $contents = &read_file($argp->{pipe}); }
 	elsif( $argp->{routine} )
 	    { $contents = &{ $argp->{routine} }; }
         elsif( $argp->{eval_string} )
 	    { $contents = eval($argp->{eval_string}); }
 	elsif( $argp->{http} )
-	    { $contents = &cpi_magic_http::magic_http( $argp ); }
+	    { $contents = &magic_http( $argp ); }
 	if( defined($_=$argp->{check}) && $contents !~ /$_/ )
 	    {
-	    &cpi_file::write_file("$query_file.failed.$$",$request) if( $query_file );
+	    &write_file("$query_file.failed.$$",$request) if( $query_file );
 	    return undef;
 	    }
 	$contents = encode_base64( $contents ) if( $result_file =~ /\.b64$/ );
-	&cpi_file::write_file($result_file,$contents);
+	&write_file($result_file,$contents);
 	#print "Contents(", length($contents), ") written to $result_file.\n";
-	&cpi_file::write_file($query_file,$request) if( $query_file );
+	&write_file($query_file,$request) if( $query_file );
 	}
 
     if( ! $argp->{return} )
-	{ return $contents || &cpi_file::read_file($result_file); }
+	{ return $contents || &read_file($result_file); }
     elsif( $argp->{return} eq "result_file" )
 	{ return $result_file; }
     elsif( $argp->{return} eq "contents" )
-	{ return $contents || &cpi_file::read_file($result_file); }
+	{ return $contents || &read_file($result_file); }
     else
-	{ &cpi_file::fatal("cache cannot return ".$argp->{return}); }
+	{ &autopsy("cache cannot return ".$argp->{return}); }
     }
 
 1;

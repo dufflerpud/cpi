@@ -21,10 +21,10 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( read_config );
 use lib ".";
 
-use cpi_file;
+use cpi_file qw( autopsy read_file );
 #__END__
 1;
 #########################################################################
@@ -36,7 +36,7 @@ sub read_config
     my( $vtype ) = ref( $varref );
 
     if( -f $fn )
-	{ $_ = &cpi_file::read_file( $fn ); }
+	{ $_ = &read_file( $fn ); }
     else
         { $_ = "\$VAR1 = {};"; }
 
@@ -64,7 +64,7 @@ sub read_config
 	@{$varref} = @temp;
 	}
     else
-	{&cpi_file::fatal("read_config refers to unknown variable type:".$vtype);}
+	{&autopsy("read_config refers to unknown variable type:".$vtype);}
     return 1;
     }
 1;

@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( get_trace stack_trace );
 use lib ".";
 
 
@@ -29,7 +29,7 @@ use lib ".";
 1;
 
 #########################################################################
-#	Return a trace as a string for use in fatal, etc.		#
+#	Return a trace as a string for use in autopsy, etc.		#
 #########################################################################
 sub get_trace
     {

@@ -21,10 +21,10 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( subst_list template );
 use lib ".";
 
-use cpi_file;
+use cpi_file qw( read_file );
 use cpi_vars;
 #__END__
 1;
@@ -58,7 +58,7 @@ sub subst_list
 sub template
     {
     my( $filename, @substs ) = @_;
-    return &subst_list( &cpi_file::read_file($filename), @substs );
+    return &subst_list( &read_file($filename), @substs );
     }
 
 1;

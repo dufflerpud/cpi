@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( );
 use lib ".";
 
 
@@ -131,7 +131,7 @@ our $BASEFILE;
 our $BASEDIR;
 our $OFFSET = "/sto";
 our $WEBSITE;
-our $PROG;
+our $PROG = $0; $PROG =~ s+.*/++; $PROG =~ s+\.[^\.]*$++;
 our $COMMONDIR;
 our $COMMONLIB;
 our $COMMONJS;

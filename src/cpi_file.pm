@@ -21,10 +21,12 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( chmog cleanup echodo fatal autopsy death_requested
+ files_in mkdirp read_file read_lines register_cleanup slurp_file
+ tempfile write_file );
 use lib ".";
 
-use cpi_log;
+use cpi_log qw( log );
 use cpi_vars;
 #__END__
 1;
@@ -35,7 +37,7 @@ use cpi_vars;
 sub read_file
     {
     my( $fname, $ret ) = @_;
-    &fatal("read_file called with no filename.") if( ! defined($fname) );
+    &autopsy("read_file called with no filename.") if( ! defined($fname) );
     if( open( INF, $fname ) )
 	{
 	binmode INF;
@@ -43,7 +45,7 @@ sub read_file
 	close( INF );
 	}
     elsif( ! defined($ret) )
-	{ &fatal("Cannot read_file($fname):  $!"); }
+	{ &autopsy("Cannot read_file($fname):  $!"); }
     return $ret;
     }
 
@@ -73,7 +75,7 @@ sub write_file
     {
     my( $fn, $contents ) = @_;
 
-    open( OUT, ">$fn" ) || &fatal("Cannot write $fn:  $!");
+    open( OUT, ">$fn" ) || &autopsy("Cannot write $fn:  $!");
     binmode OUT;
     print OUT $contents;
     close( OUT );
@@ -86,9 +88,9 @@ sub chmog
     {
     my( $mode, $uid, $gid, @files ) = @_;
     chmod( $mode, @files ) ||
-	&fatal("chmod($mode,".join(",",@files).") failed:  $!");
+	&autopsy("chmod($mode,".join(",",@files).") failed:  $!");
     chown( $uid, $gid, @files ) ||
-	&fatal("chown($uid,$gid,".join(",",@files).") failed:  $!");
+	&autopsy("chown($uid,$gid,".join(",",@files).") failed:  $!");
     return 0;
     }
 
@@ -108,7 +110,7 @@ sub mkdirp
 	    {
 	    next if( $_ eq "" );
 	    $sofar .= "/$_";
-	    mkdir($sofar,$mask) || &fatal("Cannot create $sofar:  $!")
+	    mkdir($sofar,$mask) || &autopsy("Cannot create $sofar:  $!")
 	        if( ! -d $sofar );
 	    }
 	}
@@ -125,7 +127,7 @@ sub mkdirp
 sub files_in
     {
     my( $dname, $pat ) = @_;
-    opendir(D,$dname) || &fatal("Cannot opendir($dname):  $!");
+    opendir(D,$dname) || &autopsy("Cannot opendir($dname):  $!");
     $pat = "^[^\\.]" if( ! defined($pat) );
     my( @ret ) = grep( /$pat/, readdir( D ) );
     closedir( D );
@@ -189,25 +191,28 @@ sub echodo
 #	Print out a list of error messages and then exit.		#
 #		Note that due to the low level last resort nature	#
 #		of this code, some CGI stuff is here rather than in	#
-#		the CGI module.  CGI lib wants to be able to call fatal	#
-#		so fatal should not call CGI lib.			#
+#		the CGI module.  CGI lib wants to be able to call	#
+#		death_requested	so death_requested should not call CGI	#
+#		lib.							#
 #########################################################################
-sub fatal
+sub death_requested
     {
-    my( $msg, $do_trace ) = @_;
-    $do_trace = 1 if( !defined($do_trace) || $msg eq "" );
+    my( $argp, @msgs ) = @_;
 
     print "Content-type:  text/html; charset=\"utf-8\"\n\n"
 	if( $ENV{SCRIPT_NAME} && ! $cpi_vars::CGIheader_has_been_printed );
 
     if( !defined($cpi_vars::THIS) || $cpi_vars::THIS eq "" )
-        { print( $msg, "\n" ); }
+	{ print STDERR join("\n",@msgs,""); }
     else
         {
-	print(
-	    "<h2>Fatal error:</h2><dd><font style='background-color:black;color:red'>$msg</font>\n" );
+	print "<h2>Fatal error(s):</h2>\n",
+	    (
+	    map { "<dd><font style='background-color:black;color:red'>$_</font></dd>\n" }
+		@msgs
+	    );
 	}
-    if( $do_trace )
+    if( $argp->{trace} )
 	{
 	print("<hr>") if( $ENV{SCRIPT_NAME} );
 	my $i = 0;
@@ -220,8 +225,17 @@ sub fatal
 		{ print STDOUT "    ${file}:$line $subname\n"; }
 	    }
 	}
-    &cpi_log::log( ($cpi_vars::REALUSER||"?") ."(". ($cpi_vars::SID||"?") . ")"
-	. " had fatal error:  $msg");
+    if( $argp->{log} )
+	{
+	foreach my $msg ( @msgs )
+	    {
+	    &log( ($cpi_vars::REALUSER||"?") ."(". ($cpi_vars::SID||"?") . ")"
+		. " had fatal error:  $msg");
+	    }
+	}
     &cleanup(1);
     }
+
+sub fatal	{ &death_requested( {trace=>0,log=>1}, @_ ); }
+sub autopsy	{ &death_requested( {trace=>1,log=>1}, @_ ); }
 1;

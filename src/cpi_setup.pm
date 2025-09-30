@@ -21,15 +21,15 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( setup );
 use lib ".";
 
-use cpi_cgi;
-use cpi_copy_db;
-use cpi_db;
-use cpi_time;
-use cpi_translate;
-use cpi_user;
+use cpi_cgi qw( CGIreceive );
+use cpi_copy_db qw( copydb dumpdb undumpdb );
+use cpi_db qw( dbread find_db new_sql_table );
+use cpi_time qw( timestr );
+use cpi_translate qw( init_phrases );
+use cpi_user qw( login );
 use cpi_vars;
 #__END__
 1;
@@ -138,12 +138,12 @@ sub setup
     $cpi_vars::COMMONLIB="$cpi_vars::COMMONDIR/lib";
     $cpi_vars::COMMONJS="$cpi_vars::COMMONLIB/common.js";
     $cpi_vars::TRANSLATIONS_BASE="$cpi_vars::PROJECTSDIR/transdaemon/db/app";
-    $cpi_vars::TRANSLATIONS_DB=&cpi_db::find_db("$cpi_vars::TRANSLATIONS_BASE");
+    $cpi_vars::TRANSLATIONS_DB=&find_db("$cpi_vars::TRANSLATIONS_BASE");
     $cpi_vars::TRANSLATIONS_TODO="$cpi_vars::TRANSLATIONS_BASE.todo";
-    $cpi_vars::ACCOUNTDB=&cpi_db::find_db("$cpi_vars::COMMONDIR/db/accounts");
+    $cpi_vars::ACCOUNTDB=&find_db("$cpi_vars::COMMONDIR/db/accounts");
     $cpi_vars::WRITTEN_IN="en";
     $cpi_vars::LANG_TRAN="tran";
-    $cpi_vars::DB=&cpi_db::find_db("$cpi_vars::BASEDIR/db/app");
+    $cpi_vars::DB=&find_db("$cpi_vars::BASEDIR/db/app");
     $cpi_vars::DBSEP="\377";
     $cpi_vars::SQLSEP="__";
     %cpi_vars::DBSTATUS = ();
@@ -180,34 +180,34 @@ sub setup
 	$cpi_vars::HIGHLIGHT_COLOR	||= "#ff6060";
 	$cpi_vars::LOWLIGHT_COLOR		||= "#808080";
 	$cpi_vars::TABLE_TAGS		||= "bgcolor=#c0e0f0";
-	$cpi_vars::TODAY			= &cpi_time::timestr( time() );
-	&cpi_cgi::CGIreceive();
+	$cpi_vars::TODAY			= &timestr( time() );
+	&CGIreceive();
 	$cpi_vars::LANG			||= $cpi_vars::FORM{LANG};
-	&cpi_translate::init_phrases();
+	&init_phrases();
 
-	&cpi_db::dbread( $cpi_vars::ACCOUNTDB );
+	&dbread( $cpi_vars::ACCOUNTDB );
 
-	&cpi_user::login();
-	&cpi_db::dbread( $cpi_vars::DB ) if( $cpi_vars::DB && -f $cpi_vars::DB );
+	&login();
+	&dbread( $cpi_vars::DB ) if( $cpi_vars::DB && -f $cpi_vars::DB );
 	}
     elsif( defined($ARGV[0]) )
 	{
 	if( $ARGV[0] eq "copydb" )
-	    { &cpi_copy_db::copydb( $ARGV[1], $ARGV[2] ); }
+	    { &copydb( $ARGV[1], $ARGV[2] ); }
 	elsif( $ARGV[0] eq "table" )
-	    { &cpi_db::new_sql_table( $ARGV[1], $ARGV[2] ); }
+	    { &new_sql_table( $ARGV[1], $ARGV[2] ); }
 #	elsif( $ARGV[0] eq "dumpapp" || $ARGV[0] eq "dump" )
-#	    { &cpi_copy_db::dumpdb($cpi_vars::DB,$ARGV[1]); }
+#	    { &dumpdb($cpi_vars::DB,$ARGV[1]); }
 #	elsif( $ARGV[0] eq "dumpaccounts" )
-#	    { &cpi_copy_db::dumpdb($cpi_vars::ACCOUNTDB,$ARGV[1]); }
+#	    { &dumpdb($cpi_vars::ACCOUNTDB,$ARGV[1]); }
 #	elsif( $ARGV[0] eq "dumptranslations" )
-#	    { &cpi_copy_db::dumpdb($cpi_vars::TRANSLATIONS_DB,$ARGV[1]); }
+#	    { &dumpdb($cpi_vars::TRANSLATIONS_DB,$ARGV[1]); }
 #	elsif( $ARGV[0] eq "undumpapp" || $ARGV[0] eq "undump" )
-#	    { &cpi_copy_db::undumpdb($cpi_vars::DB,$ARGV[1]); }
+#	    { &undumpdb($cpi_vars::DB,$ARGV[1]); }
 #	elsif( $ARGV[0] eq "undumpaccounts" )
-#	    { &cpi_copy_db::undumpdb($cpi_vars::ACCOUNTDB,$ARGV[1]); }
+#	    { &undumpdb($cpi_vars::ACCOUNTDB,$ARGV[1]); }
 #	elsif( $ARGV[0] eq "undumptranslations" )
-#	    { &cpi_copy_db::undumpdb($cpi_vars::TRANSLATIONS_DB,$ARGV[1]); }
+#	    { &undumpdb($cpi_vars::TRANSLATIONS_DB,$ARGV[1]); }
 	}
     $cpi_vars::CACHEDIR = ($ENV{HOME}||$cpi_vars::BASEDIR)."/.cache";
     $cpi_vars::DEFAULT_FORM = "form";

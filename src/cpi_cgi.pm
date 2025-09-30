@@ -21,10 +21,11 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( CGIheader CGIreceive embed_css
+ embed_javascript safe_html safe_url show_vars starting_CSS );
 use lib ".";
 
-use cpi_file;
+use cpi_file qw( read_file );
 use cpi_vars;
 #__END__
 1;
@@ -104,7 +105,7 @@ sub CGIheader
 	        { &app_intro(); }
 	    else
 	        {
-		print &cpi_file::read_file( $cpi_vars::COMMONJS ) if( $cpi_vars::COMMONJS && -r $cpi_vars::COMMONJS );
+		print &read_file( $cpi_vars::COMMONJS ) if( $cpi_vars::COMMONJS && -r $cpi_vars::COMMONJS );
 		print "<link href='$cpi_vars::CSS_URL' rel='stylesheet' type='text/css' />\n"
 		    if( $cpi_vars::CSS_URL );
 		print "<link href='$cpi_vars::PROG_CSS_URL' rel='stylesheet' type='text/css' />\n"
@@ -254,7 +255,7 @@ sub CGIreceive
 sub embed_javascript
     {
     return join("",
-        "<script TYPE='text/javascript'>\n", &cpi_file::read_file($_[0]), "</script>\n");
+        "<script TYPE='text/javascript'>\n", &read_file($_[0]), "</script>\n");
     }
 
 #########################################################################
@@ -262,7 +263,7 @@ sub embed_javascript
 #########################################################################
 sub embed_css
     {
-    return join("","<style type='text/css'>\n",&cpi_file::read_file($_[0]),"</style>\n");
+    return join("","<style type='text/css'>\n",&read_file($_[0]),"</style>\n");
     }
 
 #########################################################################

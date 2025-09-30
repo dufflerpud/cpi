@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( hashof );
 use lib ".";
 
 use Digest::MD5 qw(md5_hex);

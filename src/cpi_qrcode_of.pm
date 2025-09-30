@@ -21,10 +21,10 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( qrcode_of );
 use lib ".";
 
-use cpi_file;
+use cpi_file qw( autopsy write_file );
 use MIME::Base64 qw( encode_base64 );
 use Imager::QRCode;
 #__END__
@@ -47,16 +47,16 @@ sub qrcode_of
         lightcolor    => Imager::Color->new(255, 255, 255),
         darkcolor     => Imager::Color->new(0, 0, 0),
 	);
-    &cpi_file::fatal("Imager::QRCode->new failed:  $!") if( ! $qrcode );
+    &autopsy("Imager::QRCode->new failed:  $!") if( ! $qrcode );
     print STDERR "Going to write QR $fmt to ", ($argp->{file} || "UNDEF"), ".\n";
     my $img = $qrcode->plot($text);
-    &cpi_file::fatal("Imager::QRCode->plot($text) failed:  $!") if( ! $img );
+    &autopsy("Imager::QRCode->plot($text) failed:  $!") if( ! $img );
 
     my $ret;
     $img->write(data =>\$ret, type => $fmt);
 
     if( ! $ret )
-        { &cpi_file::fatal("image writer failed:  $!"); }
+        { &autopsy("image writer failed:  $!"); }
     else
 	{
 	if( my $encoding = $argp->{encoding} )
@@ -67,7 +67,7 @@ sub qrcode_of
 		{ $ret = "<img src='data:image/jpeg;base64,".encode_base64($ret)."'/>"; }
 	    }
 
-	&cpi_file::write_file( $argp->{file}, $ret ) if( $argp->{file} );
+	&write_file( $argp->{file}, $ret ) if( $argp->{file} );
 	}
     print STDERR "qrcode_of() returned.\n";
     return $ret;

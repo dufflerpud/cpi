@@ -21,14 +21,21 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( db_cleanup db_gdbm db_gothere db_perlobj
+ db_readable db_sql db_status db_unique db_writable dbadd
+ dbarr dbclose dbdel dbdelkey dbforget dbget dbget_gdbm
+ dbget_hash dbget_perlobj dbget_sql dbnew dbnew_gdbm
+ dbnew_perlobj dbnew_sql dbnewkey dbopen_sql dbpop dbput
+ dbput_gdbm dbput_hash dbput_perlobj dbput_sql dbread
+ dbread_gdbm dbread_perlobj dbread_sql dbtest dbtype dbupdate
+ dbwrite find_db new_sql_table );
 use lib ".";
 
-use cpi_compress_integer;
-use cpi_config;
-use cpi_file;
-use cpi_lock;
-use cpi_trace;
+use cpi_compress_integer qw( compress_integer );
+use cpi_config qw( read_config );
+use cpi_file qw( cleanup autopsy register_cleanup write_file );
+use cpi_lock qw( lock_file unlock_file );
+use cpi_trace qw( stack_trace );
 use cpi_vars;
 use Data::Dumper;
 use GDBM_File;
@@ -83,7 +90,7 @@ sub dbtype
 	    last;
 	    }
 	}
-    &cpi_file::fatal("Cannot identify [$dbname] database type.",1) if( ! $ret );
+    &autopsy("Cannot identify [$dbname] database type.",1) if( ! $ret );
     #print STDERR "dbtype($dbname) = $ret.\n";
     return $ret;
     }
@@ -103,7 +110,7 @@ sub dbnew
 #########################################################################
 sub dbnew_perlobj
     {
-    &cpi_file::write_file( $_[0], Dumper({}) );
+    &write_file( $_[0], Dumper({}) );
     }
 
 #########################################################################
@@ -112,7 +119,7 @@ sub dbnew_perlobj
 #########################################################################
 sub dbnew_gdbm
     {
-    &cpi_file::write_file( $_[0], "" );
+    &write_file( $_[0], "" );
     }
 
 #########################################################################
@@ -159,7 +166,7 @@ EOF1
 	}
 
     print join("",@sql_cmds);
-    &cpi_file::cleanup(0);
+    &cleanup(0);
     }
 
 #########################################################################
@@ -179,7 +186,7 @@ sub dbnew_sql
 sub dbget
     {
     my( $dbname, @args ) = @_;
-    &cpi_file::fatal("XL(Cannot read [[" . join(",",@args) . "]]:"
+    &autopsy("XL(Cannot read [[" . join(",",@args) . "]]:"
         . "  database [[$dbname]] not open)")
         if( ($cpi_vars::DBSTATUS{$dbname}||"") eq "" );
 
@@ -204,7 +211,7 @@ sub dbget_hash
     push( @problems, "No arguments specified to dbget_hash")
 	if( ! @args || !defined( $args[0] ) );
     return $cpi_vars::databases{$dbname}{join($cpi_vars::DBSEP,@args)} if( ! @problems );
-    &cpi_trace::stack_trace( @problems );
+    &stack_trace( @problems );
     return undef;
     }
 
@@ -255,10 +262,10 @@ sub dbupdate
 
     my( $ind ) = join($cpi_vars::DBSEP,@inds);
     my( $newval );
-    &cpi_file::fatal(
+    &autopsy(
 	"Cannot update [".join(",",@inds)."]:  database $dbname not open")
         if( $cpi_vars::DBSTATUS{$dbname} eq "" );
-    &cpi_file::fatal(
+    &autopsy(
         "Cannot update [".join(",",@inds)."]:  database $dbname read-only")
         if( $cpi_vars::DBSTATUS{$dbname} eq "RO" );
     if( $func eq "put" )
@@ -276,7 +283,7 @@ sub dbupdate
 	    { $SEENIND{$val} = 0; }
 	else
 	    {
-	    &cpi_file::fatal(
+	    &autopsy(
 	        "Unknown function $func for dbupdate for $dbname.");
 	    }
 	$newval =
@@ -339,9 +346,9 @@ sub dbput_sql
 sub dbread
     {
     my( $dbname ) = @_;
-    &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
+    &stack_trace("Database not specified") if( ! $dbname );
     &db_gothere( __LINE__, "dbread begin", $dbname );
-#    &cpi_file::fatal("Database $dbname already open for writing")
+#    &autopsy("Database $dbname already open for writing")
 #	if( $cpi_vars::DBSTATUS{$dbname} eq "RW" );
     if(!defined($cpi_vars::DBSTATUS{$dbname}) || $cpi_vars::DBSTATUS{$dbname} eq "")
 	{
@@ -363,7 +370,7 @@ sub dbread_gdbm
     until( tie( %{$cpi_vars::databases{$dbname}}, 'GDBM_File', $dbname,
 	&GDBM_READER, 0666 ) )
 	{
-	&cpi_file::fatal("dbread_gdbm cannot tie $dbname for reading:  $!")
+	&autopsy("dbread_gdbm cannot tie $dbname for reading:  $!")
 	    if( $! ne "Resource temporarily unavailable" );
 	sleep(1);
 	}
@@ -375,7 +382,7 @@ sub dbread_gdbm
 sub dbread_perlobj
     {
     my( $dbname ) = @_;
-    &cpi_config::read_config( $dbname, \%{$cpi_vars::databases{$dbname}} );
+    &read_config( $dbname, \%{$cpi_vars::databases{$dbname}} );
     }
 
 #########################################################################
@@ -391,13 +398,13 @@ sub dbread_sql		{ return &dbopen_sql( @_ ); }
 sub dbwrite
     {
     my( $dbname ) = @_;
-    &cpi_trace::stack_trace("Database not specified") if( ! $dbname );
+    &stack_trace("Database not specified") if( ! $dbname );
     &db_gothere( __LINE__, "dbwrite begin", $dbname );
     if((($cpi_vars::DBSTATUS{$dbname}||"") ne "RW")
 	&& ! grep( ($_||"") eq "RW", @{$cpi_vars::db_stati{$dbname}}))
 	{
-	&cpi_file::register_cleanup( \&db_cleanup );
-	&cpi_lock::lock_file( $dbname );
+	&register_cleanup( \&db_cleanup );
+	&lock_file( $dbname );
 	&{ $DBTYPES{ &dbtype($dbname) } {"write"} } ( $dbname );
 	}
     push( @{$cpi_vars::db_stati{$dbname}}, $cpi_vars::DBSTATUS{$dbname} );
@@ -416,11 +423,11 @@ sub db_gdbm
 	&GDBM_WRITER, 0666 ) )
 	{
 	my $errcode = $!;
-	&cpi_lock::unlock_file( $dbname );
-	&cpi_file::fatal("db_gdbm cannot tie $dbname for writing:  $!")
+	&unlock_file( $dbname );
+	&autopsy("db_gdbm cannot tie $dbname for writing:  $!")
 	    if( $errcode ne "Resource temporarily unavailable" );
 	sleep(1);
-	&cpi_lock::lock_file( $dbname );
+	&lock_file( $dbname );
 	}
     }
 
@@ -432,7 +439,7 @@ sub db_gdbm
 sub db_perlobj
     {
     my( $dbname ) = @_;
-    &cpi_config::read_config( $dbname, \%{$cpi_vars::databases{$dbname}} )
+    &read_config( $dbname, \%{$cpi_vars::databases{$dbname}} )
 	if( ($cpi_vars::DBSTATUS{$dbname}||"") eq "" );
     }
 
@@ -485,7 +492,7 @@ sub db_gothere
     my( $ind ) = 0;
     my $nl = "\n";
 
-    &cpi_trace::stack_trace("$lnum stack trace {$msg}:");
+    &stack_trace("$lnum stack trace {$msg}:");
     my @toprint =
 	( "${nl}DBWRITTEN{$dbname} = ", $cpi_vars::DBWRITTEN{$dbname}||"UNDEF", $nl);
     if( $cpi_vars::db_stati{$dbname} )
@@ -524,7 +531,7 @@ sub dbpop
 	    elsif( $dbt eq "sql" )
 		{ $cpi_vars::db_fh{$dbname}->disconnect(); }
 	    else
-		{ &cpi_file::fatal("Unknown database type [$_] for $dbname."); }
+		{ &autopsy("Unknown database type [$_] for $dbname."); }
 	    }
 	}
     elsif( ($cpi_vars::DBSTATUS{$dbname}||"") eq "RW" )
@@ -533,7 +540,7 @@ sub dbpop
 	    {
 	    if( $dbt eq "perlobj" )
 		{
-		&cpi_file::write_file($dbname,
+		&write_file($dbname,
 		    Dumper(\%{$cpi_vars::databases{$dbname}}))
 		    if( $cpi_vars::DBWRITTEN{$dbname} > 0 );
 		}
@@ -546,7 +553,7 @@ sub dbpop
 			tie(%{$cpi_vars::databases{$dbname}},'GDBM_File',$dbname,
 			    &GDBM_READER, 0666 ) )
 			{
-			&cpi_file::fatal("Cannot open $dbname for writing:  $!")
+			&autopsy("Cannot open $dbname for writing:  $!")
 		    	    if( $! ne "Resource temporarily unavailable" );
 			}
 		    }
@@ -557,13 +564,13 @@ sub dbpop
 		$cpi_vars::db_fh{$dbname}->disconnect();
 		}
 	    else
-		{ &cpi_file::fatal("Unknown database type [$_] for $dbname."); }
-	    &cpi_lock::unlock_file( $dbname );
+		{ &autopsy("Unknown database type [$_] for $dbname."); }
+	    &unlock_file( $dbname );
 	    $cpi_vars::DBWRITTEN{$dbname} = 0;
 	    }
 	}
     else
-        { &cpi_file::fatal("dbpop failed:  Database $dbname not open"); }
+        { &autopsy("dbpop failed:  Database $dbname not open"); }
     &db_gothere( __LINE__, "dbpop middle", $dbname );
     $cpi_vars::DBSTATUS{$dbname} = pop( @{$cpi_vars::db_stati{$dbname}} );
     &db_gothere( __LINE__, "dbpop end", $dbname );
@@ -628,7 +635,7 @@ sub db_unique
 #########################################################################
 sub dbnewkey
     {
-    return &cpi_compress_integer::compress_integer( &db_unique(@_) );
+    return &compress_integer( &db_unique(@_) );
     }
 
 #########################################################################

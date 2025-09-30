@@ -21,11 +21,11 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( send_via sendfax sendmail sendphone );
 use lib ".";
 
-use cpi_file;
-use cpi_mime;
+use cpi_file qw( autopsy tempfile write_file );
+use cpi_mime qw( read_mime_types );
 use cpi_vars;
 use MIME::Lite;
 #__END__
@@ -82,7 +82,7 @@ sub sendmail
 	Data	=> $msg
 	) || die("Cannot attach body of message:  $!");
 
-    &cpi_mime::read_mime_types();
+    &read_mime_types();
     foreach my $fn ( @files )
 	{
 	my $ext = ( ( $fn =~ /^[^\.].*\.([^\.]+)$/ ) ? $1 : "" );
@@ -108,8 +108,8 @@ sub sendmail
         die("Cannot run $cpi_vars::SENDMAIL:  $!");
     print OUT $mime_msg->as_string;
     close( OUT );
-    &cpi_file::write_file( "/tmp/outgoing", $mime_msg->as_string );
-    #&cpi_file::write_file( "/mytmp/outgoing", $mime_msg->as_string );
+    &write_file( "/tmp/outgoing", $mime_msg->as_string );
+    #&write_file( "/mytmp/outgoing", $mime_msg->as_string );
     }
 
 #########################################################################
@@ -128,10 +128,10 @@ sub sendfax
 	    $fmtmsg =~ s+>+\&gt;+gs;
 	    $fmtmsg = "<pre>$fmtmsg</pre>";
 	    }
-	my $tf = &cpi_file::tempfile(".pdf");
+	my $tf = &tempfile(".pdf");
 	#open( CVT, "| tee /tmp/1.html | $cpi_vars::HTML2PS | tee /tmp/1.ps | $cpi_vars::PS2PDF - $tf" )
 	open( CVT, "| tee /tmp/1.html | $cpi_vars::HTML2PDF -q - $tf" )
-	    || &cpi_file::fatal("Cannot convert message to pdf.");
+	    || &autopsy("Cannot convert message to pdf.");
 	print CVT $msg;
 	close( CVT );
 	unshift( @pdf_files, $tf );

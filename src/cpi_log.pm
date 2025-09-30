@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( log );
 use lib ".";
 
 use cpi_vars;
@@ -37,6 +37,7 @@ sub log
     my( $msg ) = @_;
     $msg =~ s/XL\((.*?)\)/$1/g;
     my($sec,$min,$hour,$mday,$month,$year) = localtime(time);
+    $cpi_vars::PROG if(0);	# Get rid of only used once warnings
     my $str = sprintf( "%02d/%02d/%04d %02d:%02d:%02d %s %d:  %s\n",
         $month+1,$mday,$year+1900,$hour,$min,$sec,$cpi_vars::PROG,$$,$msg);
     if( ! $log_opened )

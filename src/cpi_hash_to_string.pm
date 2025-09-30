@@ -21,10 +21,10 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( hash_to_string );
 use lib ".";
 
-use cpi_escape;
+use cpi_escape qw( perl_esc );
 #__END__
 1;
 #########################################################################
@@ -41,7 +41,7 @@ sub hash_to_string
         {
         my( $v ) = ${$hash_to_do}{$k};
         next if( $v eq "" );
-        $str .= ("$sep\"".&cpi_escape::perl_esc($k). "\", \"".&cpi_escape::perl_esc($v)."\"");
+        $str .= ("$sep\"".&perl_esc($k). "\", \"".&perl_esc($v)."\"");
         $sep = ",\n";
         }
     $str .= "\n);\n1;\n";

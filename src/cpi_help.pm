@@ -21,11 +21,11 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( help_strings );
 use lib ".";
 
-use cpi_file;
-use cpi_template;
+use cpi_file qw( write_file );
+use cpi_template qw( template );
 use cpi_vars;
 #__END__
 1;
@@ -57,15 +57,15 @@ sub help_strings
 		}
 	    elsif( -r "$cpi_vars::HELPDIR/help_template.cgi" )
 	        {
-		&cpi_file::write_file( "$cpi_vars::HELPDIR/$subject.cgi",
-		    &cpi_template::template( "$cpi_vars::HELPDIR/help_template.cgi",
+		&write_file( "$cpi_vars::HELPDIR/$subject.cgi",
+		    &template( "$cpi_vars::HELPDIR/help_template.cgi",
 			"%%MISSING%%", "$cpi_vars::HELPDIR/$subject.cgi") );
 		system("chmod 755 $cpi_vars::HELPDIR/$subject.cgi");
 		}
 	    elsif( -r "$cpi_vars::HELPDIR/help_template.html" )
 	        {
-		&cpi_file::write_file( "$cpi_vars::HELPDIR/$subject.html",
-		    &cpi_template::template( "$cpi_vars::HELPDIR/help_template.html",
+		&write_file( "$cpi_vars::HELPDIR/$subject.html",
+		    &template( "$cpi_vars::HELPDIR/help_template.html",
 			"%%MISSING%%", "$cpi_vars::HELPDIR/$subject.html") );
 		}
 	    }

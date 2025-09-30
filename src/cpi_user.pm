@@ -21,16 +21,20 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( admin_page all_prog_users all_users can
+ can_cgroup can_cuser can_suser check_com_field group_to_name
+ groups groups_of_user handle_invitations in_group invite
+ login logout logout_select name_to_group read_sid user_can
+ user_name users_in_group who );
 use lib ".";
 
-use cpi_cgi;
-use cpi_compress_integer;
-use cpi_db;
-use cpi_file;
-use cpi_log;
-use cpi_send_file;
-use cpi_translate;
+use cpi_cgi qw( CGIheader );
+use cpi_compress_integer qw( compress_integer );
+use cpi_db qw( dbadd dbarr dbdel dbget dbpop dbput dbwrite );
+use cpi_file qw( cleanup autopsy files_in );
+use cpi_log qw( log );
+use cpi_send_file qw( send_via );
+use cpi_translate qw( gen_language_params xlate xprint );
 use cpi_vars;
 use Captcha::reCAPTCHA;
 #__END__
@@ -39,7 +43,7 @@ use Captcha::reCAPTCHA;
 #	Return if user has a particular attribute			#
 #########################################################################
 sub user_can
-    { return &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,@_); }
+    { return &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,@_); }
 
 sub can_cuser	{ return &user_can("create_user"); }
 sub can_suser	{ return &user_can("create_user"); }
@@ -64,7 +68,7 @@ sub name_to_group
 sub logout
     {
     unlink( "$cpi_vars::SIDDIR/$cpi_vars::SID" );
-    &cpi_log::log("$cpi_vars::REALUSER logs out from SID $cpi_vars::SID.");
+    &log("$cpi_vars::REALUSER logs out from SID $cpi_vars::SID.");
     }
 
 #########################################################################
@@ -81,13 +85,13 @@ sub handle_invitations
 	    my $found_activation_code = 0;
 	    foreach my $fld ( @cpi_vars::CONFIRM_FIELDS )
 		{
-		my $ccode = &cpi_db::dbget($cpi_vars::ACCOUNTDB,
+		my $ccode = &dbget($cpi_vars::ACCOUNTDB,
 		    "users",$cpi_vars::REALUSER,"confirm$fld");
 		if( $ccode eq $activation_code )
 		    {
-		    my $val = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,$fld);
-		    &cpi_db::dbwrite( $cpi_vars::ACCOUNTDB ) if( $written++ == 0 );
-		    &cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,
+		    my $val = &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,$fld);
+		    &dbwrite( $cpi_vars::ACCOUNTDB ) if( $written++ == 0 );
+		    &dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,
 		        "last".$fld,$val);
 		    $found_activation_code = 1;
 		    push( @msgs, "XL($fld confirmed as) $val." );
@@ -96,7 +100,7 @@ sub handle_invitations
 		}
 	    next if( $found_activation_code );
 	    my $action_string =
-		&cpi_db::dbget($cpi_vars::ACCOUNTDB,
+		&dbget($cpi_vars::ACCOUNTDB,
 		    "invitations",$activation_code);
 	    if( !defined($action_string) || $action_string eq "" )
 		{
@@ -108,18 +112,18 @@ sub handle_invitations
 		}
 	    else
 		{
-		&cpi_db::dbwrite( $cpi_vars::ACCOUNTDB ) if( $written++ == 0 );
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,
+		&dbwrite( $cpi_vars::ACCOUNTDB ) if( $written++ == 0 );
+		&dbput($cpi_vars::ACCOUNTDB,
 		    "invitations",$activation_code,"used");
 		&invitation_handler( split($cpi_vars::DBSEP,$action_string) );
 		}
 	    }
 	}
-    &cpi_db::dbpop( $cpi_vars::ACCOUNTDB ) if( $written );
+    &dbpop( $cpi_vars::ACCOUNTDB ) if( $written );
     if( @msgs )
 	{
-	&cpi_translate::xprint( join("<br>",@msgs) );
-	&cpi_file::cleanup(0);
+	&xprint( join("<br>",@msgs) );
+	&cleanup(0);
 	}
     }
 
@@ -129,7 +133,7 @@ sub handle_invitations
 sub read_sid
     {
     my( $fname ) = @_;
-    open( IN, $fname ) || &cpi_file::fatal("Cannot open SID file $fname:  $!");
+    open( IN, $fname ) || &autopsy("Cannot open SID file $fname:  $!");
     $cpi_vars::REALUSER = <IN>;
     $cpi_vars::REALUSER =~ s/[\r\n]//g;
     $cpi_vars::LANG = <IN>;
@@ -174,7 +178,7 @@ sub login
 	    $cpi_vars::SID = ( $cpi_vars::anonymous_user || "anonymous" );
 	    $cpi_vars::USER = $cpi_vars::SID;
 	    $cpi_vars::ANONYMOUS = 1;
-	    &cpi_cgi::CGIheader();
+	    &CGIheader();
 	    return;
 	    }
 	$cpi_vars::SID = ($cpi_vars::FORM{SID} || "");
@@ -187,12 +191,12 @@ sub login
 	    {
 	    if( $cpi_vars::SID =~ /RT_/ )
 		{
-		&cpi_cgi::CGIheader();
+		&CGIheader();
 		return;
 		}
 	    elsif( ! -r "$cpi_vars::SIDDIR/$cpi_vars::SID" )
 	        {
-		&cpi_log::log("$cpi_vars::SIDDIR/$cpi_vars::SID removed.");
+		&log("$cpi_vars::SIDDIR/$cpi_vars::SID removed.");
 		undef $cpi_vars::SID;
 		}
 	    }
@@ -202,7 +206,7 @@ sub login
         {	# Form claims user already logged in.  We'll see ...
 	if( exists &app_dependent_login && &app_dependent_login() )
 	    {	# For hat.cgi, probably should get rid of this.
-	    &cpi_cgi::CGIheader();
+	    &CGIheader();
 	    return;
 	    }
 	elsif( $cpi_vars::SID !~ /^[A-Za-z0-9]+$/ )	# SID correct format?
@@ -223,9 +227,9 @@ sub login
 		my $newprog = $ENV{REQUEST_URI};
 		#$newprog =~ s+/$cpi_vars::PROG.cgi.*+/$cpi_vars::FORM{new_prog}.cgi+;
 		$newprog =~ s+/$cpi_vars::PROG\b+/$cpi_vars::FORM{new_prog}+;
-		&cpi_cgi::CGIheader();
+		&CGIheader();
 		print "<meta http-equiv=\"refresh\" content=\"0;url=$newprog?SID=$cpi_vars::SID\">";
-		&cpi_file::cleanup(0);
+		&cleanup(0);
 		}
 	    }
 	else	# If we're here, we have a legitimate SID.
@@ -305,7 +309,7 @@ sub login
 	    my $let_him_in = $cpi_vars::ANONYMOUS;
 	    if( ! $let_him_in )
 		{
-		my $oldp = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",
+		my $oldp = &dbget($cpi_vars::ACCOUNTDB,"users",
 				$cpi_vars::FORM{user},"password");
 		print STDERR "Checking A=$cpi_vars::ACCOUNTDB U=$cpi_vars::FORM{user} o=[$oldp]\n";
 		if( $oldp eq "" )
@@ -320,26 +324,26 @@ sub login
 			{ $msg = "XL(Account must have two letters.)"; }
 		    else
 			{
-			&cpi_db::dbwrite( $cpi_vars::ACCOUNTDB );
-			&cpi_db::dbadd( $cpi_vars::ACCOUNTDB,
+			&dbwrite( $cpi_vars::ACCOUNTDB );
+			&dbadd( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user} );
-			&cpi_db::dbput( $cpi_vars::ACCOUNTDB,
+			&dbput( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user},
 			    "password", $cpi_vars::FORM{password} );
-			&cpi_db::dbput( $cpi_vars::ACCOUNTDB,
+			&dbput( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user}, "inuse", 1 );
-			&cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{user},
+			&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{user},
 			    "fullname",$cpi_vars::FORM{fullname})
 			    if( $cpi_vars::require_fullname );
-			&cpi_db::dbput( $cpi_vars::ACCOUNTDB,
+			&dbput( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user}, "groups", $check_group );
 			foreach my $fld ( @cpi_vars::CONFIRM_FIELDS )
 			    {
 			    &check_com_field($cpi_vars::FORM{user},$fld)
 			        if( $cpi_vars::FLDESC{$fld}{ask} );
 			    }
-			&cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
-			&cpi_log::log("Creating user $cpi_vars::FORM{user} in group $check_group.");
+			&dbpop( $cpi_vars::ACCOUNTDB );
+			&log("Creating user $cpi_vars::FORM{user} in group $check_group.");
 			$let_him_in = 1;
 			}
 		    }
@@ -356,25 +360,25 @@ sub login
 		}
 	    if( $let_him_in )
 		{
-		$cpi_vars::SID = &cpi_compress_integer::compress_integer( rand() );
+		$cpi_vars::SID = &compress_integer( rand() );
 		$fname = "$cpi_vars::SIDDIR/$cpi_vars::SID";
 		open( OUT, "> $fname") ||
-		    &cpi_file::fatal("XL(Cannot write [[SID]] file [[$fname]]):  $!");
+		    &autopsy("XL(Cannot write [[SID]] file [[$fname]]):  $!");
 		print OUT "$cpi_vars::FORM{user}\n$cpi_vars::LANG\n";
 		close( OUT );
 		$cpi_vars::REALUSER = $cpi_vars::FORM{user};
-		&cpi_cgi::CGIheader( $cpi_vars::SIDNAME, $cpi_vars::SID );
-		&cpi_log::log("$cpi_vars::REALUSER logs in in $cpi_vars::LANG with SID $cpi_vars::SID.");
+		&CGIheader( $cpi_vars::SIDNAME, $cpi_vars::SID );
+		&log("$cpi_vars::REALUSER logs in in $cpi_vars::LANG with SID $cpi_vars::SID.");
 		}
 	    }
 	}
 
-    &cpi_cgi::CGIheader();
+    &CGIheader();
 
     if( $msg )
         {
-	&cpi_log::log( ($cpi_vars::FORM{user}||"?") . ":  $msg" );
-	my $langstring=($cpi_vars::preset_language ? "" : &cpi_translate::gen_language_params());
+	&log( ($cpi_vars::FORM{user}||"?") . ":  $msg" );
+	my $langstring=($cpi_vars::preset_language ? "" : &gen_language_params());
 	push( @toprint, <<EOF );
 <title>$msg</title><body $cpi_vars::BODY_TAGS><center>
 <form name=$form_login method=post>
@@ -449,8 +453,8 @@ window.document.$form_login.user.focus();
 </script>
 </form>
 EOF
-	&cpi_translate::xprint( @toprint );
-	&cpi_file::cleanup(0);
+	&xprint( @toprint );
+	&cleanup(0);
 	}
 
     &handle_invitations();
@@ -462,22 +466,22 @@ EOF
         {
 	$cpi_vars::FORM{USER} = lc($cpi_vars::FORM{USER});
 	if( $cpi_vars::FORM{USER} !~ /^[a-z0-9\.\@]+$/ )
-	    { &cpi_file::fatal("$cpi_vars::FORM{USER} contains illegal characters."); }
-	elsif( ! &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{USER},"inuse") )
-	    { &cpi_file::fatal("$cpi_vars::FORM{USER} does not exist"); }
+	    { &autopsy("$cpi_vars::FORM{USER} contains illegal characters."); }
+	elsif( ! &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{USER},"inuse") )
+	    { &autopsy("$cpi_vars::FORM{USER} does not exist"); }
 	elsif( ! &can_suser() )
-	    { &cpi_file::fatal("$cpi_vars::REALUSER cannot switch users from [$cpi_vars::REALUSER] to [$cpi_vars::FORM{USER}]."); }
+	    { &autopsy("$cpi_vars::REALUSER cannot switch users from [$cpi_vars::REALUSER] to [$cpi_vars::FORM{USER}]."); }
 	else
 	    {
 #	    my %seen = ();
-#	    grep( $seen{$_}++, &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups") );
-#	    if(! grep($seen{$_} > 0, &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{USER},"groups")))
-#	        { &cpi_file::fatal("$cpi_vars::FORM{USER} is not in any of your groups."); }
+#	    grep( $seen{$_}++, &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups") );
+#	    if(! grep($seen{$_} > 0, &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{USER},"groups")))
+#	        { &autopsy("$cpi_vars::FORM{USER} is not in any of your groups."); }
 #	    else
 		{ $cpi_vars::USER=$cpi_vars::FORM{USER}; }
 	    }
 	}
-    $cpi_vars::FULLNAME = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"fullname");
+    $cpi_vars::FULLNAME = &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"fullname");
     }
 
 #########################################################################
@@ -486,7 +490,7 @@ EOF
 sub can
     {
     my( $priv ) = @_;
-    return grep( $priv eq $_, &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups") );
+    return grep( $priv eq $_, &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups") );
     }
 
 #########################################################################
@@ -495,7 +499,7 @@ sub can
 sub user_name
     {
     my( $u ) = @_;
-    return (&cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$u,"fullname") || $u);
+    return (&dbget($cpi_vars::ACCOUNTDB,"users",$u,"fullname") || $u);
     }
 
 #########################################################################
@@ -504,7 +508,7 @@ sub user_name
 sub group_to_name
     {
     my( $g ) = @_;
-    return (&cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"fullname") || $g);
+    return (&dbget($cpi_vars::ACCOUNTDB,"groups",$g,"fullname") || $g);
     }
 
 #########################################################################
@@ -513,9 +517,9 @@ sub group_to_name
 sub all_users
     {
     my @ret = ();
-    foreach my $u ( &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users") )
+    foreach my $u ( &dbget($cpi_vars::ACCOUNTDB,"users") )
 	{
-	&cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$u,"inuse") && push(@ret,$u);
+	&dbget($cpi_vars::ACCOUNTDB,"users",$u,"inuse") && push(@ret,$u);
 	}
     return sort @ret;
     }
@@ -528,7 +532,7 @@ sub all_prog_users
     my $check_group = &name_to_group( "can_run_" . $cpi_vars::PROG );
     return
 	grep(
-	    &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$_,"inuse")
+	    &dbget($cpi_vars::ACCOUNTDB,"users",$_,"inuse")
 	    && &in_group($_,$check_group),
 	    &all_users() );
     }
@@ -539,9 +543,9 @@ sub all_prog_users
 sub groups()
     {
     my( @ret ) = ();
-    foreach my $g ( &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups" ) )
+    foreach my $g ( &dbget($cpi_vars::ACCOUNTDB,"groups" ) )
 	{
-        &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") &&
+        &dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") &&
 	    push( @ret, $g );
 	}
     return sort @ret;
@@ -554,9 +558,9 @@ sub groups_of_user
     {
     my( $u ) = @_;
     my( @ret );
-    foreach my $g ( &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$u,"groups" ) )
+    foreach my $g ( &dbget($cpi_vars::ACCOUNTDB,"users",$u,"groups" ) )
 	{
-        &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") &&
+        &dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") &&
 	    push( @ret, $g );
 	}
     return sort @ret;
@@ -570,7 +574,7 @@ sub in_group
     my( $uname, $gname ) = @_;
     #print "Checking to see if [$uname] is a member of [$gname]<br>\n";
     return grep($_ eq $gname,
-	&cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$uname,"groups"));
+	&dbget($cpi_vars::ACCOUNTDB,"users",$uname,"groups"));
     }
 
 #########################################################################
@@ -596,7 +600,7 @@ sub users_in_group
 #########################################################################
 sub who
     {
-    my @dirs = grep(/^[^\.]/,&cpi_file::files_in( $cpi_vars::SIDDIR ) );
+    my @dirs = grep(/^[^\.]/,&files_in( $cpi_vars::SIDDIR ) );
     my %results = ();
     foreach my $sidfile ( @dirs )
         {
@@ -607,7 +611,7 @@ sub who
 	my $inactivity = time - $st_mtime;
 	if( $inactivity <= $cpi_vars::LOGIN_TIMEOUT )
 	    {
-	    open( INF, $fname ) || &cpi_file::fatal("Cannot read ${fname}:  $!");
+	    open( INF, $fname ) || &autopsy("Cannot read ${fname}:  $!");
 	    my( $user, $lang ) = <INF>;
 	    close( INF );
 	    chomp( $user );
@@ -634,13 +638,13 @@ EOF
 sub invite
     {
     my ( $means, $address, $msg, @parts ) = @_;
-    my $new_code = "i" . &cpi_compress_integer::compress_integer( rand() );
-    &cpi_db::dbwrite( $cpi_vars::ACCOUNTDB );
-    &cpi_db::dbput( $cpi_vars::ACCOUNTDB, "invitations",
-	$new_code, &cpi_db::dbarr(@parts) );
-    &cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
-    &cpi_send_file::send_via( $means, $cpi_vars::DAEMON_EMAIL, $address,
-        &cpi_translate::xlate("XL(Invitation)"),
+    my $new_code = "i" . &compress_integer( rand() );
+    &dbwrite( $cpi_vars::ACCOUNTDB );
+    &dbput( $cpi_vars::ACCOUNTDB, "invitations",
+	$new_code, &dbarr(@parts) );
+    &dbpop( $cpi_vars::ACCOUNTDB );
+    &send_via( $means, $cpi_vars::DAEMON_EMAIL, $address,
+        &xlate("XL(Invitation)"),
 	"$msg\n$cpi_vars::URL?func=admin&activation_code=$new_code"
 	);
     }
@@ -654,15 +658,15 @@ sub check_com_field
     {
     my( $user, $fld ) = @_;
     my ( @changed_list ) = ();
-    my $lastval=&cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$user,$fld)||"";
+    my $lastval=&dbget($cpi_vars::ACCOUNTDB,"users",$user,$fld)||"";
     if( $lastval ne ($cpi_vars::FORM{$fld}||"") )
 	{
-	&cpi_db::dbput($cpi_vars::ACCOUNTDB,
+	&dbput($cpi_vars::ACCOUNTDB,
 	    "users",$user,$fld,$cpi_vars::FORM{$fld});
-	my $new_code = "c" . &cpi_compress_integer::compress_integer( rand() );
-	&cpi_db::dbput($cpi_vars::ACCOUNTDB,
+	my $new_code = "c" . &compress_integer( rand() );
+	&dbput($cpi_vars::ACCOUNTDB,
 	    "users",$user,"confirm$fld",$new_code);
-	my $conmsg = &cpi_translate::xlate(<<EOF);
+	my $conmsg = &xlate(<<EOF);
 XL(This message was sent to you by the $cpi_vars::PROG server to verify that
 the $fld information you gave it was correct.)
 
@@ -672,7 +676,7 @@ XL(To confirm that it is, login to the $cpi_vars::PROG server as
 EOF
 	if( $fld eq "email" )
 	    {
-	    $conmsg .= &cpi_translate::xlate(<<EOF);
+	    $conmsg .= &xlate(<<EOF);
 
 XL(If your e-mail reader supports it, you can click here:
 
@@ -683,9 +687,9 @@ EOF
 	print STDERR $conmsg;
 	if( $cpi_vars::FORM{$fld} )
 	    {
-	    &cpi_send_file::send_via( $fld,
+	    &send_via( $fld,
 		$cpi_vars::DAEMON_EMAIL, $cpi_vars::FORM{$fld},
-		&cpi_translate::xlate("XL(Action required)"), $conmsg );
+		&xlate("XL(Action required)"), $conmsg );
 	    push( @changed_list,
 		"XL(Confirmation sent to [[$fld $cpi_vars::FORM{$fld}]].)");
 	    }
@@ -708,12 +712,12 @@ sub admin_page
     my @toprint;
     my( @startlist ) =
 	( &can_cgroup
-	? &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups")
-	: &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups")
+	? &dbget($cpi_vars::ACCOUNTDB,"groups")
+	: &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups")
 	);
     foreach $g ( @startlist )
         {
-	&cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse")
+	&dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse")
 	    && $mygroups{$g}++;
 	}
 
@@ -722,10 +726,10 @@ sub admin_page
 
     if( $cpi_vars::FORM{modrequest} eq "delete_user" )
 	{
-	&cpi_db::dbwrite( $cpi_vars::ACCOUNTDB );
-	&cpi_db::dbdel( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER );
-	&cpi_db::dbput( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER, "inuse",0);
-	&cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
+	&dbwrite( $cpi_vars::ACCOUNTDB );
+	&dbdel( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER );
+	&dbput( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER, "inuse",0);
+	&dbpop( $cpi_vars::ACCOUNTDB );
 	}
     elsif( $cpi_vars::FORM{modrequest} eq "modify_user" )
 	{
@@ -756,34 +760,34 @@ sub admin_page
 	if( ! @changed_list )
 	    {
 	    $cpi_vars::USER = $usertobe;
-	    &cpi_db::dbwrite($cpi_vars::ACCOUNTDB);
+	    &dbwrite($cpi_vars::ACCOUNTDB);
 	    if( ! &can_cuser() )
 		{
 		if( $cpi_vars::FORM{fullname} ne
-		    &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"fullname") )
+		    &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"fullname") )
 		    {
-		    &cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		    &dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 			"fullname",$cpi_vars::FORM{fullname});
 		    push( @changed_list, "Full name updated." );
 		    }
 		if( $cpi_vars::FORM{password0} ne "" )
 		    {
-		    &cpi_db::dbput( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER,
+		    &dbput( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER,
 			"password", $cpi_vars::FORM{password0} );
 		    push( @changed_list, "Password updated." );
 		    }
 		}
 	    else
 		{
-		&cpi_db::dbadd($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		&dbadd($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER);
+		&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 		    "inuse",1);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 		    "password",$cpi_vars::FORM{password0})
 		    if( $cpi_vars::FORM{password0} ne "" );
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
-		    "groups",&cpi_db::dbarr(@glist));
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		    "groups",&dbarr(@glist));
+		&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 		    "fullname",$cpi_vars::FORM{fullname});
 		push( @changed_list, "XL(User [[$cpi_vars::USER]] updated)" );
 		}
@@ -793,7 +797,7 @@ sub admin_page
 		push( @changed_list,
 		    &check_com_field( $cpi_vars::USER, $fld ) );
 		}
-	    &cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
+	    &dbpop( $cpi_vars::ACCOUNTDB );
 	    }
 	$msg = join("<br>",@changed_list);
 	}
@@ -802,16 +806,16 @@ sub admin_page
 	if( ($cpi_vars::FORM{groupname} ne "") && &can_cgroup )
 	    {
 	    my $g = &name_to_group( $cpi_vars::FORM{groupname} );
-	    if( &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") )
+	    if( &dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") )
 		{ $msg = "Group $g already in use.  Try another."; }
 	    else
 		{
-		&cpi_db::dbwrite($cpi_vars::ACCOUNTDB);
-		&cpi_db::dbadd($cpi_vars::ACCOUNTDB,"groups",$g);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"groups",$g,"inuse",1);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"groups",$g,"fullname",
+		&dbwrite($cpi_vars::ACCOUNTDB);
+		&dbadd($cpi_vars::ACCOUNTDB,"groups",$g);
+		&dbput($cpi_vars::ACCOUNTDB,"groups",$g,"inuse",1);
+		&dbput($cpi_vars::ACCOUNTDB,"groups",$g,"fullname",
 		    $cpi_vars::FORM{groupname});
-		&cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
+		&dbpop( $cpi_vars::ACCOUNTDB );
 		}
 	    }
 	}
@@ -820,16 +824,16 @@ sub admin_page
 	if( ($cpi_vars::FORM{group} ne "") && &can_cgroup )
 	    {
 	    my $g = $cpi_vars::FORM{group};
-	    if( ! &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") )
+	    if( ! &dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") )
 		{ $msg = "Group $g not in use.  Try another."; }
 	    else
 		{
-		&cpi_db::dbwrite($cpi_vars::ACCOUNTDB);
-		&cpi_db::dbadd($cpi_vars::ACCOUNTDB,"groups",$g);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"groups",$g,"inuse",1);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"groups",$g,"fullname",
+		&dbwrite($cpi_vars::ACCOUNTDB);
+		&dbadd($cpi_vars::ACCOUNTDB,"groups",$g);
+		&dbput($cpi_vars::ACCOUNTDB,"groups",$g,"inuse",1);
+		&dbput($cpi_vars::ACCOUNTDB,"groups",$g,"fullname",
 		    $cpi_vars::FORM{groupname});
-		&cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
+		&dbpop( $cpi_vars::ACCOUNTDB );
 		}
 	    }
 	}
@@ -838,14 +842,14 @@ sub admin_page
 	if( ($cpi_vars::FORM{group} ne "") && &can_cgroup )
 	    {
 	    my $g = $cpi_vars::FORM{group};
-	    if( ! &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") )
+	    if( ! &dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse") )
 		{ $msg = "No group called '$g'.  Try another."; }
 	    else
 		{
-		&cpi_db::dbwrite($cpi_vars::ACCOUNTDB);
-		&cpi_db::dbdel($cpi_vars::ACCOUNTDB,"groups",$g);
-		&cpi_db::dbput($cpi_vars::ACCOUNTDB,"groups",$g,"inuse","");
-		&cpi_db::dbpop( $cpi_vars::ACCOUNTDB );
+		&dbwrite($cpi_vars::ACCOUNTDB);
+		&dbdel($cpi_vars::ACCOUNTDB,"groups",$g);
+		&dbput($cpi_vars::ACCOUNTDB,"groups",$g,"inuse","");
+		&dbpop( $cpi_vars::ACCOUNTDB );
 		}
 	    }
 	}
@@ -863,13 +867,13 @@ sub admin_page
 	    if( /\*/ )
 		{
 		$cpi_vars::FORM{cardnum} =
-		    &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		    &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 		    "cardnum");
 		$cpi_vars::FORM{cardname} =
-		    &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		    &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 		    "cardname");
 		$cpi_vars::FORM{cardexp} =
-		    &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+		    &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 		    "cardexp");
 		$_ = $cpi_vars::FORM{cardnum};
 		}
@@ -918,47 +922,47 @@ sub admin_page
 	    foreach $_ ( @problems )
 		{ push(@toprint, "<dd><font color=red>$_</font>\n" ); }
 	    push( @toprint, "<p>XL(Go back and correct these problems.)\n" );
-	    &cpi_translate::xprint( @toprint );
+	    &xprint( @toprint );
 	    exit(0);
 	    }
 	my( $ind ) = $cpi_vars::TODAY;
-	&cpi_db::dbwrite($cpi_vars::DB);
-	&cpi_db::dbadd($cpi_vars::DB,"users",$cpi_vars::USER,"days",
+	&dbwrite($cpi_vars::DB);
+	&dbadd($cpi_vars::DB,"users",$cpi_vars::USER,"days",
 	    $cpi_vars::TODAY,"payments",$ind);
-	&cpi_db::dbput($cpi_vars::DB,"users",$cpi_vars::USER,"days",
+	&dbput($cpi_vars::DB,"users",$cpi_vars::USER,"days",
 	    $cpi_vars::TODAY,"payments",$ind,"note",$note);
-	&cpi_db::dbput($cpi_vars::DB,"users",$cpi_vars::USER,"days",
+	&dbput($cpi_vars::DB,"users",$cpi_vars::USER,"days",
 	    $cpi_vars::TODAY,"payments",$ind,"paid",$paid);
-	&cpi_db::dbpop($cpi_vars::DB);
+	&dbpop($cpi_vars::DB);
 	if( $cpi_vars::FORM{cardonfile} )
 	    {
-	    &cpi_db::dbwrite($cpi_vars::ACCOUNTDB);
-	    &cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+	    &dbwrite($cpi_vars::ACCOUNTDB);
+	    &dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 	        "cardnum",$cpi_vars::FORM{cardnum});
-	    &cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+	    &dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 	        "cardexp",$cpi_vars::FORM{cardexp});
-	    &cpi_db::dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+	    &dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 	        "cardname",$cpi_vars::FORM{cardname});
-	    &cpi_db::dbpop($cpi_vars::ACCOUNTDB);
+	    &dbpop($cpi_vars::ACCOUNTDB);
 	    }
 	}
 
     @startlist =
 	( &can_cgroup
-	? &cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups")
-	: &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups")
+	? &dbget($cpi_vars::ACCOUNTDB,"groups")
+	: &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,"groups")
 	);
     %mygroups = ();
     foreach $g ( @startlist )
         {
-	&cpi_db::dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse")
+	&dbget($cpi_vars::ACCOUNTDB,"groups",$g,"inuse")
 	    && $mygroups{$g}++;
 	}
     my $pname = $cpi_vars::FULLNAME || $cpi_vars::USER;
 
     my %thisusergroup = ();
     grep( $thisusergroup{$_}="selected",
-	&cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"groups") );
+	&dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"groups") );
 
     push( @toprint, <<EOF );
 <script>
@@ -990,7 +994,7 @@ $cpi_vars::HELP_IFRAME
 <th valign=top><table border=0>
 EOF
     my $fullname =
-	&cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",
+	&dbget($cpi_vars::ACCOUNTDB,"users",
 	    $cpi_vars::USER,"fullname");
     if( $cpi_vars::FORM{switchuser} eq "*" )
         {
@@ -1013,18 +1017,18 @@ EOF
 	my $cgprivs = &can_cgroup();
 	foreach $u ( &all_users() )
 	    {
-	    next if( ! &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$u,"inuse") );
+	    next if( ! &dbget($cpi_vars::ACCOUNTDB,"users",$u,"inuse") );
 	    my $found_group = $cgprivs;
 	    if( ! $found_group )
 		{
 		$found_group++
 		    if( grep($mygroups{$_},
-		        &cpi_db::dbget($cpi_vars::ACCOUNTDB,
+		        &dbget($cpi_vars::ACCOUNTDB,
 			    "users",$u,"groups")) );
 		}
 	    if( $found_group )
 		{
-		$_ = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$u,"fullname");
+		$_ = &dbget($cpi_vars::ACCOUNTDB,"users",$u,"fullname");
 		push( @toprint,
 		    "<option",
 		        ($selflag{$u}||""),
@@ -1049,8 +1053,8 @@ EOF
     my %confirmed = ();
     foreach my $fld ( @cpi_vars::CONFIRM_FIELDS )
         {
-	$current{$fld} = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,$fld);
-	my $lf = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"last".$fld) || "";
+	$current{$fld} = &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,$fld);
+	my $lf = &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,"last".$fld) || "";
 	if( ! $current{$fld} )
 	    { $confirmed{$fld} = ""; }
 	elsif( ($current{$fld}||"") eq $lf )
@@ -1113,13 +1117,13 @@ EOF
 	my( $topay, $weight, $cardname, $cardnum, $cardonfile, $checknum, $certnum, $usecash );
 	my $expselect = "";
 
-	$cardname = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+	$cardname = &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 			"cardname");
-	$cardnum = &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
+	$cardnum = &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::USER,
 			"cardnum");
 	$_ = length( $cardnum );
 	$cardnum = "************".substr($cardnum,$_-4,4);
-	my %selflag = ( &cpi_db::dbget($cpi_vars::ACCOUNTDB,"users",
+	my %selflag = ( &dbget($cpi_vars::ACCOUNTDB,"users",
 			    $cpi_vars::USER,"cardexp"), " selected" );
 
 	for( $_=0; $_<48; $_++ )
@@ -1190,9 +1194,9 @@ EOF
     push( @toprint, "<td valign=top>" . &who() . "</td>" );
 
     push( @toprint, "</tr></table></form>\n" );
-    &cpi_translate::xprint( @toprint );
+    &xprint( @toprint );
     &main::footer("admin") if( exists(&main::footer) );;
-    &cpi_file::cleanup(0);
+    &cleanup(0);
     }
 
 #########################################################################
@@ -1214,7 +1218,7 @@ sub logout_select
     my %seen_cgs =
         map { $_, 1 }
 	    grep( &in_group($cpi_vars::USER,&name_to_group("can_run_$_")),
-		grep( -x "../$_/index.cgi", &cpi_file::files_in("..","^\\w") ) );
+		grep( -x "../$_/index.cgi", &files_in("..","^\\w") ) );
     $seen_cgs{$cpi_vars::PROG}=1;
 
     foreach my $prog ( sort keys %seen_cgs )

@@ -21,13 +21,19 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( breakup_and_translate_strings
+ cleanup_translator gen_language_params
+ get_full_language_list get_language_list init_phrases
+ save_phrases set_language_pair tran_db trans trans_chunk
+ transeq translate xlate xlfatal xlphrase xprint );
 use lib ".";
 
-use cpi_db;
-use cpi_file;
-use cpi_help;
-use cpi_trans_none;
+use cpi_db qw( db_readable db_writable dbarr dbget dbpop
+ dbput dbread dbwrite );
+use cpi_file qw( autopsy register_cleanup );
+use cpi_help qw( help_strings );
+use cpi_trans_none qw( pkg_get_language_list
+ pkg_set_language_pair pkg_trans_chunk );
 use cpi_vars;
 use cpi_trans_none;	# Or cpi_trans_babel or cpi_trans_lingua
 #__END__
@@ -35,9 +41,9 @@ use cpi_trans_none;	# Or cpi_trans_babel or cpi_trans_lingua
 
 my %needs_translation = ();
 
-sub set_language_pair	{ return &cpi_trans_none::pkg_set_language_pair(@_); }
-sub get_language_list	{ return &cpi_trans_none::pkg_get_language_list(@_); }
-sub trans_chunk		{ return &cpi_trans_none::pkg_trans_chunk(@_); }
+sub set_language_pair	{ return &pkg_set_language_pair(@_); }
+sub get_language_list	{ return &pkg_get_language_list(@_); }
+sub trans_chunk		{ return &pkg_trans_chunk(@_); }
 
 #########################################################################
 #	Get any phrases that we're keeping track of.			#
@@ -159,10 +165,10 @@ sub tran_db
 	}
     else
 	{
-	&cpi_db::dbread($cpi_vars::TRANSLATIONS_DB)
-	    if( ! &cpi_db::db_readable( $cpi_vars::TRANSLATIONS_DB ) );
+	&dbread($cpi_vars::TRANSLATIONS_DB)
+	    if( ! &db_readable( $cpi_vars::TRANSLATIONS_DB ) );
 	my $mapped_phrase =
-	    &cpi_db::dbget( $cpi_vars::TRANSLATIONS_DB,
+	    &dbget( $cpi_vars::TRANSLATIONS_DB,
 		$langfrom, $langto, $phrase );
 	if( ! defined($mapped_phrase) )
 	    {
@@ -176,7 +182,7 @@ sub tran_db
 		if( ! $language_todo_open )
 		    {
 		    open( TODO, ">> $cpi_vars::TRANSLATIONS_TODO" )
-			|| &cpi_file::fatal(
+			|| &autopsy(
 			    "Cannot open $cpi_vars::TRANSLATIONS_TODO:  $!");
 		    $language_todo_open = 1;
 		    }
@@ -190,12 +196,12 @@ sub tran_db
 
 	    if( defined( $mapped_phrase ) )
 		{
-		if( ! &cpi_db::db_writable( $cpi_vars::TRANSLATIONS_DB ) )
+		if( ! &db_writable( $cpi_vars::TRANSLATIONS_DB ) )
 		    {
-		    &cpi_file::register_cleanup( \&cleanup_translator );
-		    &cpi_db::dbwrite( $cpi_vars::TRANSLATIONS_DB );
+		    &register_cleanup( \&cleanup_translator );
+		    &dbwrite( $cpi_vars::TRANSLATIONS_DB );
 		    }
-		&cpi_db::dbput($cpi_vars::TRANSLATIONS_DB,
+		&dbput($cpi_vars::TRANSLATIONS_DB,
 		    $langfrom, $langto, $phrase, $mapped_phrase );
 		}
 	    }
@@ -246,26 +252,26 @@ sub trans
 #########################################################################
 sub gen_language_params
     {
-    &cpi_db::dbread( $cpi_vars::TRANSLATIONS_DB )
-	if( ! &cpi_db::db_readable( $cpi_vars::TRANSLATIONS_DB ) );
+    &dbread( $cpi_vars::TRANSLATIONS_DB )
+	if( ! &db_readable( $cpi_vars::TRANSLATIONS_DB ) );
     my $l;
-    my @lanlist = &cpi_db::dbget( $cpi_vars::TRANSLATIONS_DB, "LANGUAGES" );
+    my @lanlist = &dbget( $cpi_vars::TRANSLATIONS_DB, "LANGUAGES" );
     if( ! @lanlist )
         {
 	my %lmap = &get_full_language_list( $cpi_vars::WRITTEN_IN );
-        if( ! &cpi_db::db_writable( $cpi_vars::TRANSLATIONS_DB ) )
+        if( ! &db_writable( $cpi_vars::TRANSLATIONS_DB ) )
 	    {
-	    &cpi_file::register_cleanup( \&cleanup_translator );
-	    &cpi_db::dbwrite( $cpi_vars::TRANSLATIONS_DB );
+	    &register_cleanup( \&cleanup_translator );
+	    &dbwrite( $cpi_vars::TRANSLATIONS_DB );
 	    }
 	foreach $l ( keys %lmap )
 	    {
-	    &cpi_db::dbput($cpi_vars::TRANSLATIONS_DB,$cpi_vars::WRITTEN_IN,
+	    &dbput($cpi_vars::TRANSLATIONS_DB,$cpi_vars::WRITTEN_IN,
 	        "prompt_for_$l","Communicate in $lmap{$l}");
 	    }
 	@lanlist = sort keys %lmap;
-	&cpi_db::dbput($cpi_vars::TRANSLATIONS_DB,"LANGUAGES",
-	    &cpi_db::dbarr(@lanlist));
+	&dbput($cpi_vars::TRANSLATIONS_DB,"LANGUAGES",
+	    &dbarr(@lanlist));
 	}
 
     if( ! $cpi_vars::LANG )
@@ -289,7 +295,7 @@ sub gen_language_params
     my @options = ();
     foreach $l ( @lanlist )
         {
-	my $phrase = &cpi_db::dbget(
+	my $phrase = &dbget(
 			$cpi_vars::TRANSLATIONS_DB,
 			$cpi_vars::WRITTEN_IN,
 			"prompt_for_$l" );
@@ -398,8 +404,8 @@ sub xlate
 	}
     if( defined( $cpi_vars::TRANSLATIONS_DB ) )
 	{
-	&cpi_db::dbpop( $cpi_vars::TRANSLATIONS_DB )
-	    while( &cpi_db::db_writable( $cpi_vars::TRANSLATIONS_DB ) );
+	&dbpop( $cpi_vars::TRANSLATIONS_DB )
+	    while( &db_writable( $cpi_vars::TRANSLATIONS_DB ) );
 	}
     return join("",@return_pieces);
     }
@@ -410,7 +416,7 @@ sub xlate
 #########################################################################
 sub xprint
     {
-    print &cpi_help::help_strings( &xlate(join("",@_)) );
+    print &help_strings( &xlate(join("",@_)) );
     }
 
 #########################################################################
@@ -420,8 +426,8 @@ sub cleanup_translator
     {
     if( defined( $cpi_vars::TRANSLATIONS_DB ) )
 	{
-	&cpi_db::dbpop( $cpi_vars::TRANSLATIONS_DB )
-	    while( &cpi_db::db_writable( $cpi_vars::TRANSLATIONS_DB ) );
+	&dbpop( $cpi_vars::TRANSLATIONS_DB )
+	    while( &db_writable( $cpi_vars::TRANSLATIONS_DB ) );
 	}
     }
 
@@ -430,6 +436,6 @@ sub cleanup_translator
 #########################################################################
 sub xlfatal
     {
-    &cpi_file::fatal( &xlate( @_ ) );
+    &autopsy( &xlate( @_ ) );
     }
 1;

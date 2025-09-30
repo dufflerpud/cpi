@@ -21,11 +21,11 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( lock_check lock_file unlock_file );
 use lib ".";
 
-use cpi_file;
-use cpi_trace;
+use cpi_file qw( write_file );
+use cpi_trace qw( get_trace );
 #__END__
 1;
 
@@ -48,7 +48,7 @@ sub lock_file
     my $trace_current	= "$trace_name.current";
     my $trace_last	= "$trace_name.last";
 
-    &cpi_file::write_file( $trace_new, join("\n",&cpi_trace::get_trace())."\n" );
+    &write_file( $trace_new, join("\n",&get_trace())."\n" );
     until( &lock_check( $lockname ) )
         { sleep(1); }
     rename( $trace_current, $trace_last );	# First time ever will fail

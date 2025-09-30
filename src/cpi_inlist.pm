@@ -14,47 +14,56 @@
 
 use strict;
 
-package cpi_escape;
+package cpi_inlist;
 use Exporter;
 use AutoLoader;
 our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( javascript_esc perl_esc );
+our @EXPORT = qw( abbrev inlist );
 use lib ".";
-
 
 #__END__
 1;
 
 #########################################################################
-#       Return string with characters having special meaning in perl    #
-#       strings escaped with backslashes.                               #
+#	Return true if the first item is anywhere in specified list.	#
 #########################################################################
-sub perl_esc
+sub inlist
     {
-    $_ = $_[0];
-    s/\\/\\\\/g;
-    s/"/\\"/g;
-    s/'/\\'/g;
-    s/@/\\@/g;
-    s/\$/\\\$/g;
-    s/([^ -z])/uc sprintf("\\%03o",ord($1))/eg;
-    return $_;
+    my( $word, @the_list );
+    return grep( $word eq $_, @the_list );
     }
 
 #########################################################################
-#       Return string with characters having special meaning in		#
-#       javascript strings escaped with backslashes.			#
+#	Check user input against a list of words looking for best fit.	#
 #########################################################################
-sub javascript_esc
+sub abbrev
     {
-    my( $str, $what, $to ) = @_;
-    $what = '"' if( ! defined($what) );
-    $to = "\\$what" if( ! defined($to) );
-    $str =~ s/$what/$to/g;
-    return $str;
+    my( $word, @the_list ) = @_;
+    my $word_len = length( $word );
+    $word =~ tr/A-Z/a-z/;
+    my $result;
+    foreach $_ ( @the_list )
+        {
+	if( $word eq $_ )
+	    {
+	    $result = $word;
+	    last;
+	    }
+	elsif( substr( $_, 0, $word_len ) eq $word )
+	    {
+	    if( defined($result) )
+	        {
+		$result = undef;
+		last;
+		}
+	    $result = $_;
+	    }
+	}
+#    print "abbrev($word,[",join(",",@the_list),"]) returns ",
+#        (defined($result)?"'$result'":"UNDEF"), ".\n";
+    return $result;
     }
-
 1;

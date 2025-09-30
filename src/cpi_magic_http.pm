@@ -21,11 +21,11 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( magic_http );
 use lib ".";
 
-use cpi_cgi;
-use cpi_file;
+use cpi_cgi qw( safe_url );
+use cpi_file qw( autopsy read_file write_file );
 #__END__
 1;
 
@@ -57,7 +57,7 @@ sub magic_http
     my $postname = $argp->{http};
     $postname =~ s:.*/::;
     $postname =~ s/[^A-Za-z0-9]+/_/g;
-    &cpi_file::fatal("cpi_vars::CACHEDIR not defined.") if( !defined($cpi_vars::CACHEDIR) );
+    &autopsy("cpi_vars::CACHEDIR not defined.") if( !defined($cpi_vars::CACHEDIR) );
     $postname = "$cpi_vars::CACHEDIR/$postname.post";
 
     if( $argp->{args} )
@@ -66,17 +66,17 @@ sub magic_http
 	my @fixedargs;
 	foreach my $arg ( @{ $argp->{args} } )
 	    {
-	    push( @fixedargs, &cpi_cgi::safe_url($1).'='.&cpi_cgi::safe_url($2) )
+	    push( @fixedargs, &safe_url($1).'='.&safe_url($2) )
 		if( $arg =~ /(.*?)=(.*)/ );
 	    }
 	my $fixeddatastring = join("&",@fixedargs);
-	#my $fixeddatastring = &cpi_cgi::safe_url( join("&",@{$argp->{args}}) );
+	#my $fixeddatastring = &safe_url( join("&",@{$argp->{args}}) );
 	if( $USING_FILE )
 	    {
 	    my $piece = $argp->{http};
 	    $piece =~ s:.*/::;
 	    $piece =~ s/[^A-Za-z0-9]+/_/g;
-	    &cpi_file::write_file( $tmpfile=$postname, $fixeddatastring );
+	    &write_file( $tmpfile=$postname, $fixeddatastring );
 	    push( @cmd,
 		{	wget=>" --post-file=$tmpfile",
 			curl=>" -d \@$tmpfile"		} -> { $USING } );
@@ -109,7 +109,7 @@ sub magic_http
 	    }
 	else
 	    {
-	    &cpi_file::write_file( $tmpfile=$postname, $argp->{contents} );
+	    &write_file( $tmpfile=$postname, $argp->{contents} );
 	    push( @cmd,
 		{	wget=>" --post-file=$tmpfile",
 			curl=>" -d \@$tmpfile"		} -> { $USING } );
@@ -119,7 +119,7 @@ sub magic_http
     else
 	{ push( @cmd, " '$argp->{http}'" ); }
     my $cmd_string = join("",@cmd,"|");
-    my $contents = &cpi_file::read_file( $cmd_string );
+    my $contents = &read_file( $cmd_string );
 #   print "cmd=[ $cmd_string ]<br>\n";
 #	    #unlink( $tmpfile ) if( $tmpfile );
     return $contents;

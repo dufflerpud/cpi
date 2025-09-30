@@ -21,7 +21,8 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw();
+our @EXPORT = qw( pkg_configure_for_translation
+ pkg_get_language_list pkg_set_language_pair pkg_trans_chunk );
 use lib ".";
 
 
