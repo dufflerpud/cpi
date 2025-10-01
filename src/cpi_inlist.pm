@@ -32,7 +32,7 @@ use lib ".";
 #########################################################################
 sub inlist
     {
-    my( $word, @the_list );
+    my( $word, @the_list ) = @_;
     return grep( $word eq $_, @the_list );
     }
 
