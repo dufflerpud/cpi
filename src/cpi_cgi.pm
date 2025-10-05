@@ -297,7 +297,7 @@ sub safe_url
 sub note_to_html
     {
     my( $arg ) = @_;
-    my $argp = ref($arg)=="HASH" ? $arg : { data=>$arg };
+    my $argp = ( ref($arg) eq "HASH" ) ? $arg : { data=>$arg };
     $argp->{data} = shift(@_) if( ! defined( $argp->{data} ) );
 
     $argp->{width} ||= "90%";
