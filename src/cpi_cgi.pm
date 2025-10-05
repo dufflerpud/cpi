@@ -291,4 +291,31 @@ sub safe_url
     return $ret;
     }
 
+#########################################################################
+#	Convert a string from "input type=note" to text and pics.	#
+#########################################################################
+sub note_to_html
+    {
+    my( $arg ) = @_;
+    my $argp = ref($arg)=="HASH" ? $arg : { data=>$arg };
+    $argp->{data} = shift(@_) if( ! defined( $argp->{data} ) );
+
+    $argp->{width} ||= "90%";
+    my $splitter = $argp->{split} || "~~~";
+
+    my @pieces;
+    foreach my $pc ( split(/$splitter/,$argp->{data}) )
+	{
+	if( $pc !~ /(data:image\/jpeg;base64,)(.*)/ )
+	    { push( @pieces, "<pre><b>$pc</b></pre>" ); }
+	else
+	    {
+	    my $intro = $1;
+	    my $splitpc = $2;
+	    $splitpc =~ s/(.{1,76})/$1\n/gs;
+	    push(@pieces, "<img width=$argp->{width} src='$intro$splitpc' />");
+	    }
+	}
+    return join("",@pieces);
+    }
 1;
