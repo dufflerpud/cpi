@@ -43,8 +43,8 @@ sub parse_arguments
     if( ! $argp )	# Backward compatibility
     	{
 	$argp = {};
-	$argp->{switches} = \%main::ONLY_ONE_DEFAULT
-	    ;#if( exists ( %main::ONLY_ONE_DEFAULT ) );
+	$argp->{switches} = \%main::ONLY_ONE_DEFAULTS
+	    ;#if( exists ( %main::ONLY_ONE_DEFAULTS ) );
 	$copy_res_to = \%main::ARGS
 	    ;#if( exists( %main::ARGS ) );
 	$argp->{non_switches} = \@main::files
@@ -81,7 +81,7 @@ sub parse_arguments
 	    my( $lhe, $rhe );
 	    if( $arg =~ /^-(.+)=+(.*)$/ )
 	    	{ $lhe=$1; $rhe=$2; }
-	    elsif( $arg =~ /^-(.)(.+)/ && $argp->{switches}{$1} )
+	    elsif( $arg =~ /^-(.)(.+)/ && defined($argp->{switches}{$1}) )
 	    	{ $lhe=$1; $rhe=$2; }
 	    elsif( $arg =~ /^-(.+)/ )
 	    	{ $lhe=$1; }
