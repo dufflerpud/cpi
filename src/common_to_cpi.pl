@@ -192,7 +192,8 @@ sub one_file
     $contents .= &read_file( $old_file );
     my $modsrc = join("|",(map{$_."::"} keys %{$modulesp}),"COMMON::","");
     my %used;
-    foreach my $otype ( $ARGS{i} ? ('&') : @OTYPES )
+    #foreach my $otype ( $ARGS{i} ? ('&') : @OTYPES )
+    foreach my $otype ( @OTYPES )
 	{
 	foreach my $sym ( keys %{$found_inp->{$otype}} )
 	    {
@@ -211,7 +212,7 @@ sub one_file
 	    if( $contents ne $old_contents )
 	        {
 		push( @changes, $search_to );
-		$used{ $located_in }{ $sym }++;
+		$used{ $located_in }{ $sym }++ if( $otype eq '&' );
 		}
 
 	    if( $otype eq '%' || $otype eq '@' )
@@ -226,7 +227,7 @@ sub one_file
 		if( $contents ne $old_contents )
 		    {
 		    push( @changes, $search_to );
-		    $used{ $located_in }{ $sym }++;
+		    $used{ $located_in }{ $sym }++ if( $otype eq '&' );
 		    }
 		}
 	    }
