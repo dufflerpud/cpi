@@ -252,6 +252,10 @@ sub one_file
 
     $contents =~ s/^use cpi_.*?\n//gms;
     $contents =~ s/^use COMMON.*?\n//ms;
+    $contents =~ s/^my %ARGS;/our %ARGS;/ms
+    $contents =~ s/^my @files;/our @files;/ms
+    $contents =~ s/^my @problems;/our @problems;/ms
+    $contents =~ s/^my %ONLY_ONE_DEFAULTS/our %ONLY_ONE_DEFAULTS/ms
     my $use_string = join("\n",@use_strings);
     $contents =~ s/use strict;/use strict;\nuse lib "$ARGS{d}";\n/ms
 	if( $contents !~ m:$ARGS{d}: );
