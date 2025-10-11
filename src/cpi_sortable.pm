@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( sortable );
+our @EXPORT = qw( sortable numeric_sort unique );
 use lib ".";
 
 
@@ -43,16 +43,15 @@ sub sortable
 #########################################################################
 sub numeric_sort
     {
-    return sort { &sortable($a,$b) } @_;
+    return sort { &sortable($a) cmp &sortable($b) } @_;
     }
 
 #########################################################################
-#	Get rid of all redundant items in an array.			#
+#	Get rid of all redundant items in an array, preserve order.	#
 #########################################################################
 sub unique
     {
     my %seen;
-    grep( $seen{$_}, @_ );
-    return keys %seen;
+    return grep( ! $seen{$_}++, @_ );
     }
 1;

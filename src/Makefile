@@ -1,6 +1,6 @@
 # Makefile to build CPI
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
-MODULES=$(shell ls *.pm | sed -e 's/\.pm//')
+MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 INSTALLDIR=/usr/local/lib/perl
 
 No_argument_supplied:
@@ -25,8 +25,8 @@ remake:
 all_modules:\
 	auto/cpi_vars/autosplit.ix\
 	auto/cpi_cache/autosplit.ix\
-	auto/cpi_reorder/autosplit.ix\
 	auto/cpi_sortable/autosplit.ix\
+	auto/cpi_reorder/autosplit.ix\
 	auto/cpi_mime/autosplit.ix\
 	auto/cpi_hash_to_string/autosplit.ix\
 	auto/cpi_lock/autosplit.ix\
@@ -54,6 +54,7 @@ all_modules:\
 	auto/cpi_help/autosplit.ix\
 	auto/cpi_inlist/autosplit.ix\
 	auto/cpi_arguments/autosplit.ix\
+	auto/cpi_perl/autosplit.ix\
 	auto/cpi_unique_nbit_color/autosplit.ix
 auto/cpi_cache/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
@@ -83,6 +84,13 @@ auto/cpi_compress_integer/autosplit.ix:
 	sed -e 's/^#*__END__/__END__/' < cpi_compress_integer.compiling > cpi_compress_integer.pm
 	perl -MAutoSplit -e 'autosplit(cpi_compress_integer,auto,0,1,1)' || excode=0
 	mv cpi_compress_integer.compiling cpi_compress_integer.pm
+auto/cpi_perl/autosplit.ix:
+	perl cpi_perl.pm
+	[ -d auto/cpi_perl ] || mkdir -p auto/cpi_perl
+	mv cpi_perl.pm cpi_perl.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_perl.compiling > cpi_perl.pm
+	perl -MAutoSplit -e 'autosplit(cpi_perl,auto,0,1,1)' || excode=0
+	mv cpi_perl.compiling cpi_perl.pm
 auto/cpi_unique_nbit_color/autosplit.ix:
 	perl cpi_unique_nbit_color.pm
 	[ -d auto/cpi_unique_nbit_color ] || mkdir -p auto/cpi_unique_nbit_color
@@ -222,7 +230,8 @@ auto/cpi_qrcode_of/autosplit.ix:\
 	sed -e 's/^#*__END__/__END__/' < cpi_qrcode_of.compiling > cpi_qrcode_of.pm
 	perl -MAutoSplit -e 'autosplit(cpi_qrcode_of,auto,0,1,1)' || excode=0
 	mv cpi_qrcode_of.compiling cpi_qrcode_of.pm
-auto/cpi_reorder/autosplit.ix:
+auto/cpi_reorder/autosplit.ix:\
+	auto/cpi_sortable/autosplit.ix
 	perl cpi_reorder.pm
 	[ -d auto/cpi_reorder ] || mkdir -p auto/cpi_reorder
 	mv cpi_reorder.pm cpi_reorder.compiling
