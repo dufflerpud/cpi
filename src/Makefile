@@ -32,6 +32,7 @@ all_modules:\
 	auto/cpi_lock/autosplit.ix\
 	auto/cpi_cgi/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
+	auto/cpi_drivers/autosplit.ix\
 	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_magic_http/autosplit.ix\
 	auto/cpi_config/autosplit.ix\
@@ -146,6 +147,15 @@ auto/cpi_file/autosplit.ix:\
 	sed -e 's/^#*__END__/__END__/' < cpi_file.compiling > cpi_file.pm
 	perl -MAutoSplit -e 'autosplit(cpi_file,auto,0,1,1)' || excode=0
 	mv cpi_file.compiling cpi_file.pm
+auto/cpi_drivers/autosplit.ix:\
+	auto/cpi_template/autosplit.ix \
+	auto/cpi_file/autosplit.ix
+	perl cpi_drivers.pm
+	[ -d auto/cpi_drivers ] || mkdir -p auto/cpi_drivers
+	mv cpi_drivers.pm cpi_drivers.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_drivers.compiling > cpi_drivers.pm
+	perl -MAutoSplit -e 'autosplit(cpi_drivers,auto,0,1,1)' || excode=0
+	mv cpi_drivers.compiling cpi_drivers.pm
 auto/cpi_filename/autosplit.ix:
 	perl cpi_filename.pm
 	[ -d auto/cpi_filename ] || mkdir -p auto/cpi_filename
