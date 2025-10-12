@@ -23,7 +23,7 @@ our @ISA = qw /Exporter/;
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( chmog cleanup echodo fatal autopsy death_requested
  files_in mkdirp read_file read_lines register_cleanup slurp_file
- tempfile write_file );
+ tempfile write_file append_file );
 use lib ".";
 
 use cpi_log qw( log );
@@ -76,6 +76,19 @@ sub write_file
     my( $fn, @contents ) = @_;
 
     open( OUT, ">$fn" ) || &autopsy("Cannot write $fn:  $!");
+    binmode OUT;
+    print OUT @contents;
+    close( OUT );
+    }
+
+#########################################################################
+#       Write entire contents of arguments to specified file.           #
+#########################################################################
+sub append_file
+    {
+    my( $fn, @contents ) = @_;
+
+    open( OUT, ">>$fn" ) || &autopsy("Cannot append to $fn:  $!");
     binmode OUT;
     print OUT @contents;
     close( OUT );
