@@ -27,27 +27,8 @@ use lib ".";
 #__END__
 1;
 
-#########################################################################
-#	Return first arg capitalized with same scheme as second arg	#
-#########################################################################
-sub match_case
-    {
-    my( $word, $ref ) = @_;
-    return lc( $word )			if( lc($ref) eq $ref );
-    return uc( $word )			if( uc($ref) eq $ref );
-    return ucfirst( lc( $word ) );
-    }
-
-#########################################################################
-#	You generally pluralize words in English by adding "s", but	#
-#	not all words.							#
-#########################################################################
-sub plural
-    {
-    my( $word ) = @_;
-    my $lcword = lc( $word );
-    my $ret =
-    	{
+my %plural_cache =
+	(
 	"addendum"	=>	"addenda",
 	"aircraft"	=>	"aircraft",
 	"alumna"	=>	"alumnae",
@@ -139,24 +120,51 @@ sub plural
 	"photo"		=>	"photos",
 	"piano"		=>	"pianos",
 	"roof"		=>	"roofs"
-	} -> { $lcword };
-    if( $ret )
-	{}
-    elsif( $lcword =~ /.(s|x|z|ch|sh|o)$/ )
-	{ $ret = $word."es"; }
-    elsif( $lcword =~ /(.*)y$/ )
-	{ $ret = $1."ies"; }
-    elsif( $lcword =~ /(.*)(f|fe)$/ )
-	{ $ret = $1."ves"; }
-    elsif( $lcword =~ /(.*)man$/ )
-    	{ $ret = $1."men"; }
-    elsif( $lcword =~ /(.*)child$/ )
-    	{ $ret = $1."children"; }
-    elsif( $lcword =~ /(.*)person$/ )
-    	{ $ret = $1."people"; }
-    else
-	{ $ret = $lcword."s"; }
-    return &match_case( $ret, $word );
+	);
+
+#########################################################################
+#	Return first arg capitalized with same scheme as second arg	#
+#########################################################################
+sub match_case
+    {
+    my( $word, $ref ) = @_;
+    return lc( $word )			if( lc($ref) eq $ref );
+    return uc( $word )			if( uc($ref) eq $ref );
+    return ucfirst( lc( $word ) );
+    }
+
+#########################################################################
+#	You generally pluralize words in English by adding "s", but	#
+#	not all words.  Cache starts out with results we would get	#
+#	wrong if we used our ruleset (English is full of exceptions)	#
+#	so we never try to compute it (and get it wrong).  We'll also	#
+#	stick stuff we generate in as well for performance reasons.	#
+#	Note that this assumes the cache primer is totally lower case.	#
+#########################################################################
+sub plural
+    {
+    my( $word ) = @_;
+    my $ret;
+
+    if( ! ( $ret = $plural_cache{$word} ) )
+	{
+	my $lcword = lc( $word );
+
+	if( $ret = $plural_cache{$lcword} )	{ }
+	elsif( $lcword =~ /.(s|x|z|ch|sh|o)$/ )	{ $ret = $word."es"; }
+	elsif( $lcword =~ /(.*)y$/ )		{ $ret = $1."ies"; }
+	elsif( $lcword =~ /(.*)(f|fe)$/ )	{ $ret = $1."ves"; }
+	elsif( $lcword =~ /(.*)man$/ )		{ $ret = $1."men"; }
+	elsif( $lcword =~ /(.*)child$/ )	{ $ret = $1."children"; }
+	elsif( $lcword =~ /(.*)person$/ )	{ $ret = $1."people"; }
+	else					{ $ret = $lcword."s"; }
+
+	$plural_cache{$lcword}			= $ret;
+	$plural_cache{uc($lcword)}		= uc( $ret );
+	$plural_cache{ucfirst($lcword)}		= ucfirst( $ret );
+	$ret = &match_case( $ret, $word );
+	}
+    return $ret;
     }
 
 #########################################################################
