@@ -38,11 +38,29 @@ use MIME::Base64 qw( encode_base64 );
 #########################################################################
 #	Do an expensive command and store results to prevent having	#
 #	to do it again.							#
+#									#
+#	We check to see if there is a file corresponding to the hash	#
+#	of the expensive command.  If that file exists and it has the	#
+#	same contents we just use the results in the corresponding	#
+#	result file (which is why this is "caching").			#
+#									#
+#	Note:								#
+#									#
+#	Sadly, this means if the hash process produces the same	string	#
+#	for different queries, it means we will re-issue the same	#
+#	same expensive command (which is certainly better than		#
+#	using the results from the other command with the same hash).	#
+#									#
+#	Also, there ain't no file locking going on here (though there	#
+#	could be).  You can imagine two processes fighting over the	#
+#	same hash.  I HIGHLY doubt this will happen over the lifetime	#
+#	of this code, but code sometimes lives on long after it		#
+#	it should.  If this gets used under very high performance	#
+#	situations and breaks randomly, try adding locking.		#
 #########################################################################
 sub cache
     {
     my( $arg, $result_file ) = @_;
-    #print "CMC cache($result_file) called.<br>\n";
     my $argp;
     my $request = $arg;
     my $typeof = ref($arg);
@@ -78,15 +96,13 @@ sub cache
 	if( $query_file =~ /%s/ );
     $regen = 1 if( $query_file && (&read_file($query_file,"") ne $request) );
 
-    print STDERR "rf=$result_file qf=$query_file regen=$regen.\n";
+    #print STDERR "rf=$result_file qf=$query_file regen=$regen.\n";
     system("mv $query_file $query_file.old.$$") if( $regen );
 
     my $contents;
     if( $regen )
 	{
-	print STDERR "About to call dirname($result_file).\n";
 	system("mkdir -p $_") if( ! -d ($_=&dirname($result_file)) );
-	print STDERR "Done dirname($result_file).\n";
 	if( $argp->{pipe} )
 	    { $contents = &read_file($argp->{pipe}); }
 	elsif( $argp->{routine} )
