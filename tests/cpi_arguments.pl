@@ -2,7 +2,7 @@
 
 use strict;
 
-use lib ".";
+use lib "/usr/local/lib/perl";
 use cpi_file qw( fatal );
 use cpi_arguments qw( parse_arguments );
 
