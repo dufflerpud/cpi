@@ -45,6 +45,7 @@ sub match_case
 sub plural
     {
     my( $word ) = @_;
+    my $lcword = lc( $word );
     my $ret =
     	{
 	"addendum"	=>	"addenda",
@@ -76,7 +77,6 @@ sub plural
 	"deer"		=>	"deer",
 	"diagnosis"	=>	"diagnoses",
 	"die"		=>	"dice",
-	"dwarf"		=>	"dwarves",
 	"ellipsis"	=>	"ellipses",
 	"erratum"	=>	"errata",
 	"faux pas"	=>	"faux pas",
@@ -90,16 +90,10 @@ sub plural
 	"goose"		=>	"geese",
 	"graffito"	=>	"graffiti",
 	"grouse"	=>	"grouse",
-	"half"		=>	"halves",
-	"hoof"		=>	"hooves",
 	"hypothesis"	=>	"hypotheses",
 	"index"		=>	"indices",
-	"knife"		=>	"knives",
 	"larva"		=>	"larvae",
-	"leaf"		=>	"leaves",
 	"libretto"	=>	"libretti",
-	"life"		=>	"lives",
-	"loaf"		=>	"loaves",
 	"locus"		=>	"loci",
 	"louse"		=>	"lice",
 	"man"		=>	"men",
@@ -124,8 +118,6 @@ sub plural
 	"radius"	=>	"radii",
 	"referendum"	=>	"referenda",
 	"salmon"	=>	"salmon",
-	"scarf"		=>	"scarves",
-	"self"		=>	"selves",
 	"series"	=>	"series",
 	"sheep"		=>	"sheep",
 	"shrimp"	=>	"shrimp",
@@ -139,7 +131,6 @@ sub plural
 	"synopsis"	=>	"synopses",
 	"tableau"	=>	"tableaux",
 	"thesis"	=>	"theses",
-	"thief"		=>	"thieves",
 	"tooth"		=>	"teeth",
 	"trout"		=>	"trout",
 	"tuna"		=>	"tuna",
@@ -147,12 +138,24 @@ sub plural
 	"vertex"	=>	"vertices",
 	"vita"		=>	"vitae",
 	"vortex"	=>	"vortices",
-	"wharf"		=>	"wharves",
-	"wife"		=>	"wives",
-	"wolf"		=>	"wolves",
-	"woman"		=>	"women"
-	} -> { lc($word) };
-    return &match_case( $ret||($word."s"), $word );
+	"woman"		=>	"women",
+	"photo"		=>	"photos",
+	"piano"		=>	"pianos",
+	"roof"		=>	"roofs"
+	} -> { $lcword };
+    if( $ret )
+	{}
+    elsif( $lcword =~ /.(s|x|z|ch|sh|o)$/ )
+	{ $ret = $word."es"; }
+    elsif( $lcword =~ /(.*)y$/ )
+	{ $ret = $1."ies"; }
+    elsif( $lcword =~ /(.*)(f|fe)$/ )
+	{ $ret = $1."ves"; }
+    elsif( $lcword =~ /(.*)man$/ )
+    	{ $ret = $1."men"; }
+    else
+	{ $ret = $lcword."s"; }
+    return &match_case( $ret, $word );
     }
 
 #########################################################################
