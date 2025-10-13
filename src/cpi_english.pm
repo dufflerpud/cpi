@@ -66,7 +66,6 @@ sub plural
 	"bureau"	=>	"bureaux",
 	"cactus"	=>	"cacti",
 	"château"	=>	"châteaux",
-	"child"		=>	"children",
 	"codex"		=>	"codices",
 	"concerto"	=>	"concerti",
 	"corpus"	=>	"corpora",
@@ -111,7 +110,6 @@ sub plural
 	"ovum"		=>	"ova",
 	"ox"		=>	"oxen",
 	"parenthesis"	=>	"parentheses",
-	"person"	=>	"people",
 	"phenomenon"	=>	"phenomena",
 	"phylum"	=>	"phyla",
 	"quiz"		=>	"quizzes",
@@ -138,7 +136,6 @@ sub plural
 	"vertex"	=>	"vertices",
 	"vita"		=>	"vitae",
 	"vortex"	=>	"vortices",
-	"woman"		=>	"women",
 	"photo"		=>	"photos",
 	"piano"		=>	"pianos",
 	"roof"		=>	"roofs"
@@ -153,6 +150,10 @@ sub plural
 	{ $ret = $1."ves"; }
     elsif( $lcword =~ /(.*)man$/ )
     	{ $ret = $1."men"; }
+    elsif( $lcword =~ /(.*)child$/ )
+    	{ $ret = $1."children"; }
+    elsif( $lcword =~ /(.*)person$/ )
+    	{ $ret = $1."people"; }
     else
 	{ $ret = $lcword."s"; }
     return &match_case( $ret, $word );
