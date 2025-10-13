@@ -81,11 +81,12 @@ sub parse_arguments
 	    my( $lhe, $rhe );
 	    if( $arg =~ /^-(.+)=+(.*)$/ )
 	    	{ $lhe=$1; $rhe=$2; }
-	    elsif( $arg =~ /^-(.)(.+)/ && defined($argp->{switches}{$1}) )
+	    elsif( $arg =~ /^-(.)(.+)/ && defined($argp->{switches}->{$1}) )
 	    	{ $lhe=$1; $rhe=$2; }
 	    elsif( $arg =~ /^-(.+)/ )
 	    	{ $lhe=$1; }
 	    # else won't happen
+	    #print "lhe=$lhe rhe=$rhe.\n";
 	    my $switchname = &abbrev( $lhe,
 	        keys %{$argp->{switches}},
 		@{ $argp->{flags} } );
