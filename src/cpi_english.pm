@@ -34,6 +34,7 @@ use lib ".";
 sub plural
     {
     my( $word ) = @_;
+    my( $lcword ) = lc( $word );
     my $ret =
     	{
 	"addendum"	=>	"addenda",
@@ -140,8 +141,12 @@ sub plural
 	"wife"		=>	"wives",
 	"wolf"		=>	"wolves",
 	"woman"		=>	"women"
-	} -> { $word };
-    return $ret || "${word}s";
+	} -> { $lcword };
+    return
+        (	! $ret			?	$word."s"
+	:	( $word ne $lcword )	?	ucfirst($ret)
+	:	$ret
+	);
     }
 
 #########################################################################
