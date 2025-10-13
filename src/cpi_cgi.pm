@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( CGIheader CGIreceive embed_css
+our @EXPORT = qw( CGIheader CGIreceive embed_css note_to_html
  embed_javascript safe_html safe_url show_vars starting_CSS );
 use lib ".";
 
