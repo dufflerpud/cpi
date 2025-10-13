@@ -21,11 +21,22 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( nword plural );
+our @EXPORT = qw( match_case nword plural );
 use lib ".";
 
 #__END__
 1;
+
+#########################################################################
+#	Return first arg capitalized with same scheme as second arg	#
+#########################################################################
+sub match_case
+    {
+    my( $word, $ref ) = @_;
+    return lc( $word )			if( lc($ref) eq $ref );
+    return uc( $word )			if( uc($ref) eq $ref );
+    return ucfirst( lc( $word ) );
+    }
 
 #########################################################################
 #	You generally pluralize words in English by adding "s", but	#
@@ -34,7 +45,6 @@ use lib ".";
 sub plural
     {
     my( $word ) = @_;
-    my( $lcword ) = lc( $word );
     my $ret =
     	{
 	"addendum"	=>	"addenda",
@@ -141,12 +151,8 @@ sub plural
 	"wife"		=>	"wives",
 	"wolf"		=>	"wolves",
 	"woman"		=>	"women"
-	} -> { $lcword };
-    return
-        (	! $ret			?	$word."s"
-	:	( $word ne $lcword )	?	ucfirst($ret)
-	:	$ret
-	);
+	} -> { lc($word) };
+    return &match_case( $ret||($word."s"), $word );
     }
 
 #########################################################################
