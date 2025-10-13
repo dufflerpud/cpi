@@ -40,6 +40,7 @@ all_modules:\
 	auto/cpi_db/autosplit.ix\
 	auto/cpi_log/autosplit.ix\
 	auto/cpi_filename/autosplit.ix\
+	auto/cpi_english/autosplit.ix\
 	auto/cpi_template/autosplit.ix\
 	auto/cpi_setup/autosplit.ix\
 	auto/cpi_translate/autosplit.ix\
@@ -163,6 +164,13 @@ auto/cpi_filename/autosplit.ix:
 	sed -e 's/^#*__END__/__END__/' < cpi_filename.compiling > cpi_filename.pm
 	perl -MAutoSplit -e 'autosplit(cpi_filename,auto,0,1,1)' || excode=0
 	mv cpi_filename.compiling cpi_filename.pm
+auto/cpi_english/autosplit.ix:
+	perl cpi_english.pm
+	[ -d auto/cpi_english ] || mkdir -p auto/cpi_english
+	mv cpi_english.pm cpi_english.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_english.compiling > cpi_english.pm
+	perl -MAutoSplit -e 'autosplit(cpi_english,auto,0,1,1)' || excode=0
+	mv cpi_english.compiling cpi_english.pm
 auto/cpi_hash/autosplit.ix:
 	perl cpi_hash.pm
 	[ -d auto/cpi_hash ] || mkdir -p auto/cpi_hash
