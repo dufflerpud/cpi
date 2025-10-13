@@ -101,7 +101,6 @@ sub breakup_and_translate_strings
     return join("",@ret);
     }
 
-my $debtrctr = 0;
 #########################################################################
 #	Translate phrase from and to specified languages.		#
 #########################################################################

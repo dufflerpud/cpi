@@ -14,8 +14,6 @@ use strict;
 
 package cpi_trans_lingua;
 
-use strict;
-
 use Lingua::Translate;
 #use Lingua::Translate::Google;
 use I18N::LangTags::List;

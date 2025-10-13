@@ -16,8 +16,6 @@ use strict;
 
 package cpi_trans_babelfish;
 
-use strict;
-
 use Exporter;
 use AutoLoader;
 
