@@ -69,7 +69,7 @@ sub get_drivers
 		&cpi_template::template( $fqn,
 		    "DRIVER", "cpi_drivers::fq_drivers{'$fqn'}",
 		    "%%DRIVER_NAME%%", $driver_name );
-	    $contents =~ s/my \$cpi_drivers::.*?\n//ms;
+	    $contents =~ s/(my \$cpi_drivers::.*?);/#$1/ms;
 	    eval( $contents );
 	    print "eval returned [$@]\n" if( $@ );
 	    #print "Done eval driver $driver_name.\n";
@@ -77,4 +77,14 @@ sub get_drivers
 	}
     return %drivers;
     }
+
+#########################################################################
+#	Print out debug information.					#
+#########################################################################
+sub device_debug
+    {
+    my( $filename, $line, $msg ) = @_;;
+    printf("%s %d:  %s\n",$filename,$line,$msg);
+    }
+
 1;
