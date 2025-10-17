@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( get_drivers );
+our @EXPORT = qw( get_drivers device_debug );
 use lib ".";
 
 use cpi_file qw( read_file files_in );
