@@ -24,11 +24,63 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( parse_arguments );
 use lib ".";
 
-use cpi_inlist qw( abbrev );
+use cpi_inlist qw( abbrev inlist );
 use cpi_file qw( autopsy );
+use cpi_english qw( conjoin );
 
 #__END__
 1;
+
+#########################################################################
+#	Check if new value conforms to switches description.  If not,	#
+#	add to problems, otherwise at to results.			#
+#########################################################################
+#&try_arg( $switchname, $argp->{switches}, $rhe );
+sub try_arg
+    {
+    my( $resp, $problemsp, $switchname, $argp, $new_value ) = @_;
+    $resp->{$switchname} = $new_value;	# Do it but check for errors ...
+
+    my $reftype = ref( $argp );
+
+    if( $reftype eq "HASH" )
+	{}
+    elsif( $reftype eq "ARRAY" )
+	{ $argp = { oneof=>$argp }; }
+    elsif( $reftype eq "CODE" )
+	{ $argp = { code=>$argp }; }
+    elsif( $reftype eq "" )
+	{ $argp = {}; }
+    else
+	{ &autopsy("try_arg(-$switchname) called with ref(\$argp)=$reftype."); }
+
+    my $preface = "-$switchname value \"$new_value\"";
+
+    push( @{$problemsp}, "$preface must be one of ".
+	    &conjoin("or",@{$argp->{oneof}}). "." )
+	if( $argp->{oneof} && ! &inlist( $new_value, @{$argp->{oneof}} ) );
+
+    if( $argp->{code} )
+	{
+	my $problem = &{$argp->{code}}( $switchname, $new_value );
+        push( @{$problemsp}, "$preface problem:  $problem" )
+	    if( defined( $problem ) );
+	}
+
+    push( @{$problemsp},
+	"$preface must match the regular expression $argp->{re}." )
+	if( $argp->{re} && $new_value !~ /$argp->{re}/ );
+
+    if( $new_value =~ /^(\d+)|(\d+\.\d+)$/ )
+	{
+	push( @{$problemsp}, "$preface is less than $argp->{min}." )
+	    if( defined($argp->{min}) && $new_value < $argp->{min} );
+	push( @{$problemsp}, "$preface is more than $argp->{max}." )
+	    if( defined($argp->{max}) && $new_value > $argp->{max} );
+	}
+    elsif( defined($argp->{min}) || defined($argp->{max}) )
+	{ push( @{$problemsp}, "$preface is not a number." ); }
+    }
 
 #########################################################################
 #	Parse the arguments						#
@@ -60,13 +112,14 @@ sub parse_arguments
     while( @my_argv )
 	{
 	my $arg = shift(@my_argv);
+	#print "Processing [$arg]\n";
 
 	if( $arg eq "--" )
 	    {
 	    if( $argp->{non_switches} )
 		{ push( @{ $res{non_switches} }, @my_argv ); }
 	    else
-	        { grep( push(@problems,"Unrecognized switch:  $_"), @my_argv ); }
+	        { grep( push(@problems,"Unrecognized switch 1:  $arg"), @my_argv ); }
 	    last;
 	    }
 	elsif( $arg !~ /^-(.+)/ )
@@ -74,14 +127,15 @@ sub parse_arguments
 	    if( $argp->{non_switches} )
 		{ push( @{ $res{non_switches} }, $arg ); }
 	    else
-	        { push(@problems,"Unrecognized switch:  $arg"); }
+	        { push(@problems,"Unrecognized argument:  $arg"); }
 	    }
 	else
 	    {
 	    my( $lhe, $rhe );
 	    if( $arg =~ /^-(.+)=+(.*)$/ )
 	    	{ $lhe=$1; $rhe=$2; }
-	    elsif( $arg =~ /^-(.)(.+)/ && defined($argp->{switches}->{$1}) )
+	    elsif( $arg =~ /^-([a-zA-Z]+)([^a-zA-Z].*)/ &&
+		&abbrev( $1, keys %{$argp->{switches}} ) )
 	    	{ $lhe=$1; $rhe=$2; }
 	    elsif( $arg =~ /^-(.+)/ )
 	    	{ $lhe=$1; }
@@ -95,16 +149,25 @@ sub parse_arguments
 		push( @problems, "-$switchname specified multiple times ($res{$switchname}})." )
 		    if( defined( $res{$switchname} ) );
 		if( defined( $rhe ) )
-		    { $res{$switchname} = $rhe; }
+		    {
+		    &try_arg( \%res, \@problems,
+			$switchname, $argp->{switches}{$switchname}, $rhe );
+		    }
 		elsif( ! defined( $argp->{switches}{$lhe} ) )
-		    { $res{$switchname} = 1; }
+		    {
+		    &try_arg( \%res, \@problems,
+			$switchname, $argp->{switches}{$switchname}, 1 );
+		    }
 		elsif( ! @my_argv )
 		    { push(@problems,"-$switchname has no specified value."); }
 		else
-		    { $res{$switchname} = shift(@my_argv); }
+		    {
+		    &try_arg( \%res, \@problems,
+			$switchname, $argp->{switches}{$switchname}, shift(@my_argv) );
+		    }
 		}
 	    else
-	        { push( @problems, "Unrecognized switch -$lhe." ); }
+	        { push( @problems, "Unrecognized switch 3: -$lhe." ); }
 	    }
 	}
 
@@ -115,6 +178,28 @@ sub parse_arguments
         if( defined($argp->{max_non_switches})
 	 && $num_non_switches > $argp->{max_non_switches} );
 
+    if( ! @problems )
+	{
+	foreach my $switch (
+	    grep( !defined($res{$_}), keys %{$argp->{switches}} ) )
+	    {
+	    my $reftype = ref($argp->{switches}{$switch});
+	    if( $reftype eq "" )
+		{ $res{$switch} = $argp->{switches}{$switch}; }
+	    elsif( $reftype eq "ARRAY" )
+		{ $res{$switch} = $argp->{switches}{$switch}[0]; }
+	    elsif( $reftype eq "HASH" )
+		{
+		if( defined($argp->{switches}{$switch}{default}) )
+		    { $res{$switch} = $argp->{switches}{$switch}{default}; }
+		elsif( defined($argp->{switches}{$switch}{oneof}) )
+		    { $res{$switch} = $argp->{switches}{$switch}{oneof}[0]; }
+		else
+		    { push( @problems, "No default for -$switch."); }
+		}	
+	    }
+	}
+
     if( @problems )
         {
 	if( exists &main::usage )
@@ -122,9 +207,6 @@ sub parse_arguments
 	else
 	    { &autopsy( join("\n",@problems) ); }
 	}
-
-    grep( $res{$_}=(defined($res{$_})?$res{$_}:$argp->{switches}{$_}),
-	keys %{$argp->{switches}} );
 
     %{$copy_res_to} = %res if( $copy_res_to );
     return %res;

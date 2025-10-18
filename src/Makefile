@@ -359,6 +359,7 @@ auto/cpi_inlist/autosplit.ix:
 	perl -MAutoSplit -e 'autosplit(cpi_inlist,auto,0,1,1)' || excode=0
 	mv cpi_inlist.compiling cpi_inlist.pm
 auto/cpi_arguments/autosplit.ix:\
+	auto/cpi_english/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_inlist/autosplit.ix
 	perl cpi_arguments.pm

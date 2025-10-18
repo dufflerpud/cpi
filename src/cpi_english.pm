@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( match_case nword plural );
+our @EXPORT = qw( match_case nword plural conjoin );
 use lib ".";
 
 #__END__
@@ -178,4 +178,19 @@ sub nword
     return join(" ",$n, ($n==1 || $n==-1) ? $word : &plural($word) );
     }
 
+#########################################################################
+#	Stupid but handy routine to create readable lists.  First arg	#
+#	is the joining word (either "and" or "or".  Some day, maybe	#
+#	even "but"!).							#
+#	Typically called with:						#
+#	    &conjoin( "and", @items );					#
+#	    &conjoin( "or", @items );					#
+#########################################################################
+sub conjoin
+    {
+    my( $word, @itemlist ) = @_;
+    my( $listsize ) = scalar( @itemlist );
+    return join(" $word ",@itemlist) if( $listsize <= 2 );
+    return join(", ",@itemlist[0..$#itemlist-1])." $word $itemlist[$#itemlist]";
+    }
 1;

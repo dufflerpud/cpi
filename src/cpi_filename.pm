@@ -21,7 +21,8 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( dirname filename_to_text text_to_filename );
+our @EXPORT = qw( dirname filename_to_text text_to_filename no_ext_of
+ just_ext_of same_ext);
 use lib ".";
 
 
@@ -60,5 +61,32 @@ sub dirname
     return "." if( $str !~ /\// );
     $str =~ s+/[^/]*$++;
     return $str;
+    }
+
+#########################################################################
+#	Return a file without any extension.				#
+#########################################################################
+sub no_ext_of
+    {
+    my( $fname ) = @_;
+    return ( $fname =~ /(.*)\.(\w+)$/ ? $1 : $fname );
+    }
+
+#########################################################################
+#	Return the extension of a filename.				#
+#########################################################################
+sub just_ext_of
+    {
+    my( $fname ) = @_;
+    return( $fname =~ /(.*)\.(\w+)$/ ? $2 : "" );
+    }
+
+#########################################################################
+#	Return extension of one filename appended to another.		#
+#########################################################################
+sub same_ext
+    {
+    my( $fname1, $fname2 ) = @_;
+    return &no_ext_of( $fname1 ) . "." . &just_exit_of( $fname2 );
     }
 1;
