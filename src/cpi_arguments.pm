@@ -146,18 +146,32 @@ sub parse_arguments
 		@{ $argp->{flags} } );
 	    if( defined($switchname) )
 	        {
-		push( @problems, "-$switchname specified multiple times ($res{$switchname}})." )
-		    if( defined( $res{$switchname} ) );
-		if( defined( $rhe ) )
+		&autopsy("argp not defined.") if( ! $argp );
+		&autopsy("argp->{switches} not defined.") if( ! $argp->{switches} );
+		if( defined($argp->{switches}{$switchname})
+		  &&ref( $argp->{switches}{$switchname}) eq "HASH"
+		  &&$argp->{switches}{$switchname}{alias} )
+		    {
+		    @my_argv =
+			(
+			@{$argp->{switches}{$switchname}{alias}},
+			@my_argv
+			);
+		    }
+		elsif( defined( $res{$switchname} ) )
+		    {
+		    push( @problems, "-$switchname specified multiple times ($res{$switchname}})." );
+		    }
+		elsif( defined( $rhe ) )
 		    {
 		    &try_arg( \%res, \@problems,
 			$switchname, $argp->{switches}{$switchname}, $rhe );
 		    }
-		elsif( ! defined( $argp->{switches}{$lhe} ) )
-		    {
-		    &try_arg( \%res, \@problems,
-			$switchname, $argp->{switches}{$switchname}, 1 );
-		    }
+#		elsif( ! defined( $argp->{switches}{$lhe} ) )
+#		    {
+#		    &try_arg( \%res, \@problems,
+#			$switchname, $argp->{switches}{$switchname}, 1 );
+#		    }
 		elsif( ! @my_argv )
 		    { push(@problems,"-$switchname has no specified value."); }
 		else
@@ -194,8 +208,8 @@ sub parse_arguments
 		    { $res{$switch} = $argp->{switches}{$switch}{default}; }
 		elsif( defined($argp->{switches}{$switch}{oneof}) )
 		    { $res{$switch} = $argp->{switches}{$switch}{oneof}[0]; }
-		else
-		    { push( @problems, "No default for -$switch."); }
+#		else
+#		    { push( @problems, "No default for -$switch."); }
 		}	
 	    }
 	}
