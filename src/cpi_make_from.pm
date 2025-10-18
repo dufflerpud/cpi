@@ -38,9 +38,6 @@ use cpi_vars;
 use GDBM_File;
 use JSON;
 use Data::Dumper;
-
-our $mf_VERBOSITY = 0;
-
 1;
 #__END__
 

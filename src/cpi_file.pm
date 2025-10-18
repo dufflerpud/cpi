@@ -193,10 +193,13 @@ sub cleanup
 sub echodo
     {
     my( $cmd ) = @_;
-    if( $ENV{SCRIPT_NAME} )
-	{ print "<pre>+ $cmd</pre>\n"; }
-    else
-        { print "+ $cmd\n"; }
+    if( $cpi_vars::VERBOSITY )
+	{
+	if( $ENV{SCRIPT_NAME} )
+	    { print "<pre>+ $cmd</pre>\n"; }
+	else
+	    { print "+ $cmd\n"; }
+	}
     return system( $cmd );
     }
 
