@@ -35,9 +35,9 @@ sub usage
     "bob"
     );
 
+print "Args:  [",join(" ",@ARGV),"]\n";
 &parse_arguments();
 
-print "Args:  [",join(" ",@ARGV),"]\n";
 print join("\n\t","Old args:",
     ( map { "$_=$ARGS{$_}" } sort keys %ARGS ) ), "\n";
 print "files=[",join(",",@files),"]\n\n";
@@ -55,13 +55,37 @@ print "files=[",join(",",@files),"]\n\n";
     "bob"
     );
 
+print "Args:  [",join(" ",@ARGV),"]\n";
 my %new_args = &parse_arguments({
     "switches"		=> \%ONLY_ONE_DEFAULTS,
     "flags"		=> \@flags,
     "non_switches"	=> []
     });
-print "Args:  [",join(" ",@ARGV),"]\n";
 print join("\n\t","New args:",
     ( map { "$_=$new_args{$_}" } sort keys %new_args ) ), "\n";
 print "non_switches: [",join(",",@{$new_args{non_switches}}),"]\n";
+
+@ARGV =
+    (
+    "-verb5",
+    "-priority",	22,
+    "-mode",		"bob"
+    );
+
+print "Args:  [",join(" ",@ARGV),"]\n";
+%new_args = &parse_arguments(
+    {
+    switches	=>
+	{
+	"mode"	=>	[ "fred", "bob", "ralph" ],
+	"priority"	=>	{ min=>0, max=>100 },
+	"verbosity"	=>	0
+	}
+    });
+print join("\n\t","New args:",
+    ( map { "$_=$new_args{$_}" } sort keys %new_args ) ), "\n";
+print "non_switches: [",join(",",@{$new_args{non_switches}}),"]\n"
+    if( $new_args{non_switches} );
+
+
 exit(0);
