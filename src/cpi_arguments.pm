@@ -119,7 +119,7 @@ sub parse_arguments
 	    if( $argp->{non_switches} )
 		{ push( @{ $res{non_switches} }, @my_argv ); }
 	    else
-	        { grep( push(@problems,"Unrecognized switch 1:  $arg"), @my_argv ); }
+	        { grep( push(@problems,"Unrecognized switch:  $arg"), @my_argv ); }
 	    last;
 	    }
 	elsif( $arg !~ /^-(.+)/ )
@@ -181,7 +181,7 @@ sub parse_arguments
 		    }
 		}
 	    else
-	        { push( @problems, "Unrecognized switch 3: -$lhe." ); }
+	        { push( @problems, "Unrecognized switch: -$lhe." ); }
 	    }
 	}
 
