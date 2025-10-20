@@ -463,7 +463,7 @@ sub mf_all_table_fun_rules
 	    {
 	    if( $fext ne $text )
 	        {
-		&mf_one_rule( $fext, $text, 3,
+		&mf_one_rule( $fext, $text, 1,
 		    "$mf_TABLE_FUN -it $fext -ot $text" );
 		}
 	    }
@@ -623,7 +623,7 @@ sub mf_all_mf_obj2obj_rules
 	    if( $fext ne $text )
 	        {
     		$mf_rule_map{"$fext,$text"} =
-		    [ 1, \&mf_obj2obj ]
+		    [ 2, \&mf_obj2obj ]
 	    	    if( ! $mf_rule_map{"$fext,$text"} );
 		}
 	    }
