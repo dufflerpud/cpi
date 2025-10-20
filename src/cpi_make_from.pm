@@ -587,7 +587,8 @@ sub mf_put_obj
 	my $contents;
 	if( $text eq "po" )
 	    { $contents = Dumper( $objp ); }
-	elsif( $text eq "json" || $text eq "txt" )
+	#elsif( $text eq "json" || $text eq "txt" )
+	elsif( $text eq "json" )
 	    { $contents = JSON->new->ascii->pretty->encode($objp); }
 	else
 	    { &autopsy("Do not know how to write $text object in $dst."); }
@@ -616,7 +617,8 @@ sub mf_all_mf_obj2obj_rules
     my @exts = ( "po","json","db" );
     foreach my $fext ( @exts )
         {
-	foreach my $text ( @exts, "txt" )
+	#foreach my $text ( @exts, "txt" )
+	foreach my $text ( @exts )
 	    {
 	    if( $fext ne $text )
 	        {
