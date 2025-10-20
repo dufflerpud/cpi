@@ -454,10 +454,12 @@ sub mf_all_ffmpeg_rules
 #########################################################################
 sub mf_all_table_fun_rules
     {
-    my @exts = ( "csv","html","lpf","perl","vcf","fields","json","mwt","text" );
-    foreach my $fext ( @exts )
+    my @fexts = split(/\n/,&read_file("$mf_TABLE_FUN -show=inputs |"));
+    my @texts = split(/\n/,&read_file("$mf_TABLE_FUN -show=outputs|"));
+
+    foreach my $fext ( @fexts )
         {
-	foreach my $text ( @exts )
+	foreach my $text ( @texts )
 	    {
 	    if( $fext ne $text )
 	        {
