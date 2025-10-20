@@ -463,7 +463,7 @@ sub mf_all_table_fun_rules
 	    {
 	    if( $fext ne $text )
 	        {
-		&mf_one_rule( $fext, $text, 1,
+		&mf_one_rule( $fext, $text, 3,
 		    "$mf_TABLE_FUN -it $fext -ot $text" );
 		}
 	    }
