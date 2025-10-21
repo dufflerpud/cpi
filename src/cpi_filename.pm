@@ -43,11 +43,13 @@ sub text_to_filename
     }
 #
 #########################################################################
-#	Convert filename (without directory or extension) into text.	#
+#	Convert filename into text.					#
 #########################################################################
 sub filename_to_text
     {
-    my( $text ) = @_;				# Chris_file
+    my( $text ) = @_;				# /tmp/Chris_file.jpg
+    $text =~ s:.*/::;				# Chris_file.jpg
+    $text =~ s/\.\w+$//;			# Chris_file
     $text =~ s/_+/ /g;				# Chris file
     return $text;
     }
