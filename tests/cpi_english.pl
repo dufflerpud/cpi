@@ -3,12 +3,48 @@
 use strict;
 
 use lib "/usr/local/lib/perl";
-use cpi_file qw( fatal );
-use cpi_english qw( match_case plural nword );
+use cpi_file qw( fatal cleanup );
+use cpi_english qw( match_case plural nword conjoin list_items );
+use cpi_arguments qw( parse_arguments );
 
-if( scalar(@ARGV) == 1 )
-    { print &plural($ARGV[0]), ".\n"; }
-elsif( scalar(@ARGV) == 2 )
-    { print &nword($ARGV[0],$ARGV[1]), ".\n"; }
-else
-    { &fatal( "Usage:  cpi_english word n\n" ); }
+our @problems;
+
+sub usage
+    {
+    &fatal( @_,
+	"",
+	"Usage:  $cpi_vars::PROG -<flag> word1 word2 word3 ...",
+	"where <flag> is one or more of:",
+	"-conjoin       Call conjoin()",
+	"-list_items    Call list_items()",
+	"-nword         Call nword()",
+	"-plural        Call plural()" );
+    }
+
+our @words;
+my %ARGS = &parse_arguments(
+    {
+    flags=>
+	[
+	"conjoin",
+	"list_items",
+	"nword",
+	"plural"
+	],
+    non_switches=>\@words
+    } );
+
+push( @problems, "Unknown function.")
+    if( !$ARGS{conjoin}
+     && !$ARGS{list_items}
+     && !$ARGS{nword}
+     && !$ARGS{plural} );
+
+&usage( @problems ) if( @problems );
+
+print &conjoin(		@words ), "\n"	if( $ARGS{conjoin}	);
+print &list_items(	@words ), "\n"	if( $ARGS{list_items}	);
+print &nword(		@words ), "\n"	if( $ARGS{nword}	);
+print &plural(		@words ), "\n"	if( $ARGS{plural}	);
+
+&cleanup(0);

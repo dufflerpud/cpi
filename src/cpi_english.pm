@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( match_case nword plural conjoin );
+our @EXPORT = qw( match_case nword plural conjoin list_items );
 use lib ".";
 
 #__END__
@@ -190,7 +190,60 @@ sub conjoin
     {
     my( $word, @itemlist ) = @_;
     my( $listsize ) = scalar( @itemlist );
-    return join(" $word ",@itemlist) if( $listsize <= 2 );
-    return join(", ",@itemlist[0..$#itemlist-1])." $word $itemlist[$#itemlist]";
+    my $ret;
+    if( $listsize == 1 )
+	{ $ret = $itemlist[0]; }
+    elsif( $listsize >= 2 )
+        {
+	$ret = join(", ",@itemlist[0..$#itemlist-1])
+		." $word $itemlist[$#itemlist]";
+	}
+    return $ret;
     }
+
+#########################################################################
+#	Wrote this to avoid ever having to write it again.		#
+#	Where item_type is any singular noun you like (eg "cat")	#
+#	"fnc" is one of "and", "or", "xor", "nor".  You could try	#
+#	but they are untested.  "but" could be fun.			#
+#	&list_items("id","not",1)	=> "not id 1"			#
+#	&list_items("id","nor",1,2)	=> "neither ids 1 nor 2"	#
+#	&list_items("id","nor",1,2,3)	=> "none of ids 1, 2 nor 3"	#
+#	&list_items("id","or",1)	=> "id 1"			#
+#	&list_items("id","or",1,2)	=> "ids 1 or 2"			#
+#	&list_items("id","or",1,2,3)	=> "ids 1, 2 or 3"		#
+#	&list_items("id","xor",1)	=> "id 1"			#
+#	&list_items("id","xor",1,2)	=> "one of ids 1 or 2"		#
+#	&list_items("id","xor",1,2,3)	=> "one of ids 1, 2 or 3"	#
+#########################################################################
+sub list_items
+    {
+    my( $item_type, $fnc, @items ) = @_;
+    my $nitems = scalar(@items);
+    my @pieces;
+    if( $item_type )
+        {
+	if( $fnc eq "nor" )
+	    {
+	    if( $nitems==1 )
+	        { push( @pieces, "not" ); }
+	    elsif( $nitems==2 )
+	        { push( @pieces, "neither" ); }
+	    else
+	        { push( @pieces, "none of" ); }
+	    }
+	elsif( $fnc eq "xor" )
+	    {
+	    push( @pieces, "exactly one of" ) if( $nitems > 1 );
+	    $fnc = "or";
+	    }
+	push( @pieces, $nitems==1 ? $item_type : &plural($item_type) );
+	}
+    if( $fnc )
+        { push( @pieces, &conjoin( $fnc, @items ) ); }
+    else
+	{ push( @pieces, @items ); }
+    return join(" ",@pieces);
+    }
+
 1;
