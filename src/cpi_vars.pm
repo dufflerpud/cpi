@@ -131,7 +131,17 @@ our $THIS;
 our $BASEFILE;
 our $OFFSET = "/sto";
 our $WEBSITE;
-our $PROG = $0; $PROG =~ s+.*/++; $PROG =~ s+\.[^\.]*$++;
+our $PROG;
+if ( defined($ENV{SCRIPT_FILENAME})
+    && $ENV{SCRIPT_FILENAME} =~ m~/([^/]*)/index.cgi$~ )
+    { $PROG = $1; }
+elsif( $0 =~ m~([^/]*)\.\w+$~ )
+    { $PROG = $1; }
+elsif( $0 =~ m~([^/]*)$~ )
+    { $PROG = $1; }
+else
+    { $PROG = $0; }
+
 our $BASEDIR = "$PROJECTSDIR/$PROG";	$BASEDIR =~ s:\.\w+$::;
 our $COMMONDIR;
 our $COMMONLIB;
