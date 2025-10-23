@@ -28,6 +28,8 @@ use cpi_inlist qw( abbrev inlist );
 use cpi_file qw( autopsy );
 use cpi_english qw( conjoin );
 
+use Data::Dumper;
+
 #__END__
 1;
 
@@ -56,9 +58,15 @@ sub try_arg
 
     my $preface = "-$switchname value \"$new_value\"";
 
-    push( @{$problemsp}, "$preface must be one of ".
-	    &conjoin("or",@{$argp->{oneof}}). "." )
-	if( $argp->{oneof} && ! &inlist( $new_value, @{$argp->{oneof}} ) );
+    if( ! $argp || ! $argp->{oneof} )
+	{ $resp->{$switchname} = $new_value; }
+    elsif( defined( $resp->{$switchname} = &abbrev( $new_value, @{$argp->{oneof}} ) ) )
+	{ $new_value = $resp->{$switchname}; }
+    else
+	{
+        push( @{$problemsp}, "$preface must be one of ".
+	    &conjoin("or",@{$argp->{oneof}}). "." );
+	}
 
     if( $argp->{code} )
 	{
@@ -140,10 +148,11 @@ sub parse_arguments
 	    elsif( $arg =~ /^-(.+)/ )
 	    	{ $lhe=$1; }
 	    # else won't happen
-	    #print "lhe=$lhe rhe=$rhe.\n";
+	    #print __LINE__, " lhe=$lhe rhe=", ($rhe||"UNDEF"), ".\n";
 	    my $switchname = &abbrev( $lhe,
 	        keys %{$argp->{switches}},
 		@{ $argp->{flags} } );
+	    #print __LINE__, " switchname=[$switchname]\n";
 	    if( defined($switchname) )
 	        {
 		&autopsy("argp not defined.") if( ! $argp );
@@ -167,11 +176,11 @@ sub parse_arguments
 		    &try_arg( \%res, \@problems,
 			$switchname, $argp->{switches}{$switchname}, $rhe );
 		    }
-#		elsif( ! defined( $argp->{switches}{$lhe} ) )
-#		    {
-#		    &try_arg( \%res, \@problems,
-#			$switchname, $argp->{switches}{$switchname}, 1 );
-#		    }
+		elsif( ! defined( $argp->{switches}{$switchname} ) )
+		    {
+		    # Else it's a flag.  Very simple.
+		    $res{$switchname} = 1;
+		    }
 		elsif( ! @my_argv )
 		    { push(@problems,"-$switchname has no specified value."); }
 		else

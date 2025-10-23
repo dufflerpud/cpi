@@ -67,9 +67,11 @@ print "non_switches: [",join(",",@{$new_args{non_switches}}),"]\n";
 
 @ARGV =
     (
-    "-verb5",
+    "-loud",
     "-priority",	22,
-    "-mode",		"bob"
+    "-mode",		"bob",
+    "-even",		2,
+    "-odd",		69
     );
 
 print "Args:  [",join(" ",@ARGV),"]\n";
@@ -79,7 +81,10 @@ print "Args:  [",join(" ",@ARGV),"]\n";
 	{
 	"mode"	=>	[ "fred", "bob", "ralph" ],
 	"priority"	=>	{ min=>0, max=>100 },
-	"verbosity"	=>	0
+	"loud"		=>	{ alias=>["-verbosity=5"] },
+	"verbosity"	=>	0,
+	"even"		=>	sub { my($s,$v)=@_; return( $v%2 ? "-even requires an even number" : undef ); },
+	"odd"		=>	{ re=>"\\d*(1|3|5|7|9)" }
 	}
     });
 print join("\n\t","New args:",
@@ -87,5 +92,19 @@ print join("\n\t","New args:",
 print "non_switches: [",join(",",@{$new_args{non_switches}}),"]\n"
     if( $new_args{non_switches} );
 
+@ARGV =
+    (
+    "-t",	"fr"
+    );
+
+print "Args:  [",join(" ",@ARGV),"]\n";
+%new_args = &parse_arguments({
+    switches	=>
+	{
+	"type"	=>	{ oneof=> ["france", "fireball", "ralph" ] }
+	}
+    } );
+print join("\n\t","New args:",
+    ( map { "$_=$new_args{$_}" } sort keys %new_args ) ), "\n";
 
 exit(0);
