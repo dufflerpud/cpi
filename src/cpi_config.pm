@@ -21,10 +21,10 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( read_config );
+our @EXPORT = qw( read_config read_map );
 use lib ".";
 
-use cpi_file qw( autopsy read_file );
+use cpi_file qw( autopsy read_file read_lines );
 #__END__
 1;
 #########################################################################
@@ -66,5 +66,26 @@ sub read_config
     else
 	{&autopsy("read_config refers to unknown variable type:".$vtype);}
     return 1;
+    }
+
+#########################################################################
+#	Create a map of all different kinds of ways of saying the	#
+#	same thing back to the canonical form.				#
+#	Returns a search string for all those things plus a map.	#
+#########################################################################
+sub read_map
+    {
+    my( $filename ) = @_;
+    my %map;
+    my @all_items;
+    foreach my $ln ( &read_lines( $filename ) )
+	{
+	my( @items ) = split(/\s*,\s*/,$ln);
+	my( @lcitems ) = map { lc($_) } @items;
+	grep( $map{ $_ } = $items[0], @lcitems );
+	push( @all_items, @lcitems );
+	}
+    my $search = join("|",@all_items);
+    return( $search, %map );
     }
 1;
