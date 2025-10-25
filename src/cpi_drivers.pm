@@ -24,7 +24,7 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( get_drivers device_debug );
 use lib ".";
 
-use cpi_file qw( read_file files_in );
+use cpi_file qw( read_file files_in autopsy );
 use cpi_template qw( template );
 
 our %fq_drivers;
@@ -32,48 +32,65 @@ our %fq_drivers;
 1;
 
 #########################################################################
+#	Eval the specified file which will add information to a driver	#
+#	table.								#
+#########################################################################
+sub add_driver
+    {
+    my( $driverp, $filename, $defdriver ) = @_;
+    $defdriver ||= "driver.pl";
+
+    my $driver_name;
+    my $fqn;
+    my $driver_dir;
+    if( $filename =~ m:^(.*)/([^/]*)\.pl$: )
+	{
+	$driver_dir = $1;
+	$driver_name = $2;
+	$fqn = $filename;
+	}
+    else
+        {
+	$fqn = "$filename/$defdriver";
+	return if( ! -r $fqn );
+	#&autopsy("$fqn not found.") if( ! -r $fqn );
+	if( $filename =~ m:^.*/([^/]*): )
+	    {
+	    $driver_dir = $filename;
+	    $driver_name = $1;
+	    }
+	}
+    if( $driver_name )
+	{
+	$driverp->{$driver_name} = $cpi_drivers::fq_drivers{$fqn} =
+	    {
+	    name	=> $driver_name,
+	    fqn		=> $fqn,
+	    dir		=> $driver_dir
+	    };
+	#print "About to eval driver $driver_name from $fqn...\n";
+	my $contents =
+	    &cpi_template::template( $fqn,
+		"DRIVER", "cpi_drivers::fq_drivers{'$fqn'}",
+		"%%DRIVER_NAME%%", $driver_name );
+	$contents =~ s/(my \$cpi_drivers::.*?);/#$1/ms;
+	eval( $contents );
+	print "eval returned [$@]\n" if( $@ );
+	#print "Done eval driver $driver_name.\n";
+	}
+    }
+
+#########################################################################
 #	Get drivers							#
 #########################################################################
 sub get_drivers
     {
-    my( $dirname, $driver ) = @_;
+    my( $dirname, $defdriver ) = @_;
     my %drivers;
-    $driver ||= "driver.pl";
     foreach my $filename ( &files_in( $dirname ) )
         {
-	my $driver_name;
-	my $fqn;
-	my $driver_dir;
-	if( $filename =~ /^(.*)\.pl$/ )
-	    {
-	    $driver_dir = $dirname;
-	    $driver_name = $1;
-	    $fqn = "$dirname/$filename";
-	    }
-	else
-	    {
-	    $driver_dir = "$dirname/$filename";
-	    $fqn = "$driver_dir/$driver";
-	    $driver_name = $filename if( -e $fqn );
-	    }
-	if( $driver_name )
-	    {
-	    $drivers{$driver_name} = $cpi_drivers::fq_drivers{$fqn} =
-	    	{
-		name		=> $driver_name,
-		fqn		=> $fqn,
-		dir		=> $driver_dir
-		};
-	    #print "About to eval driver $driver_name from $fqn...\n";
-	    my $contents =
-		&cpi_template::template( $fqn,
-		    "DRIVER", "cpi_drivers::fq_drivers{'$fqn'}",
-		    "%%DRIVER_NAME%%", $driver_name );
-	    $contents =~ s/(my \$cpi_drivers::.*?);/#$1/ms;
-	    eval( $contents );
-	    print "eval returned [$@]\n" if( $@ );
-	    #print "Done eval driver $driver_name.\n";
-	    }
+	&add_driver( \%drivers, "$dirname/$filename", $defdriver )
+	    if( -d "$dirname/$filename" || $filename =~ /\.pl$/ );
 	}
     return %drivers;
     }
