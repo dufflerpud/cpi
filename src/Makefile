@@ -149,6 +149,7 @@ auto/cpi_file/autosplit.ix:\
 	perl -MAutoSplit -e 'autosplit(cpi_file,auto,0,1,1)' || excode=0
 	mv cpi_file.compiling cpi_file.pm
 auto/cpi_drivers/autosplit.ix:\
+	auto/cpi_filename/autosplit.ix \
 	auto/cpi_template/autosplit.ix \
 	auto/cpi_file/autosplit.ix
 	perl cpi_drivers.pm

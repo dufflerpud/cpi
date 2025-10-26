@@ -21,10 +21,11 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( get_drivers device_debug );
+our @EXPORT = qw( get_drivers add_driver device_debug );
 use lib ".";
 
 use cpi_file qw( read_file files_in autopsy );
+use cpi_filename qw( dirname );
 use cpi_template qw( template );
 
 our %fq_drivers;
@@ -37,43 +38,24 @@ our %fq_drivers;
 #########################################################################
 sub add_driver
     {
-    my( $driverp, $filename, $defdriver ) = @_;
-    $defdriver ||= "driver.pl";
+    my( $driverp, $filename, $driver_name ) = @_;
 
-    my $driver_name;
-    my $fqn;
-    my $driver_dir;
-    if( $filename =~ m:^(.*)/([^/]*)\.pl$: )
+    if( -r $filename )
 	{
-	$driver_dir = $1;
-	$driver_name = $2;
-	$fqn = $filename;
-	}
-    else
-        {
-	$fqn = "$filename/$defdriver";
-	return if( ! -r $fqn );
-	#&autopsy("$fqn not found.") if( ! -r $fqn );
-	if( $filename =~ m:^.*/([^/]*): )
-	    {
-	    $driver_dir = $filename;
-	    $driver_name = $1;
-	    }
-	}
-    if( $driver_name )
-	{
-	$driverp->{$driver_name} = $cpi_drivers::fq_drivers{$fqn} =
+	#&autopsy("$filename not found.") if( ! -r $filename );
+	$driverp->{$driver_name} = $cpi_drivers::fq_drivers{$filename} =
 	    {
 	    name	=> $driver_name,
-	    fqn		=> $fqn,
-	    dir		=> $driver_dir
+	    fqn		=> $filename,
+	    dir		=> &dirname( $filename )
 	    };
 	#print "About to eval driver $driver_name from $fqn...\n";
 	my $contents =
-	    &cpi_template::template( $fqn,
-		"DRIVER", "cpi_drivers::fq_drivers{'$fqn'}",
+	    &cpi_template::template( $filename,
+		"DRIVER", "cpi_drivers::fq_drivers{'$filename'}",
 		"%%DRIVER_NAME%%", $driver_name );
 	$contents =~ s/(my \$cpi_drivers::.*?);/#$1/ms;
+	#print STDERR "eval $driver_name [$contents]\n";
 	eval( $contents );
 	print "eval returned [$@]\n" if( $@ );
 	#print "Done eval driver $driver_name.\n";
@@ -86,11 +68,20 @@ sub add_driver
 sub get_drivers
     {
     my( $dirname, $defdriver ) = @_;
+    $defdriver ||= "driver.pl";
     my %drivers;
-    foreach my $filename ( &files_in( $dirname ) )
+    foreach my $dirfile ( &files_in( $dirname ) )
         {
-	&add_driver( \%drivers, "$dirname/$filename", $defdriver )
-	    if( -d "$dirname/$filename" || $filename =~ /\.pl$/ );
+	if( $dirfile =~ /(.*).pl$/ )
+	    { &add_driver( \%drivers, "$dirname/$dirfile", $1 ); }
+	else
+	    {
+	    my $filename = "$dirname/$dirfile/$defdriver";
+	    if( -r $filename )
+		{
+		&add_driver( \%drivers, $filename, $dirfile )
+		}
+	    }
 	}
     return %drivers;
     }
