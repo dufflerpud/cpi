@@ -226,7 +226,9 @@ sub list_items
 	if( $fnc eq "nor" )
 	    {
 	    if( $nitems==1 )
-	        { push( @pieces, "not" ); }
+	        {
+		#push( @pieces, "not" );
+		}
 	    elsif( $nitems==2 )
 	        { push( @pieces, "neither" ); }
 	    else
