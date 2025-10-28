@@ -20,15 +20,17 @@ use AutoLoader;
 our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
-our @EXPORT_OK = qw( );
+our @EXPORT_OK = qw( this );
 our @EXPORT = qw( get_drivers add_driver device_debug );
 use lib ".";
 
+use Data::Dumper;
 use cpi_file qw( read_file files_in autopsy );
 use cpi_filename qw( dirname );
 use cpi_template qw( template );
 
 our %fq_drivers;
+our $this;
 #__END__
 1;
 
@@ -39,27 +41,31 @@ our %fq_drivers;
 sub add_driver
     {
     my( $driverp, $filename, $driver_name ) = @_;
+    my $save_driver = $this;
+    #print __FILE__," ",__LINE__,":  this=[", Dumper($driverp), "]\n";
 
     if( -r $filename )
 	{
 	#&autopsy("$filename not found.") if( ! -r $filename );
-	$driverp->{$driver_name} = $cpi_drivers::fq_drivers{$filename} =
+	$this = $driverp->{$driver_name} = $cpi_drivers::fq_drivers{$filename} =
 	    {
 	    name	=> $driver_name,
 	    fqn		=> $filename,
 	    dir		=> &dirname( $filename )
 	    };
-	#print "About to eval driver $driver_name from $fqn...\n";
-	my $contents =
-	    &cpi_template::template( $filename,
-		"DRIVER", "cpi_drivers::fq_drivers{'$filename'}",
-		"%%DRIVER_NAME%%", $driver_name );
-	$contents =~ s/(my \$cpi_drivers::.*?);/#$1/ms;
-	#print STDERR "eval $driver_name [$contents]\n";
-	eval( $contents );
-	print "eval returned [$@]\n" if( $@ );
-	#print "Done eval driver $driver_name.\n";
+	do $filename or &autopsy("Perl error with $filename:\n(\@=$@)\n(!=$!)");
+#	#print "About to eval driver $driver_name from $fqn...\n";
+#	my $contents =
+#	    &cpi_template::template( $filename,
+#		"DRIVER", "cpi_drivers::fq_drivers{'$filename'}",
+#		"%%DRIVER_NAME%%", $driver_name );
+#	$contents =~ s/(my \$cpi_drivers::.*?);/#$1/ms;
+#	#print STDERR "eval $driver_name [$contents]\n";
+#	eval( $contents );
+#	print "eval returned [$@]\n" if( $@ );
+#	#print "Done eval driver $driver_name.\n";
 	}
+    $this = $save_driver;
     }
 
 #########################################################################
@@ -70,6 +76,7 @@ sub get_drivers
     my( $dirname, $defdriver ) = @_;
     $defdriver ||= "driver.pl";
     my %drivers;
+    #print __FILE__," ",__LINE__,":  drivers=[", Dumper(\%drivers), "]\n";
     foreach my $dirfile ( &files_in( $dirname ) )
         {
 	if( $dirfile =~ /(.*).pl$/ )
@@ -83,6 +90,7 @@ sub get_drivers
 		}
 	    }
 	}
+    #print __FILE__," ",__LINE__,":  drivers=[", Dumper(\%drivers), "]\n";
     return %drivers;
     }
 
