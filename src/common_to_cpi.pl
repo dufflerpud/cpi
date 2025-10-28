@@ -190,6 +190,11 @@ sub one_file
 	$contents =~ s/PACKAGE/$module_name/g;
 	}
     $contents .= &read_file( $old_file );
+    foreach my $subname (
+	"read","write","pop","get","put","delkey","add","del","newkey" )
+	{
+	$contents =~ s/db$subname\(\s*\$\w+::DB,*/DB$subname(/g;
+	}
     my $modsrc = join("|",(map{$_."::"} keys %{$modulesp}),"COMMON::","");
     my %used;
     #foreach my $otype ( $ARGS{i} ? ('&') : @OTYPES )
