@@ -28,7 +28,8 @@ our @EXPORT = qw( db_cleanup db_gdbm db_gothere db_perlobj
  dbnew_perlobj dbnew_sql dbnewkey dbopen_sql dbpop dbput
  dbput_gdbm dbput_hash dbput_perlobj dbput_sql dbread
  dbread_gdbm dbread_perlobj dbread_sql dbtest dbtype dbupdate
- dbwrite find_db new_sql_table );
+ dbwrite find_db new_sql_table
+ DBread DBwrite DBpop DBget DBput DBdelkey DBadd DBdel DBnewkey );
 use lib ".";
 
 use cpi_compress_integer qw( compress_integer );
@@ -671,4 +672,19 @@ sub db_cleanup
     {
     grep( &dbclose($_), keys %cpi_vars::databases );
     }
+
+#########################################################################
+#	Avoid some typing.  Make prettier code.				#
+#	Most applications use only one database for anything other	#
+#	than logging ($DB).						#
+#########################################################################
+sub DBread	{ return &dbread	( $cpi_vars::DB	);	}
+sub DBwrite	{ return &dbwrite	( $cpi_vars::DB	);	}
+sub DBpop	{ return &dbpop		( $cpi_vars::DB	);	}
+sub DBget	{ return &dbget		( $cpi_vars::DB,@_);	}
+sub DBput	{ return &dbput		( $cpi_vars::DB,@_);	}
+sub DBdelkey	{ return &dbdelkey	( $cpi_vars::DB,@_);	}
+sub DBadd	{ return &dbadd		( $cpi_vars::DB,@_);	}
+sub DBdel	{ return &dbdel		( $cpi_vars::DB,@_);	}
+sub DBnewkey	{ return &dbnewkey	( $cpi_vars::DB,@_);	}
 1;
