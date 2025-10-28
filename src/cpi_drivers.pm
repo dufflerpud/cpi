@@ -83,7 +83,7 @@ sub get_drivers
 	    my $filename = "$dirname/$dirfile/$defdriver";
 	    if( -r $filename )
 		{
-		&device_debug( __FILE__, __LINE__, "filename=[$filename]\n" );
+		#&device_debug( __FILE__, __LINE__, "filename=[$filename]" );
 		&add_driver( \%drivers, $filename, $dirfile )
 		}
 	    }
