@@ -21,8 +21,8 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( this );
-our @EXPORT = qw( get_drivers add_driver device_debug );
-use lib ".";
+our @EXPORT = qw( get_drivers add_driver device_debug get_driver );
+use lib "/usr/local/lib/perl";
 
 use Data::Dumper;
 use cpi_file qw( read_file files_in autopsy );
@@ -30,7 +30,6 @@ use cpi_filename qw( dirname );
 use cpi_template qw( template );
 
 our %fq_drivers;
-our $this;
 #__END__
 1;
 
@@ -41,13 +40,12 @@ our $this;
 sub add_driver
     {
     my( $driverp, $filename, $driver_name ) = @_;
-    my $save_driver = $this;
     #print __FILE__," ",__LINE__,":  this=[", Dumper($driverp), "]\n";
 
     if( -r $filename )
 	{
 	#&autopsy("$filename not found.") if( ! -r $filename );
-	$this = $driverp->{$driver_name} = $cpi_drivers::fq_drivers{$filename} =
+	$driverp->{$driver_name} = $cpi_drivers::fq_drivers{$filename} =
 	    {
 	    name	=> $driver_name,
 	    fqn		=> $filename,
@@ -65,7 +63,6 @@ sub add_driver
 #	print "eval returned [$@]\n" if( $@ );
 #	#print "Done eval driver $driver_name.\n";
 	}
-    $this = $save_driver;
     }
 
 #########################################################################
@@ -86,6 +83,7 @@ sub get_drivers
 	    my $filename = "$dirname/$dirfile/$defdriver";
 	    if( -r $filename )
 		{
+		&device_debug( __FILE__, __LINE__, "filename=[$filename]\n" );
 		&add_driver( \%drivers, $filename, $dirfile )
 		}
 	    }
@@ -95,12 +93,22 @@ sub get_drivers
     }
 
 #########################################################################
+#	Return a pointer to the driver structure associated with the	#
+#	file name provided.						#
+#########################################################################
+sub get_driver
+    {
+    my( $filename ) = @_;
+    return $fq_drivers{ $filename };
+    }
+
+#########################################################################
 #	Print out debug information.					#
 #########################################################################
 sub device_debug
     {
     my( $filename, $line, $msg ) = @_;;
-    printf("%s %d:  %s\n",$filename,$line,$msg);
+    printf STDERR ("%s %d:  %s\n",$filename,$line,$msg);
     }
 
 1;
