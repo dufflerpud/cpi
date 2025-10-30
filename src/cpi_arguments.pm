@@ -130,6 +130,9 @@ sub parse_arguments
 	        { grep( push(@problems,"Unrecognized switch:  $arg"), @my_argv ); }
 	    last;
 	    }
+	elsif( $arg =~ /^-\.\w+$/ )
+	    # -.extension means either stdin or stdout with the desired type
+	    { push( @{ $res{non_switches} }, $arg ); }
 	elsif( $arg !~ /^-(.+)/ )
 	    {
 	    if( $argp->{non_switches} )
