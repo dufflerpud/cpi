@@ -2,14 +2,14 @@
 ########################################################################
 #@HDR@	$Id$
 #@HDR@		Copyright 2025 by
-#@HDR@		Christopher Caldwell/Brightsands
+#@HDR@		Christopher Caldwell
 #@HDR@		P.O. Box 401, Bailey Island, ME 04003
 #@HDR@		All Rights Reserved
 #@HDR@
 #@HDR@	This software comprises unpublished confidential information
-#@HDR@	of Brightsands and may not be used, copied or made available
-#@HDR@	to anyone, except in accordance with the license under which
-#@HDR@	it is furnished.
+#@HDR@	of the copyright holder and may not be used, copied or made
+#@HDR@	available to anyone, except in accordance with the license
+#@HDR@	under which it is furnished.
 ########################################################################
 
 use strict;
@@ -154,15 +154,14 @@ sub setup
     $cpi_vars::LOGIN_TIMEOUT = 86400;
     $cpi_vars::NOW = time();
     $cpi_vars::PAYMENT_SYSTEM = $args{payment_system};
-    $cpi_vars::DOMAIN="Brightsands.COM";
-    $cpi_vars::CSS_URL="/Brightsands.css";
+    $cpi_vars::DOMAIN||="Unknown";
+    $cpi_vars::CSS_URL="/default.css";
     $cpi_vars::PROG_CSS_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/$cpi_vars::PROG.css";
     $cpi_vars::ICON_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.ico";
     $cpi_vars::IOS_ICON_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.png";
     $cpi_vars::ANONYMOUS = 0;
     $cpi_vars::DAEMON_EMAIL="$cpi_vars::PROG\@$cpi_vars::DOMAIN";
-    #$cpi_vars::DAEMON_EMAIL="c.m.caldwell\@alumni.unh.edu";
-    $cpi_vars::FAX_SERVER = "Officejet_Pro_8500_A909a_fax";
+    $cpi_vars::FAX_SERVER ||= "Unknown";
 
     if( $ENV{SCRIPT_NAME} && $ENV{SCRIPT_NAME} ne "" )
 	{
@@ -172,15 +171,15 @@ sub setup
 	    . $cpi_vars::THIS;
 	$cpi_vars::SIDDIR="$cpi_vars::COMMONDIR/SIDS";
 	if( $cpi_vars::BASEDIR ne $cpi_vars::COMMONDIR )
-	    { $cpi_vars::SIDNAME = "cmc_sid"; }
+	    { $cpi_vars::SIDNAME = "cpi_sid"; }
 	else
 	    { $cpi_vars::SIDNAME = $cpi_vars::PROG."_SID"; }
 	    
 	$cpi_vars::BODY_TAGS		||= "bgcolor=#d0e0f0 link=#c02030 vlink=#10e030 ";
 	$cpi_vars::HIGHLIGHT_COLOR	||= "#ff6060";
-	$cpi_vars::LOWLIGHT_COLOR		||= "#808080";
+	$cpi_vars::LOWLIGHT_COLOR	||= "#808080";
 	$cpi_vars::TABLE_TAGS		||= "bgcolor=#c0e0f0";
-	$cpi_vars::TODAY			= &timestr( time() );
+	$cpi_vars::TODAY		= &timestr( time() );
 	&CGIreceive();
 	$cpi_vars::LANG			||= $cpi_vars::FORM{LANG};
 	&init_phrases();
