@@ -110,7 +110,12 @@ sub match_password
 		: &salted_password( $check_word ) );
 	    }
 	}
-    if( $check_word eq $check_against )	# This should go away, very insecure
+
+    # This is useful only because all hashes are at least 13 characters
+    # long.  If the user happens to have a long password and it is
+    # stored in clear text, it's not going to get updated, but it
+    # isn't going to pass the password check either.
+    if( $check_word eq $check_against && length($check_against)<13 )
 	{ return &salted_password($check_word); }
     return undef;
     }
