@@ -364,10 +364,10 @@ sub login
 		        {
 			# This happens when the password system has a preferred method
 			# of encryption, we'll update it.
-			print STDERR __LINE__, "Updating $cpi_vars::FORM{user} password from ",
-			    &dbget( $cpi_vars::ACCOUNTDB, "users",
-				$cpi_vars::FORM{user},"password"), " to ",
-				$new_password_encrypted, ".\n";
+#			print STDERR "Updating $cpi_vars::FORM{user} password from ",
+#			    &dbget( $cpi_vars::ACCOUNTDB, "users",
+#				$cpi_vars::FORM{user},"password"), " to ",
+#				$new_password_encrypted, ".\n";
 			&dbwrite( $cpi_vars::ACCOUNTDB );
 			&dbput( $cpi_vars::ACCOUNTDB, "users", 
 				$cpi_vars::FORM{user},"password",
