@@ -35,6 +35,7 @@ use cpi_file qw( cleanup autopsy files_in );
 use cpi_log qw( log );
 use cpi_send_file qw( send_via );
 use cpi_translate qw( gen_language_params xlate xprint );
+use cpi_hash qw( match_password salted_password );
 use cpi_vars;
 use Captcha::reCAPTCHA;
 #__END__
@@ -307,6 +308,7 @@ sub login
 	else
 	    {
 	    my $let_him_in = $cpi_vars::ANONYMOUS;
+	    my $new_password_encrypted;
 	    if( ! $let_him_in )
 		{
 		my $oldp = &dbget($cpi_vars::ACCOUNTDB,"users",
@@ -329,7 +331,7 @@ sub login
 			    "users", $cpi_vars::FORM{user} );
 			&dbput( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user},
-			    "password", $cpi_vars::FORM{password} );
+			    "password", &salted_password( $cpi_vars::FORM{password} ) );
 			&dbput( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user}, "inuse", 1 );
 			&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{user},
@@ -347,7 +349,7 @@ sub login
 			$let_him_in = 1;
 			}
 		    }
-		elsif( $oldp ne $cpi_vars::FORM{password} )
+		elsif( ! ($new_password_encrypted=&match_password($cpi_vars::FORM{password},$oldp)) )
 		    { $msg = "XL(There are problems with these credentials.  Please identify yourself definitively again.)"; }
 		elsif( ! $cpi_vars::allow_account_creation &&
 		    ! &in_group($cpi_vars::FORM{user},$check_group) )
@@ -356,7 +358,23 @@ sub login
 			&group_to_name($check_group). "]].)";
 		    }
 		else
-		    { $let_him_in = 1; }
+		    {
+		    $let_him_in = 1;
+		    if( $new_password_encrypted && ( $new_password_encrypted ne $oldp ) )
+		        {
+			# This happens when the password system has a preferred method
+			# of encryption, we'll update it.
+			print STDERR __LINE__, "Updating $cpi_vars::FORM{user} password from ",
+			    &dbget( $cpi_vars::ACCOUNTDB, "users",
+				$cpi_vars::FORM{user},"password"), " to ",
+				$new_password_encrypted, ".\n";
+			&dbwrite( $cpi_vars::ACCOUNTDB );
+			&dbput( $cpi_vars::ACCOUNTDB, "users", 
+				$cpi_vars::FORM{user},"password",
+				$new_password_encrypted );
+			&dbpop( $cpi_vars::ACCOUNTDB );
+			}
+		    }
 		}
 	    if( $let_him_in )
 		{
@@ -773,7 +791,7 @@ sub admin_page
 		if( $cpi_vars::FORM{password0} ne "" )
 		    {
 		    &dbput( $cpi_vars::ACCOUNTDB, "users", $cpi_vars::USER,
-			"password", $cpi_vars::FORM{password0} );
+			"password", &salted_password( $cpi_vars::FORM{password0} ) );
 		    push( @changed_list, "Password updated." );
 		    }
 		}

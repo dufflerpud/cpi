@@ -144,7 +144,7 @@ sub setup
     $cpi_vars::WRITTEN_IN="en";
     $cpi_vars::LANG_TRAN="tran";
     $cpi_vars::DB=&find_db("$cpi_vars::BASEDIR/db/app");
-    $cpi_vars::DBSEP="\377";
+    #$cpi_vars::DBSEP="\377";
     $cpi_vars::SQLSEP="__";
     %cpi_vars::DBSTATUS = ();
     %cpi_vars::DBWRITTEN = ();

@@ -5,7 +5,7 @@ use strict;
 use lib "/usr/local/lib/perl";
 use cpi_file qw( autopsy fatal );
 
-our %ONLY_ONE_DEFAULT =
+our %ONLY_ONE_DEFAULTS =
     (
     "v"	=> 0,
     "i"	=> "/dev/stdin",

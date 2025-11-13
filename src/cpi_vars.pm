@@ -80,7 +80,7 @@ our $CGIheader_has_been_printed = 0;
 # cpi_db:
 
 our @DB_EXTS		= (".db",".sql",".po");
-our $DBSEP;
+our $DBSEP		= "\377";
 our $SQLSEP;
 our %DBSTATUS;
 our %DBWRITTEN;

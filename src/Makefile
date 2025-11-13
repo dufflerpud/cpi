@@ -172,7 +172,8 @@ auto/cpi_english/autosplit.ix:
 	sed -e 's/^#*__END__/__END__/' < cpi_english.compiling > cpi_english.pm
 	perl -MAutoSplit -e 'autosplit(cpi_english,auto,0,1,1)' || excode=0
 	mv cpi_english.compiling cpi_english.pm
-auto/cpi_hash/autosplit.ix:
+auto/cpi_hash/autosplit.ix:\
+	auto/cpi_file/autosplit.ix
 	perl cpi_hash.pm
 	[ -d auto/cpi_hash ] || mkdir -p auto/cpi_hash
 	mv cpi_hash.pm cpi_hash.compiling
