@@ -21,47 +21,81 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( lock_check lock_file unlock_file );
+our @EXPORT = qw( lock_file unlock_file );
 use lib ".";
 
-use cpi_file qw( write_file );
+use cpi_file qw( write_file read_file );
 use cpi_trace qw( get_trace );
+use cpi_vars;
+
 #__END__
 1;
 
 #########################################################################
 #       Check if file is locked.  If not locked, lock it.               #
+#       Returns true if lock successful, false if someone else has	#
+#       the lock.							#
 #########################################################################
-sub lock_check
-    {
-    return symlink( "/$$", "$_[0].lock" );
-    }
-
-#########################################################################
-#       Keep checking the lock until we get it.                         #
-#########################################################################
+my %lock_trace_file;
 sub lock_file
     {
-    my( $lockname ) = @_;
-    my $trace_name	= "$lockname.trace";
-    my $trace_new	= "$trace_name.$$";
-    my $trace_current	= "$trace_name.current";
-    my $trace_last	= "$trace_name.last";
+    my( $resource_name ) = @_;
+    my $pid = $$;
+    my $lockname = "$resource_name.lock";
+    my $contents;
+    my $trace_file;
 
-    &write_file( $trace_new, join("\n",&get_trace())."\n" );
-    until( &lock_check( $lockname ) )
-        { sleep(1); }
-    rename( $trace_current, $trace_last );	# First time ever will fail
-    rename( $trace_new, $trace_current );	# Should always work
+    if( $cpi_vars::LOCK_DEBUG )
+	{
+	$trace_file=$lock_trace_file{$resource_name}="$resource_name.trace.$pid";
+	$contents = join("\n",&get_trace(),"");
+	&write_file( $trace_file, $contents );
+	}
+
+    while( ! symlink( $pid, $lockname ) )	# Works because symlink() is atomic
+        {
+	if( my $old_pid=readlink($lockname) )
+	    {
+	    if( $contents )
+		{
+		&write_file( $trace_file,
+		    join("\n",
+			$contents,
+			"HOLDING ON ${old_pid}:",
+			&read_file( "$resource_name.trace.$old_pid", "?" ) ) );
+		}
+            if( $cpi_vars::LOCK_BREAK_STALE && ! -e "/proc/$old_pid" )
+	        {
+		unlink( $lockname );
+		print STDERR "Breaking ${old_pid}'s lock for $resource_name.\n";
+		}
+	    else
+		{ sleep(1); }
+	    }
+	}
+
+    if( $contents )
+        {
+	unlink( "$resource_name.trace.current" );
+	symlink( $trace_file, "$resource_name.trace.current" );
+	}
+    return 1;
     }
 
 #########################################################################
-#       By removing the link previously put there by a lock_check,    #
-#       we allow one of the processes waiting on the lock file in.      #
+#       By removing the link previously put there by a lock_file,	#
+#       we allow one of the processes waiting on the lock file in.	#
 #########################################################################
 sub unlock_file
     {
-    unlink( "$_[0].lock" );
+    my( $resource_name ) = @_;
+    if( my $trace_file = $lock_trace_file{$resource_name} )
+        {
+	unlink( "$resource_name.trace.current" );
+	unlink( $trace_file );
+	undef $lock_trace_file{$resource_name};
+	}
+    unlink( "$resource_name.lock" );
     }
 
 1;
