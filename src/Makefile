@@ -35,7 +35,7 @@ install:
 	mkdir -p $(CPI_USER_DIR)/db $(CPI_USER_DIR)/SIDS
 	chmod 755 $(CPI_USER_DIR)
 	chmod 777 $(CPI_USER_DIR)/db $(CPI_USER_DIR)/SIDS
-	[ -f $(CPI_USER_DIR)/db/accounts.db ] || ../tests/cpi_test.pl \
+	[ -f $(CPI_USER_DIR)/db/accounts.db ] || /usr/local/projects/cpi/tests/cpi_test.pl \
 	    -database $(CPI_USER_DIR)/db/accounts.db \
 	    -init \
 	    -administrator administrator \
