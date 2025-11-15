@@ -23,7 +23,7 @@ our @ISA = qw /Exporter/;
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( db_cleanup db_gdbm db_gothere db_perlobj
  db_readable db_sql db_status db_unique db_writable dbadd
- dbarr dbclose dbdel dbdelkey dbforget dbget dbget_gdbm
+ dbarr dbclose dbdel dbdelkey dbforget dbget dbisin dbget_gdbm
  dbget_hash dbget_perlobj dbget_sql dbnew dbnew_gdbm
  dbnew_perlobj dbnew_sql dbnewkey dbopen_sql dbpop dbput
  dbput_gdbm dbput_hash dbput_perlobj dbput_sql dbread
@@ -37,6 +37,7 @@ use cpi_config qw( read_config );
 use cpi_file qw( cleanup autopsy register_cleanup write_file );
 use cpi_lock qw( lock_file unlock_file );
 use cpi_trace qw( stack_trace );
+use cpi_inlist qw( inlist );
 use cpi_vars;
 use Data::Dumper;
 use GDBM_File;
@@ -199,6 +200,23 @@ sub dbget
 	{ return (); }
     else
 	{ return split($cpi_vars::DBSEP,$res); }
+    }
+
+#########################################################################
+#	Return true if specified item (last argument) is in the list	#
+#	specified.							#
+#########################################################################
+sub dbisin
+    {
+    my( $dbname, @args ) = @_;
+    &autopsy("XL(Cannot read [[" . join(",",@args) . "]]:"
+        . "  database [[$dbname]] not open)")
+        if( ($cpi_vars::DBSTATUS{$dbname}||"") eq "" );
+    my $check_for = pop( @args );
+
+    my $res = &{ $DBTYPES{ &dbtype($dbname) }{"get"} }($dbname,@args);
+    return undef if( ! defined($res) );
+    return &inlist( $check_for, split($cpi_vars::DBSEP,$res) );
     }
 
 #########################################################################
