@@ -2,11 +2,25 @@
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
 MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 INSTALLDIR=/usr/local/lib/perl
+REQUIRED_MODULES=$(shell \
+    grep '^use ' cpi_*.pm | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
+    grep -v '^cpi_' | \
+    grep -v '^lib' | \
+    grep -v '^strict' | \
+    grep -v '^Exporter' | \
+    grep -v '^AutoLoader' | \
+    sort -u)
 
 No_argument_supplied:
 	id
 	@echo "You must specify either 'install', 'remake' or 'all_modules'"
 	@false
+
+show_required_modules:
+	cpan -O $(REQUIRED_MODULES)
+
+install_required_modules:
+	cpan install $(REQUIRED_MODULES)
 
 install:
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
@@ -123,7 +137,6 @@ auto/cpi_db/autosplit.ix:\
 	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_config/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
-	auto/cpi_inlist/autosplit.ix\
 	auto/cpi_lock/autosplit.ix\
 	auto/cpi_trace/autosplit.ix\
 	auto/cpi_vars/autosplit.ix
