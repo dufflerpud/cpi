@@ -2,6 +2,7 @@
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
 MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 INSTALLDIR=/usr/local/lib/perl
+CPI_USER_DIR=/usr/local/projects/common
 REQUIRED_MODULES=$(shell \
     grep '^use ' cpi_*.pm | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
     grep -v '^cpi_' | \
@@ -31,6 +32,15 @@ install:
 	done
 	cp $(CURRENT_MAKEFILE) $(INSTALLDIR)/Makefile.cpi
 	cd $(INSTALLDIR); make -f Makefile.cpi all_modules
+	mkdir -p $(CPI_USER_DIR)/db $(CPI_USER_DIR)/SIDS
+	chmod 755 $(CPI_USER_DIR)
+	chmod 777 $(CPI_USER_DIR)/db $(CPI_USER_DIR)/SIDS
+	[ -f $(CPI_USER_DIR)/db/accounts.db ] || tests/cpi_test.pl \
+	    -database $(CPI_USER_DIR)/db/accounts.db \
+	    -init \
+	    -administrator administrator \
+	    -password "CHANGEME!"
+	chmod 666 $(CPI_USER_DIR)/db/accounts.db
 
 remake:
 	rm -rf auto/cpi_*
@@ -138,6 +148,7 @@ auto/cpi_db/autosplit.ix:\
 	auto/cpi_config/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_lock/autosplit.ix\
+	auto/cpi_inlist/autosplit.ix\
 	auto/cpi_trace/autosplit.ix\
 	auto/cpi_vars/autosplit.ix
 	perl cpi_db.pm

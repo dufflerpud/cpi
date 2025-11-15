@@ -122,6 +122,11 @@ our $SENDMAIL =
 our $FAX_SERVER;
 
 #########################################################################
+# cpi_lock:
+our $LOCK_DEBUG = 1;
+our $LOCK_BREAK_STALE = 1;
+
+#########################################################################
 # cpi_setup:
 our $STDERR_LOG_DIR = "/var/log/stderr";
 our $PROJECTSDIR = "/usr/local/projects";

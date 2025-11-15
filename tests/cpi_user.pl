@@ -26,7 +26,7 @@ my %STANDARD_GROUPS =
 	"can_html"		=> "Can generate HTML",
 	"can_json"		=> "Can generate JSON",
 	"can_pdf"		=> "Can generate PDF files",
-	"can_run_transdaemon"	=> "Can run todo",
+	"can_run_transdaemon"	=> "Can run translation daemon",
 	"can_sql"		=> "Can generate SQL",
 	"can_sql_server"	=> "Can send to SQL_server",
 	"can_text"		=> "Can generate text",
@@ -104,10 +104,14 @@ sub do_list
 #########################################################################
 #	Create standard entries for any database (useful for init).	#
 #########################################################################
-sub init_account_database
+sub setup_account_database
     {
-    my( $dbname ) = @_;
-    &dbnew( $dbname ) if( ! -e $dbname );
+    my( $dbname, $init_flag ) = @_;
+    if( $init_flag )
+	{
+	unlink( $dbname );
+        &dbnew( $dbname );
+	}
     &dbwrite( $dbname );
     foreach my $group ( keys %STANDARD_GROUPS )
 	{
@@ -166,17 +170,15 @@ sub add_user
     {
     my( $dbname, $thing ) = @_;
     my $class = "users";
+
     foreach my $fld (
 	grep( $ARGS{$_},
-	    "email", "fax", "phone", "address", "cardnum", "cardname", "cardexp" ) )
+	    "password", "email", "fax", "phone", "address", "cardnum", "cardname", "cardexp" ) )
 	{ &dbput( $dbname, $class, $thing, $fld, $ARGS{$fld} ); }
-    &dbput( $dbname, $class, $thing, "password",
-	&salted_password( $ARGS{password} ) )
-	if( $ARGS{password} );
     my @groups =
     	( $ARGS{administrator}
-	? sort keys %STANDARD_GROUPS
-	: "user" );
+	? @ADMINISTRATOR_GROUPS
+	: @USER_GROUPS );
     foreach my $group ( @groups )
         { &dbadd( $dbname, $class, $thing, "groups", $group ); }
     if( $ARGS{groups} )
@@ -226,11 +228,29 @@ sub add_thing
     }
 
 #########################################################################
+#	Prompt for a password and return in clear text.  Handle echo.	#
+#########################################################################
+sub prompt_password
+    {
+    my( $prompt_text ) = @_;
+    system("stty -echo");
+    my $password;
+    do  {
+	print $prompt_text;
+	$password = <STDIN>;
+	print "\n";
+	chomp($password) if( defined( $password ) );
+	} while( defined($password) && $password eq "" );
+    system("stty echo");
+    return $password;
+    }
+
+#########################################################################
 #	Main								#
 #########################################################################
 %ARGS = &parse_arguments(
     {
-    flags		=>	[ "setup", "delete", "yes" ],
+    flags		=>	[ "init", "setup", "delete", "yes", "ask_password" ],
     switches=>
 	{
 	"list"		=>	[ "", "users", "groups" ],
@@ -252,8 +272,18 @@ sub add_thing
 	}
     } );
 
-if(    $ARGS{setup} )		{ &init_account_database( $ARGS{database} ); }
-elsif( $ARGS{list} )		{ &do_list( $ARGS{database}, $ARGS{list} ); }
+if( $ARGS{ask_password} )
+    {
+    $ARGS{password} = &prompt_password("Password:  ");
+    &fatal("Premature EOF") if( ! defined($ARGS{password}) );
+    }
+$ARGS{password} = &salted_password( $ARGS{password} )
+    if( defined($ARGS{password}) && $ARGS{password} ne "" );
+
+if(    $ARGS{init} )		{ &setup_account_database( $ARGS{database}, 1 ); }
+elsif( $ARGS{setup} )		{ &setup_account_database( $ARGS{database}, 0 ); }
+
+if( $ARGS{list} )		{ &do_list( $ARGS{database}, $ARGS{list} ); }
 elsif( $ARGS{delete} )
     {
     if( $ARGS{user} )
@@ -268,8 +298,8 @@ elsif( $ARGS{delete} )
 elsif( $ARGS{administrator} )	{ &add_thing( $ARGS{database}, "users", $ARGS{administrator} ); }
 elsif( $ARGS{user} )		{ &add_thing( $ARGS{database}, "users", $ARGS{user} ); }
 elsif( $ARGS{groups} )		{ &add_thing( $ARGS{database}, "groups", $ARGS{groups} ); }
-else
+elsif( ! $ARGS{init} && ! $ARGS{setup} )
     {
-    &fatal("Don't know how I got here.");
+    &usage("No command (-init, -setup, -list, -user, -group) specified.");
     }
 &cleanup(0);
