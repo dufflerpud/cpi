@@ -123,6 +123,7 @@ auto/cpi_db/autosplit.ix:\
 	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_config/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
+	auto/cpi_inlist/autosplit.ix\
 	auto/cpi_lock/autosplit.ix\
 	auto/cpi_trace/autosplit.ix\
 	auto/cpi_vars/autosplit.ix
