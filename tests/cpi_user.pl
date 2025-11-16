@@ -120,6 +120,7 @@ sub setup_account_database
 	&dbput( $dbname, "groups", $group, "fullname", $STANDARD_GROUPS{$group} );
 	}
     &dbpop( $dbname );
+    system("chmod 666 $dbname");
     }
 
 #########################################################################
