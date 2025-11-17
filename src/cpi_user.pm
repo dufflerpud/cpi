@@ -30,7 +30,7 @@ use lib ".";
 
 use cpi_cgi qw( CGIheader );
 use cpi_compress_integer qw( compress_integer );
-use cpi_db qw( dbadd dbarr dbdel dbget dbpop dbput dbwrite );
+use cpi_db qw( dbadd dbarr dbdel dbget dbpop dbput dbwrite dbisin );
 use cpi_file qw( cleanup autopsy files_in );
 use cpi_log qw( log );
 use cpi_send_file qw( send_via );
@@ -44,7 +44,10 @@ use Captcha::reCAPTCHA;
 #	Return if user has a particular attribute			#
 #########################################################################
 sub user_can
-    { return &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,@_); }
+    {
+    return &dbisin($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,
+	"groups",@_);
+    }
 
 sub can_cuser	{ return &user_can("create_user"); }
 sub can_suser	{ return &user_can("create_user"); }
