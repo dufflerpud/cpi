@@ -37,7 +37,6 @@ my %STANDARD_GROUPS =
 	"user"			=> "User"
     );
 my @ADMINISTRATOR_GROUPS = sort keys %STANDARD_GROUPS;
-my @USER_GROUPS = "user";
 
 #########################################################################
 #	Print a usage message and die.					#
@@ -48,8 +47,20 @@ sub usage
 	"",
 	"Usage:  $cpi_vars::PROG { <argument> }",
 	"where <argument> is one or more of:",
-	"-list users",
-	"-list groups" );
+	"-list <what>      'users' or 'groups'",
+	"",
+	"-administrator <username>",
+	"    or",
+	"-user <username>",
+	"",
+	"-group <groupname>",
+	"-full <full name>",
+	"",
+	"-password <password to encrypt>",
+	"    or",
+	"-askpassword",
+	"",
+	"-merge or -overwrite or -init" );
     }
 
 #########################################################################
@@ -106,8 +117,8 @@ sub do_list
 #########################################################################
 sub setup_account_database
     {
-    my( $dbname, $init_flag ) = @_;
-    if( $init_flag )
+    my( $dbname ) = @_;
+    if( $ARGS{mode} eq "init" )
 	{
 	unlink( $dbname );
         &dbnew( $dbname );
@@ -117,7 +128,7 @@ sub setup_account_database
 	{
 	&dbadd( $dbname, "groups", $group );
 	&dbput( $dbname, "groups", $group, "inuse", 1 );
-	&dbput( $dbname, "groups", $group, "fullname", $STANDARD_GROUPS{$group} );
+	&mergeput( $dbname, "groups", $group, "fullname", $STANDARD_GROUPS{$group} );
 	}
     &dbpop( $dbname );
     system("chmod 666 $dbname");
@@ -165,6 +176,14 @@ sub delete_thing
     }
 
 #########################################################################
+#	Only overwrite values that aren't set if merge set.		#
+#########################################################################
+sub mergeput
+    {
+    &dbput( @_ ) if( $ARGS{mode} ne "merge" || ! &dbget( @_[0..($#_-1)] ) );
+    }
+
+#########################################################################
 #	Specific user based attributes.					#
 #########################################################################
 sub add_user
@@ -175,11 +194,11 @@ sub add_user
     foreach my $fld (
 	grep( $ARGS{$_},
 	    "password", "email", "fax", "phone", "address", "cardnum", "cardname", "cardexp" ) )
-	{ &dbput( $dbname, $class, $thing, $fld, $ARGS{$fld} ); }
+	{ &mergeput( $dbname, $class, $thing, $fld, $ARGS{$fld} ); }
     my @groups =
     	( $ARGS{administrator}
-	? @ADMINISTRATOR_GROUPS
-	: @USER_GROUPS );
+	? grep( &dbget($dbname,"groups",$_,"inuse"), &dbget($dbname,"groups") )
+	: "user" );
     foreach my $group ( @groups )
         { &dbadd( $dbname, $class, $thing, "groups", $group ); }
     if( $ARGS{groups} )
@@ -221,9 +240,9 @@ sub add_thing
     &dbadd( $dbname, $class, $thing );
     &dbput( $dbname, $class, $thing, "inuse", 1 );
     if( $ARGS{full_name} )
-        { &dbput( $dbname, $class, $thing, "fullname", $ARGS{full_name} ); }
+        { &mergeput( $dbname, $class, $thing, "fullname", $ARGS{full_name} ); }
     elsif( ! &dbget( $dbname, $class, $thing, "fullname" ) )
-        { &dbput( $dbname, $class, $thing, "fullname", $suggested_name ); }
+        { &mergeput( $dbname, $class, $thing, "fullname", $suggested_name ); }
     &add_user( $dbname, $thing ) if( $class eq "users" );
     &dbpop( $dbname );
     }
@@ -251,10 +270,14 @@ sub prompt_password
 #########################################################################
 %ARGS = &parse_arguments(
     {
-    flags		=>	[ "init", "setup", "delete", "yes", "ask_password" ],
+    flags		=>	[ "delete", "yes", "ask_password" ],
     switches=>
 	{
 	"list"		=>	[ "", "users", "groups" ],
+	"mode"		=>	[ "overwrite", "init", "merge" ],
+	"init"		=>	{ alias=>[ "-mode", "init" ] },
+	"merge"		=>	{ alias=>[ "-mode", "merge" ] },
+	"overwrite"	=>	{ alias=>[ "-mode", "overwrite" ] },
 	"administrator"	=>	"",
 	"user"		=>	"",
 	"password"	=>	"",
@@ -273,34 +296,44 @@ sub prompt_password
 	}
     } );
 
+$ARGS{user} ||= $ARGS{administrator};
+
 if( $ARGS{ask_password} )
     {
-    $ARGS{password} = &prompt_password("Password:  ");
+    my $ask = 1;
+    if( $ARGS{mode} eq "merge" )	# Don't ask if not going to use info
+	{
+	&dbread( $ARGS{database} );
+	$ask = ! &dbget( $ARGS{database}, "users", $ARGS{user}, "password" );
+	&dbpop( $ARGS{database} );
+	}
+    if( $ask )
+        { $ARGS{password} = &prompt_password("Password:  "); }
+    else
+        {
+	print "Not asking for password as it is already set.";
+	$ARGS{password} = "Who cares?";
+	}
     &fatal("Premature EOF") if( ! defined($ARGS{password}) );
     }
 $ARGS{password} = &salted_password( $ARGS{password} )
     if( defined($ARGS{password}) && $ARGS{password} ne "" );
 
-if(    $ARGS{init} )		{ &setup_account_database( $ARGS{database}, 1 ); }
-elsif( $ARGS{setup} )		{ &setup_account_database( $ARGS{database}, 0 ); }
+if( $ARGS{mode} eq "init" || $ARGS{mode} eq "setup" )
+    { &setup_account_database( $ARGS{database} ); }
 
-if( $ARGS{list} )		{ &do_list( $ARGS{database}, $ARGS{list} ); }
-elsif( $ARGS{delete} )
+if( $ARGS{delete} )
     {
-    if( $ARGS{user} )
-	{ &delete_thing( $ARGS{database}, "users", $ARGS{user} ); }
-    elsif( $ARGS{administrator} )
-	{ &delete_thing( $ARGS{database}, "users", $ARGS{administrator} ); }
-    elsif( $ARGS{groups} )
-	{ &delete_thing( $ARGS{database}, "groups", $ARGS{groups} ); }
+    if( $ARGS{user} )		{ &delete_thing( $ARGS{database}, "users", $ARGS{user} ); }
+    elsif( $ARGS{groups} )	{ &delete_thing( $ARGS{database}, "groups", $ARGS{groups} ); }
     else
 	{ &fatal("You must specify either a user or group to delete."); }
     }
-elsif( $ARGS{administrator} )	{ &add_thing( $ARGS{database}, "users", $ARGS{administrator} ); }
+elsif( $ARGS{list} )		{ &do_list( $ARGS{database}, $ARGS{list} ); }
 elsif( $ARGS{user} )		{ &add_thing( $ARGS{database}, "users", $ARGS{user} ); }
 elsif( $ARGS{groups} )		{ &add_thing( $ARGS{database}, "groups", $ARGS{groups} ); }
-elsif( ! $ARGS{init} && ! $ARGS{setup} )
+else
     {
-    &usage("No command (-init, -setup, -list, -user, -group) specified.");
+    &usage("No command (-user, -group, -list, or -delete) specified.");
     }
 &cleanup(0);
