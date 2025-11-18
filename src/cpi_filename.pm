@@ -36,7 +36,7 @@ sub text_to_filename
     {
     my( $text ) = @_;				# Chris's  file!
     $text =~ s/'s/s/g;				# Chriss  file!
-    $text =~ s/[^A-Za-z0-9]+/_/g;		# Chriss__file_
+    $text =~ s/[^A-Za-z0-9\.]+/_/g;		# Chriss__file_
     $text =~ s/__*/_/g;				# Chriss_file_
     $text = $1 if( $text =~ /^_*(.*?)_*$/ );	# Chriss_file
     return $text;
