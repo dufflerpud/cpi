@@ -24,32 +24,42 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( mime_string read_mime_types );
 use lib ".";
 
+use cpi_file qw( read_lines );
 use cpi_vars;
 #__END__
 1;
 
 #########################################################################
 #	Read in /etc/mime.types to map extensions to mime types.	#
+#	Creates global variables:					#
+#	    EXT_TO_MIME_TYPES	- Indexed by extension to give mime	#
+#	    MIME_TYPE_TO_EXTS	- Indexed by mime and ext		#
+#	Returns a list of known mime types.				#
 #########################################################################
 sub read_mime_types
     {
     %cpi_vars::EXT_TO_MIME_TYPE = ();
-    foreach my $file_to_try (
+    %cpi_vars::MIME_TYPE_TO_EXTS = ();
+    %cpi_vars::MIME_TYPE_TO_BASE_TYPE = ();
+    foreach my $file_to_try ( grep( -r $_,
 	"/etc/mime.types",
 	"/etc/apache2/mime.types",
-	"/etc/httpd/conf/mime.types" )
+	"/etc/httpd/conf/mime.types" ) )
 	{
-	if( open(INF,$file_to_try) )
+	foreach $_ ( &read_lines( $file_to_try ) )
 	    {
-	    while( $_ = <INF> )
-		{
-		s/[#\r\n].*//;
-		my( $mimestr, @exts ) = split(/\s+/);
-		grep( $cpi_vars::EXT_TO_MIME_TYPE{$_}=$mimestr, @exts );
-		}
-	    close(INF);
+	    my( $mimestr, @exts ) = split(/\s+/,lc($_));
+	    grep( $cpi_vars::EXT_TO_MIME_TYPE{$_}=$mimestr, @exts );
+	    grep( $cpi_vars::MIME_TYPE_TO_EXTS{$mimestr}{$_}=1, @exts );
+	    $cpi_vars::MIME_TYPE_TO_BASE_TYPE{$mimestr} =
+		( $mimestr =~ /movie/		? "movie"
+		: $mimestr =~ /gif/		? "gif"
+		: $mimestr !~ m/(.*)\/(.*)/	? $mimestr
+		: $1 eq "application"		? $2
+		: $1 );
 	    }
 	}
+    return sort keys %cpi_vars::MIME_TYPE_TO_EXTS;
     }
 
 #########################################################################
@@ -60,7 +70,7 @@ sub mime_string
     {
     my( $fn ) = @_;
     my $ret;
-    &read_mime_types() if( ! %cpi_vars::EXT_TO_MIME_TYPES );
+    &read_mime_types() if( ! %cpi_vars::EXT_TO_MIME_TYPE );
     if( $fn =~ /\.(.*?)$/ )
         {
 	$ret = $cpi_vars::EXT_TO_MIME_TYPE{$1};
