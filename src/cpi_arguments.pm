@@ -198,9 +198,9 @@ sub parse_arguments
 	}
 
     my $num_non_switches = $res{non_switches} ? scalar(@{$res{non_switches}}) : 0;
-    &push( @problems, "Not enough non-switch arguments specified." )
+    push( @problems, "Not enough non-switch arguments specified." )
         if( $num_non_switches < ($argp->{min_non_switches}||0) );
-    &push( @problems, "Too many non-switch arguments specified." )
+    push( @problems, "Too many non-switch arguments specified." )
         if( defined($argp->{max_non_switches})
 	 && $num_non_switches > $argp->{max_non_switches} );
 
