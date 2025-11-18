@@ -260,6 +260,7 @@ auto/cpi_make_from/autosplit.ix:\
 	perl -MAutoSplit -e 'autosplit(cpi_make_from,auto,0,1,1)' || excode=0
 	mv cpi_make_from.compiling cpi_make_from.pm
 auto/cpi_mime/autosplit.ix:\
+	auto/cpi_file/autosplit.ix \
 	auto/cpi_vars/autosplit.ix
 	perl cpi_mime.pm
 	[ -d auto/cpi_mime ] || mkdir -p auto/cpi_mime
