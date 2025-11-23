@@ -21,7 +21,7 @@ show_required_modules:
 	cpan -O $(REQUIRED_MODULES)
 
 install_required_modules:
-	cpan install $(REQUIRED_MODULES)
+	-cpan install $(REQUIRED_MODULES)
 
 install:
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
@@ -33,15 +33,6 @@ install:
 	done
 	cp $(CURRENT_MAKEFILE) $(INSTALLDIR)/Makefile.cpi
 	cd $(INSTALLDIR); make -f Makefile.cpi all_modules
-	mkdir -p $(CPI_USER_DIR)/db $(CPI_USER_DIR)/SIDS
-	chmod 755 $(CPI_USER_DIR)
-	chmod 777 $(CPI_USER_DIR)/db $(CPI_USER_DIR)/SIDS
-	[ -f $(CPI_USER_DIR)/db/accounts.db ] || /usr/local/projects/cpi/tests/cpi_user.pl \
-	    -database $(CPI_USER_DIR)/db/accounts.db \
-	    -init \
-	    -administrator administrator \
-	    -password "CHANGEME!"
-	chmod 666 $(CPI_USER_DIR)/db/accounts.db
 
 remake:
 	rm -rf auto/cpi_*
