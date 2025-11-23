@@ -1,3 +1,6 @@
+install:
+	cd src; sudo make install_required_modules install
+
 fresh:
 	git pull
-	cd src; make remake && sudo make install
+	@make install
