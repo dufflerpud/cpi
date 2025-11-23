@@ -26,6 +26,7 @@ install_required_modules:
 install:
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
 	@id | grep uid=0 || (echo "Must install as root." && false)
+	install -d -m 0755 -o root -g root $(INSTALLDIR)
 	rm -rf $(INSTALLDIR)/cpi_* $(INSTALLDIR)/auto/cpi_*
 	for m in *.pm; do \
 	    sed -e 's:use lib ".":use lib "$(INSTALLDIR)":' < $$m > $(INSTALLDIR)/$$m; \
