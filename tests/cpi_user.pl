@@ -204,6 +204,7 @@ sub add_user
     if( $ARGS{groups} )
 	{
 	my $fnc = "+";
+	$ARGS{groups} = lc( $ARGS{groups} );
 	foreach my $groupfnc ( split(/([+\-])/,$ARGS{groups}) )
 	    {
 	    if( $groupfnc eq "" )
@@ -297,6 +298,7 @@ sub prompt_password
     } );
 
 $ARGS{user} ||= $ARGS{administrator};
+$ARGS{user} = lc( $ARGS{user} );
 
 if( $ARGS{ask_password} )
     {
