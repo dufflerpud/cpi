@@ -189,25 +189,22 @@ sub setup
 	&login();
 	&dbread( $cpi_vars::DB ) if( $cpi_vars::DB && -f $cpi_vars::DB );
 	}
-    elsif( defined($ARGV[0]) )
+    # This should be handled by parse_arguments but history is long and evil.
+    elsif( scalar(@ARGV)==2 && ($ARGV[0] eq "initdb" || $ARGV[0] eq "-initdb" ) )
 	{
-	if( $ARGV[0] eq "copydb" )
-	    { &copydb( $ARGV[1], $ARGV[2] ); }
-	elsif( $ARGV[0] eq "table" )
-	    { &new_sql_table( $ARGV[1], $ARGV[2] ); }
-#	elsif( $ARGV[0] eq "dumpapp" || $ARGV[0] eq "dump" )
-#	    { &dumpdb($cpi_vars::DB,$ARGV[1]); }
-#	elsif( $ARGV[0] eq "dumpaccounts" )
-#	    { &dumpdb($cpi_vars::ACCOUNTDB,$ARGV[1]); }
-#	elsif( $ARGV[0] eq "dumptranslations" )
-#	    { &dumpdb($cpi_vars::TRANSLATIONS_DB,$ARGV[1]); }
-#	elsif( $ARGV[0] eq "undumpapp" || $ARGV[0] eq "undump" )
-#	    { &undumpdb($cpi_vars::DB,$ARGV[1]); }
-#	elsif( $ARGV[0] eq "undumpaccounts" )
-#	    { &undumpdb($cpi_vars::ACCOUNTDB,$ARGV[1]); }
-#	elsif( $ARGV[0] eq "undumptranslations" )
-#	    { &undumpdb($cpi_vars::TRANSLATIONS_DB,$ARGV[1]); }
+	&dbnew( $ARGV[1] );
+	&cleanup( 0 );
 	}
+    elsif( scalar(@ARGV)==3 && ($ARGV[0] eq "copydb" || $ARGV[0] eq "-copydb" ) )
+	{
+	&copydb( $ARGV[1], $ARGV[2] );
+	&cleanup( 0 );
+	}
+#    elsif( scalar(@ARGV)==3 && ($ARGV[0] eq "table" || $ARGV[0] eq "-table" ) )
+#	{
+#	&new_sql_table( $ARGV[1], $ARGV[2] );
+#	&cleanup( 0 );
+#	}
     $cpi_vars::CACHEDIR = ($ENV{HOME}||$cpi_vars::BASEDIR)."/.cache";
     $cpi_vars::DEFAULT_FORM = "form";
     }
