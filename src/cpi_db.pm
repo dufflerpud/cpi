@@ -121,7 +121,11 @@ sub dbnew_perlobj
 #########################################################################
 sub dbnew_gdbm
     {
-    &write_file( $_[0], "" );
+    my( $dbname ) = @_;
+    &write_file( $dbname, "" ); 
+    &dbwrite( $dbname );
+    %{$cpi_vars::databases{$dbname}} = ();
+    &dbclose( $dbname );
     }
 
 #########################################################################
