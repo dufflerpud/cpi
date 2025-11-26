@@ -287,6 +287,7 @@ auto/cpi_send_file/autosplit.ix:\
 	perl -MAutoSplit -e 'autosplit(cpi_send_file,auto,0,1,1)' || excode=0
 	mv cpi_send_file.compiling cpi_send_file.pm
 auto/cpi_setup/autosplit.ix:\
+	auto/cpi_file/autosplit.ix\
 	auto/cpi_cgi/autosplit.ix\
 	auto/cpi_copy_db/autosplit.ix\
 	auto/cpi_db/autosplit.ix\
