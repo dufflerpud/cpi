@@ -26,7 +26,7 @@ use lib ".";
 
 use cpi_cgi qw( CGIreceive );
 use cpi_copy_db qw( copydb dumpdb undumpdb );
-use cpi_db qw( dbread find_db new_sql_table );
+use cpi_db qw( dbread find_db new_sql_table dbnew );
 use cpi_time qw( timestr );
 use cpi_translate qw( init_phrases );
 use cpi_user qw( login );
