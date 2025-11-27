@@ -23,7 +23,7 @@ our @ISA = qw /Exporter/;
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( chmog cleanup echodo fatal autopsy death_requested
  files_in mkdirp read_file read_lines register_cleanup slurp_file
- tempfile write_file append_file );
+ tempfile write_file append_file first_in_path );
 use lib ".";
 
 use cpi_log qw( log );
@@ -254,4 +254,20 @@ sub death_requested
 
 sub fatal	{ &death_requested( {trace=>0,log=>1}, @_ ); }
 sub autopsy	{ &death_requested( {trace=>1,log=>1}, @_ ); }
+
+#########################################################################
+#	Return the full path for the first prog in argument list.	#
+#########################################################################
+sub first_in_path
+    {
+    my( @progs ) = @_;
+    my @path_dirs = split(/:/,$ENV{PATH});
+    foreach my $prog ( @progs )
+	{
+	foreach my $dir ( @path_dirs )
+	    { return $_ if( -e ($_="$dir/$prog") ); }
+	}
+    return undef;
+    }
+
 1;
