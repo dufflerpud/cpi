@@ -55,6 +55,10 @@ sub can_cgroup	{ return &user_can("create_group"); }
 
 #########################################################################
 #	Turn text into a token that can be used as a group.		#
+#	Could ALMOST do this with cpi_filename::text_to_filename	#
+#	except it gets rid of more characters and result is always	#
+#	lower case.							#
+#		lc( &cpi_file::text_to_filename( x ) )			#
 #########################################################################
 sub name_to_group
     {
@@ -158,7 +162,7 @@ sub login
     my $msg = "";
     my $fname;
     my @toprint;
-    my $check_group = &name_to_group( "can_run_" . $cpi_vars::PROG );
+    my $check_group = &name_to_group( $cpi_vars::PROG . " user" );
 
     if( ! -d $cpi_vars::SIDDIR )
         {
@@ -550,7 +554,7 @@ sub all_users
 #########################################################################
 sub all_prog_users
     {
-    my $check_group = &name_to_group( "can_run_" . $cpi_vars::PROG );
+    my $check_group = &name_to_group( $cpi_vars::PROG . " user" );
     return
 	grep(
 	    &dbget($cpi_vars::ACCOUNTDB,"users",$_,"inuse")
@@ -606,12 +610,9 @@ sub in_group
 sub users_in_group
     {
     my( $l4 ) = @_;
-    $l4 = &name_to_group("can_run_$cpi_vars::PROG")
+    $l4 = &name_to_group("$cpi_vars::PROG user")
 	if( ! defined($l4) );
-    my @ret = ();
-    foreach my $u ( &all_users() )
-	{ &in_group( $u, $l4 ) && push( @ret, $u ); }
-    return @ret;
+    return grep( &in_group($_,$l4), &all_users() );
     }
 
 1;
@@ -1238,7 +1239,7 @@ sub logout_select
 
     my %seen_cgs =
         map { $_, 1 }
-	    grep( &in_group($cpi_vars::USER,&name_to_group("can_run_$_")),
+	    grep( &in_group($cpi_vars::USER,&name_to_group("$_ user")),
 		grep( -x "../$_/index.cgi", &files_in("..","^\\w") ) );
     $seen_cgs{$cpi_vars::PROG}=1;
 
