@@ -31,7 +31,7 @@ our $CACHEDIR;
 
 #########################################################################
 # cpi_cgi:
-my $SAME_RELATIVE	= <<EOF;
+our $SAME_RELATIVE	= <<EOF;
 	table				{font-size:inherit;}
 	h1                      	{font-size:2em;}
 	h2                      	{font-size:1.6em;}
@@ -97,7 +97,7 @@ our $VERBOSITY = 0;
 #########################################################################
 # cpi_help:
 #my @HELP_EVENTS = ( "contextmenu", "touchstart", "touchend" );
-my @HELP_EVENTS = ( "contextmenu" );       # Help stuff sucks on iPhone
+our @HELP_EVENTS = ( "contextmenu" );       # Help stuff sucks on iPhone
 our $HELPDIR;
 our $HELP_IFRAME;
 
@@ -166,8 +166,8 @@ our $TODAY;
 
 #########################################################################
 # cpi_translate:
-my $TRANSLATIONS_BATCH		= 1;
-my $TRANSLATIONS_LIVE		= 1;
+our $TRANSLATIONS_BATCH		= 1;
+our $TRANSLATIONS_LIVE		= 1;
 our $TRANSLATIONS_DB;
 our $TRANSLATIONS_TODO;
 our $TRANSLATIONS_BASE;
@@ -178,10 +178,10 @@ our $WRITTEN_IN;
 
 #########################################################################
 # cpi_translate:
-my $KEY_CAPTCHA_PUBLIC	= "6LfWBgUAAAAAAGBpRAxhZTUixDVWVVRJBqnq-4_Q";
-my $KEY_CAPTCHA_PRIVATE	= "6LfWBgUAAAAAAH6d5yLV3pGUsxaruuh8JGfz0W2X";
+our $KEY_CAPTCHA_PUBLIC	= "6LfWBgUAAAAAAGBpRAxhZTUixDVWVVRJBqnq-4_Q";
+our $KEY_CAPTCHA_PRIVATE	= "6LfWBgUAAAAAAH6d5yLV3pGUsxaruuh8JGfz0W2X";
 
-my @CONFIRM_FIELDS =
+our @CONFIRM_FIELDS =
     (
     "email"			=> { prompt=>"E-mail address",  cols=>20,rows=>1,ask=>1,req=>0 },
     "phone"			=> { prompt=>"Phone number",    cols=>14,rows=>1,ask=>1,req=>0 },
@@ -190,7 +190,7 @@ my @CONFIRM_FIELDS =
     "address"			=> { prompt=>"Mailing address", cols=>40,rows=>5,ask=>1,req=>0 },
     "shipping"			=> { prompt=>"Shipping address",cols=>40,rows=>5,ask=>1,req=>0 }
     );
-my %FLDESC = @CONFIRM_FIELDS;
+our %FLDESC = @CONFIRM_FIELDS;
 @CONFIRM_FIELDS = grep( defined($FLDESC{$_}{prompt}), @CONFIRM_FIELDS );
 
 our $anonymous_user;
