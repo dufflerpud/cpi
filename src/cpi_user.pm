@@ -1234,7 +1234,7 @@ sub logout_select
     $script_prefix =~ s:index.cgi::;
     $script_prefix =~ s:[^/]*/$::;
     my $logoutfnc = 
-	"if(this.value==\"logout\") {$submit_func(this.value);} else {window.document.$form_logout.action=\"$script_prefix\"+this.value;window.document.$form_logout.submit();}";
+	"if(this.value==\"logout\"||this.value==\"admin\") {$submit_func(this.value);} else {window.document.$form_logout.action=\"$script_prefix\"+this.value;window.document.$form_logout.submit();}";
     my @s = ("<select name=new_prog help='COMMON_select_program' onChange='$logoutfnc'>\n");
 
     my %seen_cgs =
@@ -1249,7 +1249,8 @@ sub logout_select
 	    ( $prog eq $cpi_vars::PROG ? " selected" : "" ),
 	    ">$prog</option>\n" );
 	}
-    push( @s, "<option value=logout>XL(Logout)</option></select>\n" );
+    push( @s,	"<option value=admin>XL(User settings)</option>",
+		"<option value=logout>XL(Logout)</option></select>\n" );
 
     return join("",@s);
     }
