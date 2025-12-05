@@ -52,7 +52,7 @@ all_modules:\
 	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_magic_http/autosplit.ix\
 	auto/cpi_config/autosplit.ix\
-	auto/cpi_trans_none/autosplit.ix\
+	auto/cpi_trans_shell/autosplit.ix\
 	auto/cpi_db/autosplit.ix\
 	auto/cpi_log/autosplit.ix\
 	auto/cpi_filename/autosplit.ix\
@@ -68,12 +68,15 @@ all_modules:\
 	auto/cpi_copy_db/autosplit.ix\
 	auto/cpi_user/autosplit.ix\
 	auto/cpi_make_from/autosplit.ix\
+	auto/cpi_player/autosplit.ix\
 	auto/cpi_trace/autosplit.ix\
 	auto/cpi_help/autosplit.ix\
 	auto/cpi_inlist/autosplit.ix\
 	auto/cpi_arguments/autosplit.ix\
 	auto/cpi_perl/autosplit.ix\
 	auto/cpi_unique_nbit_color/autosplit.ix
+auto/cpi_player/autosplit.ix:\
+	auto/cpi_file/autosplit.ix
 auto/cpi_cache/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_filename/autosplit.ix\
@@ -331,18 +334,18 @@ auto/cpi_trace/autosplit.ix:
 	sed -e 's/^#*__END__/__END__/' < cpi_trace.compiling > cpi_trace.pm
 	perl -MAutoSplit -e 'autosplit(cpi_trace,auto,0,1,1)' || excode=0
 	mv cpi_trace.compiling cpi_trace.pm
-auto/cpi_trans_none/autosplit.ix:
-	perl cpi_trans_none.pm
-	[ -d auto/cpi_trans_none ] || mkdir -p auto/cpi_trans_none
-	mv cpi_trans_none.pm cpi_trans_none.compiling
-	sed -e 's/^#*__END__/__END__/' < cpi_trans_none.compiling > cpi_trans_none.pm
-	perl -MAutoSplit -e 'autosplit(cpi_trans_none,auto,0,1,1)' || excode=0
-	mv cpi_trans_none.compiling cpi_trans_none.pm
+auto/cpi_trans_shell/autosplit.ix:
+	perl cpi_trans_shell.pm
+	[ -d auto/cpi_trans_shell ] || mkdir -p auto/cpi_trans_shell
+	mv cpi_trans_shell.pm cpi_trans_shell.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_trans_shell.compiling > cpi_trans_shell.pm
+	perl -MAutoSplit -e 'autosplit(cpi_trans_shell,auto,0,1,1)' || excode=0
+	mv cpi_trans_shell.compiling cpi_trans_shell.pm
 auto/cpi_translate/autosplit.ix:\
 	auto/cpi_db/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_help/autosplit.ix\
-	auto/cpi_trans_none/autosplit.ix\
+	auto/cpi_trans_shell/autosplit.ix\
 	auto/cpi_vars/autosplit.ix
 	perl cpi_translate.pm
 	[ -d auto/cpi_translate ] || mkdir -p auto/cpi_translate
