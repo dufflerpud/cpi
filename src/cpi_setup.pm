@@ -138,7 +138,7 @@ sub setup
     $cpi_vars::COMMONDIR=$cpi_vars::BASEDIR if( ! -d $cpi_vars::COMMONDIR );
     $cpi_vars::COMMONLIB="$cpi_vars::COMMONDIR/lib";
     $cpi_vars::COMMONJS="$cpi_vars::COMMONLIB/common.js";
-    $cpi_vars::TRANSLATIONS_BASE="$cpi_vars::PROJECTSDIR/transdaemon/db/app";
+    $cpi_vars::TRANSLATIONS_BASE="$cpi_vars::COMMONDIR/db/xl";
     $cpi_vars::TRANSLATIONS_DB=&find_db("$cpi_vars::TRANSLATIONS_BASE");
     $cpi_vars::TRANSLATIONS_TODO="$cpi_vars::TRANSLATIONS_BASE.todo";
     $cpi_vars::ACCOUNTDB=&find_db("$cpi_vars::COMMONDIR/db/accounts");
