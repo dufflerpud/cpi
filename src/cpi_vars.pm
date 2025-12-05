@@ -167,7 +167,7 @@ our $TODAY;
 #########################################################################
 # cpi_translate:
 our $TRANSLATIONS_BATCH		= 1;
-our $TRANSLATIONS_LIVE		= 1;
+our $TRANSLATIONS_LIVE		= 0;
 our $TRANSLATIONS_DB;
 our $TRANSLATIONS_TODO;
 our $TRANSLATIONS_BASE;
