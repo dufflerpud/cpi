@@ -30,12 +30,13 @@ use lib ".";
 
 use cpi_db qw( db_readable db_writable dbarr dbget dbpop
  dbput dbread dbwrite );
-use cpi_file qw( autopsy register_cleanup );
+use cpi_file qw( autopsy register_cleanup read_file write_file );
 use cpi_help qw( help_strings );
-use cpi_trans_none qw( pkg_get_language_list
+use cpi_trans_shell qw( pkg_get_language_list
  pkg_set_language_pair pkg_trans_chunk );
+use cpi_lock qw( lock_file unlock_file );
+use cpi_trans_shell;	# Or cpi_trans_babel or cpi_trans_lingua
 use cpi_vars;
-use cpi_trans_none;	# Or cpi_trans_babel or cpi_trans_lingua
 #__END__
 1;
 
@@ -50,15 +51,9 @@ sub trans_chunk		{ return &pkg_trans_chunk(@_); }
 #########################################################################
 sub init_phrases
     {
-    if( open(PHRASES,"$cpi_vars::COMMONDIR/phrases") )
-        {
-	while( $_ = <PHRASES> )
-	    {
-	    s/[\r\n]//g;
-	    $needs_translation{$_}++;
-	    }
-	close(PHRASES);
-	}
+    my $phrase_file = "$cpi_vars::COMMONDIR/phrases";
+    grep( $needs_translation{$_}++, &read_lines( $phrase_file ) )
+	if( -f $phrase_file );
     }
 
 #########################################################################
@@ -66,11 +61,8 @@ sub init_phrases
 #########################################################################
 sub save_phrases
     {
-    if( open(PHRASES,">$cpi_vars::COMMONDIR/phrases") )
-	{
-	print PHRASES map { $_, "\n" } sort keys %needs_translation;
-	close(PHRASES);
-	}
+    my $phrase_file = "$cpi_vars::COMMONDIR/phrases";
+    &write_file( $phrase_file, map { $_, "\n" } sort keys %needs_translation );
     }
 
 #########################################################################
@@ -107,6 +99,7 @@ sub breakup_and_translate_strings
 sub translate
     {
     my( $langfrom, $langto, $phrase ) = @_;
+    print STDERR "Translate [$phrase] from [$langfrom] to [$langto]\n";
     my $retres;
     if( $phrase !~ /\w/ )
 	{ $retres = $phrase; }
@@ -134,10 +127,20 @@ sub get_full_language_list
     }
 
 #########################################################################
+#	Read in all the phrases already queued up to be translated.	#
+#########################################################################
+my %text_batched_to_translate;
+my $batch_state = "unread";
+sub add_to_batch
+    {
+    grep( $text_batched_to_translate{$_}=1,
+	split("####\n", &read_file($cpi_vars::TRANSLATIONS_TODO)) );
+    }
+
+#########################################################################
 #	Look for previous translation.  If we don't have one, call	#
 #	the translater and remember the results.			#
 #########################################################################
-my $language_todo_open = 0;
 sub tran_db
     {
     my( $langfrom, $langto, $phrase ) = @_;
@@ -174,18 +177,18 @@ sub tran_db
 	    $cpi_vars::TRANSLATIONS_BATCH if(0);	# Get rid of "only used once" warning
 	    if( $cpi_vars::TRANSLATIONS_BATCH )
 		{
-		my $todump = "{{{{"
-		    #. join(",",map {ord($_)} split(//,$langfrom)) . "::::"
-		    . $langfrom . ":"
-		    . $phrase. "}}}}\n";
-		if( ! $language_todo_open )
+		if( $batch_state eq "unread" )
 		    {
-		    open( TODO, ">> $cpi_vars::TRANSLATIONS_TODO" )
-			|| &autopsy(
-			    "Cannot open $cpi_vars::TRANSLATIONS_TODO:  $!");
-		    $language_todo_open = 1;
+		    %text_batched_to_translate = &add_to_batch();
+		    $batch_state = "read";
 		    }
-		syswrite TODO, $todump;
+	        if( ! $text_batched_to_translate{"${langfrom}:$phrase"}++ )
+		    {
+		    print STDERR __LINE__, ": We need something translated.\n";
+		    &register_cleanup(\&cleanup_translator)
+			if( $batch_state ne "modified" );
+		    $batch_state = "modified";
+		    }
 		$mapped_phrase = "{$langfrom-$langto-$phrase}";
 		}
 
@@ -423,6 +426,16 @@ sub xprint
 #########################################################################
 sub cleanup_translator
     {
+    print STDERR "cleanup_translator called, batch_state=[$batch_state]\n";
+    if( $batch_state eq "modified" )
+        {
+	&lock_file( $cpi_vars::TRANSLATIONS_TODO );
+	&add_to_batch();	# Re-read:  The list may have grown!
+	&write_file( $cpi_vars::TRANSLATIONS_TODO,
+	    map {($_,"####\n")} sort keys %text_batched_to_translate );
+	&unlock_file( $cpi_vars::TRANSLATIONS_TODO );
+	$batch_state = "unread";
+	}
     if( defined( $cpi_vars::TRANSLATIONS_DB ) )
 	{
 	&dbpop( $cpi_vars::TRANSLATIONS_DB )
