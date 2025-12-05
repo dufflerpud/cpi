@@ -264,8 +264,10 @@ sub first_in_path
     my @path_dirs = split(/:/,$ENV{PATH});
     foreach my $prog ( @progs )
 	{
+	my $check = $prog;
+	$check =~ s/ .*//g;
 	foreach my $dir ( @path_dirs )
-	    { return $_ if( -e ($_="$dir/$prog") ); }
+	    { return "$dir/$prog" if( -x "$dir/$check" ); }
 	}
     return undef;
     }
