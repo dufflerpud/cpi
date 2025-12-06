@@ -171,7 +171,7 @@ sub setup
 	    . ( ( $ENV{SERVER_PORT} == 80) ? "" : ":$ENV{SERVER_PORT}" )
 	    . $cpi_vars::THIS;
 	$cpi_vars::SIDDIR="$cpi_vars::COMMONDIR/SIDS";
-	if( $cpi_vars::BASEDIR ne $cpi_vars::COMMONDIR )
+	if( 1 || $cpi_vars::BASEDIR ne $cpi_vars::COMMONDIR )
 	    { $cpi_vars::SIDNAME = "cpi_sid"; }
 	else
 	    { $cpi_vars::SIDNAME = $cpi_vars::PROG."_SID"; }
