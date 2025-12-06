@@ -31,7 +31,8 @@ use lib ".";
 use cpi_cgi qw( CGIheader );
 use cpi_compress_integer qw( compress_integer );
 use cpi_db qw( dbadd dbarr dbdel dbget dbpop dbput dbwrite dbisin );
-use cpi_file qw( cleanup autopsy files_in );
+use cpi_file qw( cleanup autopsy files_in read_lines write_file
+ write_lines );
 use cpi_log qw( log );
 use cpi_send_file qw( send_via );
 use cpi_translate qw( gen_language_params xlate xprint );
@@ -141,12 +142,19 @@ sub handle_invitations
 sub read_sid
     {
     my( $fname ) = @_;
-    open( IN, $fname ) || &autopsy("Cannot open SID file $fname:  $!");
-    $cpi_vars::REALUSER = <IN>;
-    $cpi_vars::REALUSER =~ s/[\r\n]//g;
-    $cpi_vars::LANG = <IN>;
-    $cpi_vars::LANG =~ s/[\r\n]//g;
-    close( IN );
+    ( $cpi_vars::REALUSER, $cpi_vars::LANG ) = &read_lines($fname);
+    }
+
+#########################################################################
+#	Write the variables into the SID file.				#
+#########################################################################
+sub write_sid
+    {
+    my( $fname ) = @_;
+    &write_lines( $fname,
+	$cpi_vars::REALUSER,
+	$cpi_vars::LANG
+	);
     }
 
 #########################################################################
@@ -387,13 +395,11 @@ sub login
 		{
 		$cpi_vars::SID = &compress_integer( rand() );
 		$fname = "$cpi_vars::SIDDIR/$cpi_vars::SID";
-		open( OUT, "> $fname") ||
-		    &autopsy("XL(Cannot write [[SID]] file [[$fname]]):  $!");
-		print OUT "$cpi_vars::FORM{user}\n$cpi_vars::LANG\n";
-		close( OUT );
 		$cpi_vars::REALUSER = $cpi_vars::FORM{user};
+		&write_sid( $fname );
 		&CGIheader( $cpi_vars::SIDNAME, $cpi_vars::SID );
-		&log("$cpi_vars::REALUSER logs in in $cpi_vars::LANG with SID $cpi_vars::SID.");
+		&log("$cpi_vars::REALUSER logs in in $cpi_vars::LANG with SID ${cpi_vars::SID}.");
+		$msg = "";
 		}
 	    }
 	}
@@ -633,11 +639,7 @@ sub who
 	my $inactivity = time - $st_mtime;
 	if( $inactivity <= $cpi_vars::LOGIN_TIMEOUT )
 	    {
-	    open( INF, $fname ) || &autopsy("Cannot read ${fname}:  $!");
-	    my( $user, $lang ) = <INF>;
-	    close( INF );
-	    chomp( $user );
-	    chomp( $lang );
+	    my( $user, $lang ) = &read_lines($fname);
 	    $results{$sidfile} =
 		sprintf(
 		    "<tr><td>%s</td><td>%2s</td><td>%02d:%02d:%02d</td></tr>\n",
