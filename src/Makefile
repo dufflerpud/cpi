@@ -77,6 +77,12 @@ all_modules:\
 	auto/cpi_unique_nbit_color/autosplit.ix
 auto/cpi_player/autosplit.ix:\
 	auto/cpi_file/autosplit.ix
+	perl cpi_player.pm
+	[ -d auto/cpi_player ] || mkdir -p auto/cpi_player
+	mv cpi_player.pm cpi_player.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_player.compiling > cpi_player.pm
+	perl -MAutoSplit -e 'autosplit(cpi_player,auto,0,1,1)' || excode=0
+	mv cpi_player.compiling cpi_player.pm
 auto/cpi_cache/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_filename/autosplit.ix\
