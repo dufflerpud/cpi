@@ -35,6 +35,7 @@ sub usage
 %ARGS = &parse_arguments(
     {
     #flags		=>	[ "delete", "yes", "ask_password" ],
+    flags		=>	[ "verbose" ],
     switches=>
 	{
 	"from"		=>	"chris.interim\@gmail.com",
@@ -45,9 +46,11 @@ sub usage
     non_switches	=>	\@files
     } );
 
+print "from=$ARGS{from} to=$ARGS{to} subject=$ARGS{subject}\n"
+    if( $ARGS{verbose} );
 &sendmail(
     $ARGS{from},
-    $ARGS{dest},
+    $ARGS{to},
     $ARGS{subject},
     $ARGS{message},
     @files );
