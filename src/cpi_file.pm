@@ -23,7 +23,7 @@ our @ISA = qw /Exporter/;
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( chmog cleanup echodo fatal autopsy death_requested
  files_in mkdirp read_file read_lines register_cleanup slurp_file
- tempfile write_file write_lines append_file first_in_path );
+ tempfile write_file write_lines append_file first_in_path new_stderr );
 use lib ".";
 
 use cpi_log qw( log );
@@ -281,4 +281,31 @@ sub first_in_path
     return undef;
     }
 
+#########################################################################
+#	We're going to open something else on stderr but if that fails	#
+#	we'll revert to what was there before.				#
+#########################################################################
+sub new_stderr
+    {
+    my( $to_open ) = @_;
+    my $ret;
+    open( OLD_STDERR, ">&STDERR" )||&fatal("Cannot dup STDERR:  $!");
+    close( STDERR );
+    if( open( STDERR, $to_open ) )
+	{ $ret = 1; }
+    else
+	{
+	$ret = 0;
+	my $old_perror = $!;
+	open(STDERR,">&OLD_STDERR") || &fatal("Cannot re-dup STDERR:  $!");
+	$! = $old_perror;
+	}
+    close( OLD_STDERR );
+
+    my $old_fh = select(STDERR);
+    $| = 1;
+    select($old_fh);
+
+    return $ret;
+    }
 1;

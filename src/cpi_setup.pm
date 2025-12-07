@@ -48,21 +48,15 @@ sub setup
 	    ( $args{stderr} =~ /^\//
 	    ? $args{stderr}
 	    : join("/",$cpi_vars::STDERR_LOG_DIR,$args{stderr}) );
-	close( STDERR );
-	if( -f "$stderr_fname.truncated" )
-	    {
-	    open( STDERR, "> $stderr_fname.truncated" )
-		|| die("Cannot write to ${stderr_fname}.truncated:  $!");
-	    }
+	my $open_parameter;
+	if( -f "$stderr_fname.truncate" )
+	    { $open_parameter = "> $stderr_fname"; }
 	else
-	    {
-	    open( STDERR, ">> $stderr_fname" )
-		|| die("Cannot append to ${stderr_fname}:  $!");
-	    }
+	    { $open_parameter = ">> $stderr_fname"; }
+	
+	&new_stderr($open_parameter) ||
+	    &fatal("Cannot set stderr to '$open_parameter':  $!");
 	chmod( 0666, $stderr_fname );
-	my $old_fh = select(STDERR);
-	$| = 1;
-	select($old_fh);
 	}
 
     $cpi_vars::require_captcha		= $args{require_captcha};
