@@ -1235,7 +1235,7 @@ sub logout_select
     $script_prefix =~ s:index.cgi::;
     $script_prefix =~ s:[^/]*/$::;
     my $logoutfnc = 
-	"if(this.value==\"logout\") { window.document.$form_logout.action=\"${script_prefix}Account?func=logout\";window.document.$form_logout.submit();} else {window.document.$form_logout.action=\"$script_prefix\"+this.value;window.document.$form_logout.submit();}";
+	"if(this.value==\"logout\") { window.document.$form_logout.action=\"${script_prefix}User?func=logout\";window.document.$form_logout.submit();} else {window.document.$form_logout.action=\"$script_prefix\"+this.value;window.document.$form_logout.submit();}";
     my @s = ("<select name=new_prog help='COMMON_select_program' onChange='$logoutfnc'>\n");
 
     my %seen_cgs =
