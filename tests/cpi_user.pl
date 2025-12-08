@@ -219,8 +219,9 @@ sub add_user
     if( $ARGS{groups} )
 	{
 	my $fnc = "+";
-	foreach my $groupfnc ( split(/([+\-])/,&text_to_id($ARGS{groups})) )
+	foreach my $groupfnc ( split(/([+\-])/,$ARGS{groups}) )
 	    {
+	    $groupfnc = &text_to_id( $groupfnc );
 	    if( $groupfnc eq "" )
 		{}
 	    elsif( $groupfnc eq "+" || $groupfnc eq "-" )
