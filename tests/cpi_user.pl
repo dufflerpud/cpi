@@ -189,13 +189,7 @@ sub delete_thing
 #########################################################################
 sub mergeput
     {
-    print STDERR "mergeput dbput(",join(",",@_),")\n";
-    print STDERR "    dbget(",join(",",@_[0..($#_-1)]),")=",(&dbget( @_[0..($#_-1)] )||"UNDEF"),".\n";
-    if( $ARGS{mode} ne "merge" || ! &dbget( @_[0..($#_-1)] ) )
-	{
-        &dbput( @_ );
-	print STDERR "    dbput(",join(",",@_),")\n";
-	}
+    &dbput( @_ ) if( $ARGS{mode} ne "merge" || ! &dbget( @_[0..($#_-1)] ) );
     }
 
 #########################################################################
