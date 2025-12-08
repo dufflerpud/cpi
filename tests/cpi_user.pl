@@ -64,6 +64,14 @@ sub usage
     }
 
 #########################################################################
+#	Convert to an id.						#
+#########################################################################
+sub text_to_id
+    {
+    return lc( &text_to_filename( @_ ) );
+    }
+
+#########################################################################
 #	Print out users or groups as a table				#
 #########################################################################
 sub do_list
@@ -140,6 +148,7 @@ sub setup_account_database
 sub delete_thing
     {
     my( $dbname, $class, $rec_to_delete ) = @_;
+    $rec_to_delete = &id_to_text( $rec_to_delete );
     print STDERR "delete_thing(",join(",",@_),")\n";
     &dbwrite( $dbname );
     if( ! &dbisin($dbname,$class,$rec_to_delete) )
@@ -241,7 +250,7 @@ sub add_user
 sub add_thing
     {
     my( $dbname, $class, $suggested_name ) = @_;
-    my $thing = lc( &text_to_filename( $suggested_name ) );
+    my $thing = &text_to_id( $suggested_name );
     &dbwrite( $dbname );
     &dbadd( $dbname, $class, $thing );
     &dbput( $dbname, $class, $thing, "inuse", 1 );
@@ -303,7 +312,6 @@ sub prompt_password
     } );
 
 $ARGS{user} ||= $ARGS{administrator};
-$ARGS{user} = lc( $ARGS{user} );
 
 if( $ARGS{ask_password} )
     {
@@ -311,7 +319,7 @@ if( $ARGS{ask_password} )
     if( $ARGS{mode} eq "merge" )	# Don't ask if not going to use info
 	{
 	&dbread( $ARGS{database} );
-	$ask = ! &dbget( $ARGS{database}, "users", $ARGS{user}, "password" );
+	$ask = ! &dbget( $ARGS{database}, "users", &text_to_id($ARGS{user}), "password" );
 	&dbpop( $ARGS{database} );
 	}
     if( $ask )
