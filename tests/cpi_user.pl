@@ -180,10 +180,11 @@ sub delete_thing
 #########################################################################
 sub mergeput
     {
+    print STDERR "mergeput dbput(",join(",",@_),")\n";
     if( $ARGS{mode} ne "merge" || ! &dbget( @_[0..($#_-1)] ) )
 	{
         &dbput( @_ );
-	print STDERR "mergeput dbput(",join(",",@_),")\n";
+	print STDERR "    dbput(",join(",",@_),")\n";
 	}
     }
 
