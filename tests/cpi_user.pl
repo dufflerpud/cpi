@@ -255,10 +255,8 @@ sub add_thing
     &dbwrite( $dbname );
     &dbadd( $dbname, $class, $thing );
     &dbput( $dbname, $class, $thing, "inuse", 1 );
-    if( $ARGS{full_name} )
-        { &mergeput( $dbname, $class, $thing, "fullname", $ARGS{full_name} ); }
-    else
-        { &mergeput( $dbname, $class, $thing, "fullname", $suggested_name ); }
+    &mergeput( $dbname, $class, $thing, "fullname",
+	$ARGS{full_name} || $suggested_name );
     &add_user( $dbname, $thing ) if( $class eq "users" );
     &dbpop( $dbname );
     }
