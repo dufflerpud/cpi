@@ -180,7 +180,11 @@ sub delete_thing
 #########################################################################
 sub mergeput
     {
-    &dbput( @_ ) if( $ARGS{mode} ne "merge" || ! &dbget( @_[0..($#_-1)] ) );
+    if( $ARGS{mode} ne "merge" || ! &dbget( @_[0..($#_-1)] ) )
+	{
+        &dbput( @_ );
+	print STDERR "mergeput dbput(",join(",",@_),")\n";
+	}
     }
 
 #########################################################################
@@ -242,7 +246,7 @@ sub add_thing
     &dbput( $dbname, $class, $thing, "inuse", 1 );
     if( $ARGS{full_name} )
         { &mergeput( $dbname, $class, $thing, "fullname", $ARGS{full_name} ); }
-    elsif( ! &dbget( $dbname, $class, $thing, "fullname" ) )
+    else
         { &mergeput( $dbname, $class, $thing, "fullname", $suggested_name ); }
     &add_user( $dbname, $thing ) if( $class eq "users" );
     &dbpop( $dbname );
