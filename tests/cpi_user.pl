@@ -218,8 +218,7 @@ sub add_user
     if( $ARGS{groups} )
 	{
 	my $fnc = "+";
-	$ARGS{groups} = lc( $ARGS{groups} );
-	foreach my $groupfnc ( split(/([+\-])/,$ARGS{groups}) )
+	foreach my $groupfnc ( split(/([+\-])/,&text_to_id($ARGS{groups})) )
 	    {
 	    if( $groupfnc eq "" )
 		{}
@@ -251,6 +250,7 @@ sub add_thing
     {
     my( $dbname, $class, $suggested_name ) = @_;
     my $thing = &text_to_id( $suggested_name );
+    print STDERR "thing=[$thing] suggested_name=[$suggested_name]\n";
     &dbwrite( $dbname );
     &dbadd( $dbname, $class, $thing );
     &dbput( $dbname, $class, $thing, "inuse", 1 );
