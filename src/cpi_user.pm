@@ -397,7 +397,7 @@ sub login
 		$fname = "$cpi_vars::SIDDIR/$cpi_vars::SID";
 		$cpi_vars::REALUSER = $cpi_vars::FORM{user};
 		&write_sid( $fname );
-		&CGIheader( $cpi_vars::SIDNAME, $cpi_vars::SID );
+		&CGIheader( "$cpi_vars::SIDNAME=$cpi_vars::SID;path=/" );
 		&log("$cpi_vars::REALUSER logs in in $cpi_vars::LANG with SID ${cpi_vars::SID}.");
 		$msg = "";
 		}

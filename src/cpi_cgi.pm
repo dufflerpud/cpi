@@ -93,13 +93,23 @@ sub CGIheader
 	if(! exists &main::check_if_app_needs_header || &main::check_if_app_needs_header() )
 	    {
 	    print "Content-type:  text/html; charset=\"utf-8\"\n";
-	    my $found = 0;
 	    while( my $vr = shift(@varvals) )
 		{
-		print ($found++ == 0 ?"Set-Cookie:  ":";");
-		print $vr, "=", shift(@varvals);
+		if( $vr =~ /=/ )
+		    { print "Set-Cookie:  $vr\n"; }
+		elsif( ref($vr) ne "HASH" )
+		    { print "Set-Cookie:  $vr=", shift(@varvals), "\n"; }
+		else
+		    {
+		    print "Set-Cookie: $vr->{name}=$vr->{value}";
+		    foreach my $k ( sort keys %{$vr} )
+			{
+			print "; $k=$vr->{$k}" if( $k ne "name" && $k ne "value" );
+			}
+		    print "\n";
+		    }
 		}
-	    print "\n" if( $found );
+	    print "\n";
 	    &starting_CSS();
 	    if( exists &app_intro )
 	        { &app_intro(); }
