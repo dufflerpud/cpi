@@ -34,7 +34,7 @@ my %STANDARD_GROUPS =
 	"can_xml"		=> "Can generate XML",
 	"create_group"		=> "Can create groups",
 	"create_user"		=> "Can create users",
-	"user"			=> "User"
+	"user_user"		=> "User user"
     );
 my @ADMINISTRATOR_GROUPS = sort keys %STANDARD_GROUPS;
 
@@ -198,7 +198,7 @@ sub add_user
     my @groups =
     	( $ARGS{administrator}
 	? grep( &dbget($dbname,"groups",$_,"inuse"), &dbget($dbname,"groups") )
-	: "user" );
+	: "user_user" );
     foreach my $group ( @groups )
         { &dbadd( $dbname, $class, $thing, "groups", $group ); }
     if( $ARGS{groups} )
