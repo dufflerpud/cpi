@@ -149,7 +149,6 @@ sub delete_thing
     {
     my( $dbname, $class, $rec_to_delete ) = @_;
     $rec_to_delete = &id_to_text( $rec_to_delete );
-    print STDERR "delete_thing(",join(",",@_),")\n";
     &dbwrite( $dbname );
     if( ! &dbisin($dbname,$class,$rec_to_delete) )
 	{ print STDERR "$rec_to_delete is not in $class.\n"; }
@@ -164,7 +163,6 @@ sub delete_thing
 		print STDERR "Removing [",join(",",split(/$cpi_vars::DBSEP/,$k)),"]\n";
 		}
 	    }
-	print STDERR "$rec_to_delete removed from $class.\n";
 	&dbdel( $dbname, $class, $rec_to_delete );
 
 	if( $dbname eq "groups" )
@@ -246,7 +244,6 @@ sub add_thing
     {
     my( $dbname, $class, $suggested_name ) = @_;
     my $thing = &text_to_id( $suggested_name );
-    print STDERR "thing=[$thing] suggested_name=[$suggested_name]\n";
     &dbwrite( $dbname );
     &dbadd( $dbname, $class, $thing );
     &dbput( $dbname, $class, $thing, "inuse", 1 );
