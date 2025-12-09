@@ -21,8 +21,9 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( all_prog_users all_users can
- can_cgroup can_cuser can_suser check_com_field group_to_name
+our @EXPORT = qw( all_prog_users all_users
+ can can_cgroup can_cuser can_suser can_use can_admin
+ check_com_field group_to_name
  groups groups_of_user handle_invitations in_group invite
  login logout logout_select name_to_group read_sid user_can
  user_name users_in_group who );
@@ -53,6 +54,8 @@ sub user_can
 sub can_cuser	{ return &user_can("create_user"); }
 sub can_suser	{ return &user_can("create_user"); }
 sub can_cgroup	{ return &user_can("create_group"); }
+sub can_use	{ return &user_can("${cpi_vars::PROG}_user"); }
+sub can_admin	{ return &user_can("${cpi_vars::PROG}_admin"); }
 
 #########################################################################
 #	Turn text into a token that can be used as a group.		#
@@ -262,10 +265,10 @@ sub login
 		$cpi_vars::ANONYMOUS = ( $cpi_vars::anonymous_user && $cpi_vars::REALUSER eq $cpi_vars::anonymous_user );
 		if( ! $cpi_vars::anonymous_user &&
 		    ! $cpi_vars::allow_account_creation &&
-		    ! &in_group($cpi_vars::REALUSER,$check_group)	)
+		    ! &can_use() )
 		    {	# Verify group still exists...
 		    $msg="XL(User [[{$cpi_vars::REALUSER}]] is not a member of group [[".
-			&group_to_name($check_group)."]].)";
+			&group_to_name($check_group)."]])";
 		    }
 		}
 	    }
