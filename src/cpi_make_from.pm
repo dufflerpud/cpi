@@ -1143,7 +1143,7 @@ sub generate_rules
     }
 
 #########################################################################
-#	Debug:  Dump mf_commandmap and mf_filemap for the types.		#
+#	Debug:  Dump mf_commandmap and mf_filemap for the types.	#
 #########################################################################
 sub mf_dump_maps
     {
@@ -1157,9 +1157,13 @@ sub mf_dump_maps
 #	This retrieves the commands from the generated rule structures	#
 #	and executes them to create the files.  It then cleans up any	#
 #	/tmp files it may have created in the process.			#
+#	NOTE:  It can now be called in two ways:			#
+#	    With 1 arg (destfile) - assume &generate_rules prev called	#
+#	    With >1 arg, we're doing it all.  Stand back!		#
 #########################################################################
 sub convert_file
     {
+    &generate_rules( @_ ) if( scalar(@_) > 1 );
     my( $destfile ) = @_;
     my( $destext ) = &mf_type_of( $destfile );
     my( $deststr ) = ( ($destfile eq "-.$destext") ? "" : " > $destfile" );
