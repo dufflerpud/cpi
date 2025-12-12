@@ -68,21 +68,21 @@ all_modules:\
 	auto/cpi_copy_db/autosplit.ix\
 	auto/cpi_user/autosplit.ix\
 	auto/cpi_make_from/autosplit.ix\
-	auto/cpi_player/autosplit.ix\
+	auto/cpi_media/autosplit.ix\
 	auto/cpi_trace/autosplit.ix\
 	auto/cpi_help/autosplit.ix\
 	auto/cpi_inlist/autosplit.ix\
 	auto/cpi_arguments/autosplit.ix\
 	auto/cpi_perl/autosplit.ix\
 	auto/cpi_unique_nbit_color/autosplit.ix
-auto/cpi_player/autosplit.ix:\
+auto/cpi_media/autosplit.ix:\
 	auto/cpi_file/autosplit.ix
-	perl cpi_player.pm
-	[ -d auto/cpi_player ] || mkdir -p auto/cpi_player
-	mv cpi_player.pm cpi_player.compiling
-	sed -e 's/^#*__END__/__END__/' < cpi_player.compiling > cpi_player.pm
-	perl -MAutoSplit -e 'autosplit(cpi_player,auto,0,1,1)' || excode=0
-	mv cpi_player.compiling cpi_player.pm
+	perl cpi_media.pm
+	[ -d auto/cpi_media ] || mkdir -p auto/cpi_media
+	mv cpi_media.pm cpi_media.compiling
+	sed -e 's/^#*__END__/__END__/' < cpi_media.compiling > cpi_media.pm
+	perl -MAutoSplit -e 'autosplit(cpi_media,auto,0,1,1)' || excode=0
+	mv cpi_media.compiling cpi_media.pm
 auto/cpi_cache/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_filename/autosplit.ix\
