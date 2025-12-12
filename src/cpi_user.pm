@@ -34,6 +34,7 @@ use cpi_compress_integer qw( compress_integer );
 use cpi_db qw( dbadd dbarr dbdel dbget dbpop dbput dbwrite dbisin );
 use cpi_file qw( cleanup autopsy files_in read_lines write_file
  write_lines );
+use cpi_trace qw( stack_trace );
 use cpi_log qw( log );
 use cpi_send_file qw( send_via );
 use cpi_translate qw( gen_language_params xlate xprint );
@@ -47,15 +48,16 @@ use Captcha::reCAPTCHA;
 #########################################################################
 sub user_can
     {
-    return &dbisin($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,
-	"groups",@_);
+#    return &dbisin($cpi_vars::ACCOUNTDB,"users",$cpi_vars::REALUSER,
+#	"groups",@_);
+    &in_group( $cpi_vars::REALUSER, @_ );
     }
 
 sub can_cuser	{ return &user_can("create_user"); }
 sub can_suser	{ return &user_can("create_user"); }
 sub can_cgroup	{ return &user_can("create_group"); }
-sub can_use	{ return &user_can("${cpi_vars::PROG}_user"); }
-sub can_admin	{ return &user_can("${cpi_vars::PROG}_admin"); }
+sub can_use	{ return &user_can(lc("${cpi_vars::PROG}_user")); }
+sub can_admin	{ return &user_can(lc("${cpi_vars::PROG}_admin")); }
 
 #########################################################################
 #	Turn text into a token that can be used as a group.		#
@@ -606,9 +608,11 @@ sub groups_of_user
 sub in_group
     {
     my( $uname, $gname ) = @_;
-    #print "Checking to see if [$uname] is a member of [$gname]<br>\n";
-    return grep($_ eq $gname,
+    my $ret = grep($_ eq $gname,
 	&dbget($cpi_vars::ACCOUNTDB,"users",$uname,"groups"));
+#    &stack_trace("in_group($uname,$gname) returns ",
+#    	( defined( $ret ) ? $ret : "UNDEF" ), ".\n");
+    return $ret;
     }
 
 #########################################################################
