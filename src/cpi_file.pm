@@ -23,13 +23,25 @@ our @ISA = qw /Exporter/;
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( chmog cleanup echodo fatal autopsy death_requested
  files_in mkdirp read_file read_lines register_cleanup slurp_file
- tempfile write_file write_lines append_file first_in_path new_stderr );
+ tempfile write_file write_lines append_file first_in_path new_stderr
+ undf);
 use lib ".";
 
 use cpi_log qw( log );
 use cpi_vars;
 #__END__
 1;
+
+#########################################################################
+#	Really helpful for printing variables that might not be		#
+#	defined.  In this module because this is the most commonly	#
+#	included module and it really doesn't seem to be owned by	#
+#	a concept held by another module.  Dept of miscellaneous.	#
+#########################################################################
+sub undf
+    {
+    return ( defined($_[0]) ? $_[0] : defined($_[1]) ? $_[1] : "undef" );
+    }
 
 #########################################################################
 #       Return contents of entire file specified in arguments.          #
