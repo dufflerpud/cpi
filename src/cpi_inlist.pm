@@ -38,6 +38,8 @@ sub inlist
 
 #########################################################################
 #	Check user input against a list of words looking for best fit.	#
+#	Note that if we're doing abbreviations, we don't care about	#
+#	case.								#
 #########################################################################
 sub abbrev
     {
@@ -45,11 +47,12 @@ sub abbrev
     my $word_len = length( $word );
     $word =~ tr/A-Z/a-z/;
     my $result;
-    foreach $_ ( @the_list )
+    foreach my $check ( @the_list )
         {
+	$_ = lc( $check );
 	if( $word eq $_ )
 	    {
-	    $result = $word;
+	    $result = $check;
 	    last;
 	    }
 	elsif( substr( $_, 0, $word_len ) eq $word )
@@ -59,7 +62,7 @@ sub abbrev
 		$result = undef;
 		last;
 		}
-	    $result = $_;
+	    $result = $check;
 	    }
 	}
 #    print "abbrev($word,[",join(",",@the_list),"]) returns ",
