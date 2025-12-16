@@ -169,8 +169,6 @@ sub player
 	my $current_type = $mediap->{type} || "unknown";
 	my $file_dep_argp = &merge_dimensions( $argp, $mediap );
 	my $current_player;
-	print STDERR __LINE__,
-	    ":  ct=[",($current_type||"UNDEF"),"]\n";
 	$current_player = ($file_dep_argp->{player} || $best_for_types{$current_type})
 	    if( $current_type );
 	if( ! $current_player )
