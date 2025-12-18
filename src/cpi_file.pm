@@ -275,7 +275,7 @@ sub death_requested
 #		{ print STDOUT "    ${file}:$line $subname\n"; }
 #	    } 
 	my $trace_obj = Devel::StackTrace->new();
-	foreach my $ln ( split(/n/,$trace_obj->as_string) )
+	foreach my $ln ( split(/\n/,$trace_obj->as_string) )
 	    {
 	    print "\n", ( $ENV{SCRIPT_NAME} ? "<li>$ln" : "\t$ln" );
 	    }
