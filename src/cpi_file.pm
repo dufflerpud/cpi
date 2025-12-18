@@ -22,7 +22,7 @@ our @ISA = qw /Exporter/;
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( chmog cleanup echodo fatal autopsy death_requested
- files_in fqfiles_inmkdirp read_file read_lines register_cleanup slurp_file
+ files_in fqfiles_in mkdirp read_file read_lines register_cleanup slurp_file
  tempfile write_file write_lines append_file first_in_path new_stderr
  undf);
 use lib ".";
