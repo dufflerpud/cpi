@@ -23,7 +23,7 @@ our @ISA = qw /Exporter/;
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( get_trace stack_trace );
 use lib ".";
-
+use Devel::StackTrace;
 
 #__END__
 1;
@@ -33,13 +33,15 @@ use lib ".";
 #########################################################################
 sub get_trace
     {
-    my @ret;
-    for( my $i=0; 1; $i++ )
-	{
-	my($pack,$file,$line,$subname,$hasargs,$wantarray) = caller($i);
-	return @ret if( ! $pack );
-	push( @ret, "${file}:$line $subname" );
-	}
+    #   my @ret;
+    #   for( my $i=0; 1; $i++ )
+    #	{
+    #	my($pack,$file,$line,$subname,$hasargs,$wantarray) = caller($i);
+    #	return @ret if( ! $pack );
+    #	push( @ret, "${file}:$line $subname" );
+    #	}
+    my $trace_obj = Devel::StackTrace->new();
+    return $trace_obj->as_string;
     }
 
 #########################################################################

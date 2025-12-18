@@ -29,6 +29,7 @@ use lib ".";
 
 use cpi_log qw( log );
 use cpi_vars;
+use Devel::StackTrace;
 #__END__
 1;
 
@@ -264,15 +265,21 @@ sub death_requested
     if( $argp->{trace} )
 	{
 	print("<hr>") if( $ENV{SCRIPT_NAME} );
-	my $i = 0;
-	my($pack,$file,$line,$subname,$hasargs,$wantarray);
-	while( ($pack,$file,$line,$subname,$hasargs,$wantarray) = caller($i++) )
+#	my $i = 0;
+#	my($pack,$file,$line,$subname,$hasargs,$wantarray);
+#	while( ($pack,$file,$line,$subname,$hasargs,$wantarray) = caller($i++) )
+#	   {
+#	    if( $ENV{SCRIPT_NAME} )
+#	        { print("<li>${file}:$line $subname\n"); }
+#	    else
+#		{ print STDOUT "    ${file}:$line $subname\n"; }
+#	    } 
+	my $trace_obj = Devel::StackTrace->new();
+	foreach my $ln ( split(/n/,$trace_obj->as_string) )
 	    {
-	    if( $ENV{SCRIPT_NAME} )
-	        { print("<li>${file}:$line $subname\n"); }
-	    else
-		{ print STDOUT "    ${file}:$line $subname\n"; }
+	    print "\n", ( $ENV{SCRIPT_NAME} ? "<li>$ln" : "\t$ln" );
 	    }
+	print "\n";
 	}
     if( $argp->{log} )
 	{
