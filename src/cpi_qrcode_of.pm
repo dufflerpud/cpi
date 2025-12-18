@@ -45,7 +45,7 @@ sub qrcode_of
         level         => 'M',
         casesensitive => 1,
         lightcolor    => Imager::Color->new(255, 255, 255),
-        darkcolor     => Imager::Color->new(0, 0, 0),
+        darkcolor     => Imager::Color->new(0, 0, 0)
 	);
     &autopsy("Imager::QRCode->new failed:  $!") if( ! $qrcode );
     print STDERR "Going to write QR $fmt to ", ($argp->{file} || "UNDEF"), ".\n";
@@ -56,7 +56,7 @@ sub qrcode_of
     $img->write(data =>\$ret, type => $fmt);
 
     if( ! $ret )
-        { &autopsy("image writer failed:  $!"); }
+        { &autopsy("image writer failed:  ".$img->errstr); }
     else
 	{
 	if( my $encoding = $argp->{encoding} )
