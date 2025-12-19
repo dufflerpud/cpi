@@ -121,6 +121,9 @@ our $SENDMAIL =
     ? "/usr/lib/sendmail"
     : "sendmail" );
 our $FAX_SERVER;
+our $BASE_SERVER;
+our $BASE_URL;
+our $BASES_URL;
 
 #########################################################################
 # cpi_lock:

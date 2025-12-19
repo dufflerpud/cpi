@@ -155,8 +155,11 @@ sub setup
     $cpi_vars::ICON_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.ico";
     $cpi_vars::IOS_ICON_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.png";
     $cpi_vars::ANONYMOUS = 0;
-    $cpi_vars::DAEMON_EMAIL="$cpi_vars::PROG\@$cpi_vars::DOMAIN";
+    $cpi_vars::DAEMON_EMAIL ||= "$cpi_vars::PROG\@$cpi_vars::DOMAIN";
     $cpi_vars::FAX_SERVER ||= "Unknown";
+    $cpi_vars::BASE_SERVER ||= $ENV{SERVER_NAME};
+    $cpi_vars::BASE_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
+    $cpi_vars::BASES_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
 
     if( $ENV{SCRIPT_NAME} && $ENV{SCRIPT_NAME} ne "" )
 	{
