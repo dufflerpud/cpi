@@ -215,7 +215,7 @@ our $FULLNAME;
 our $DB;
 our $PAYMENT_SYSTEM;
 
-do "/etc/cpi_cfg.pl" if( -r "-r /etc/cpi_cfg.pl" );
+do "/etc/cpi_cfg.pl" if( -r "/etc/cpi_cfg.pl" );
 
 #__END__
 1;
