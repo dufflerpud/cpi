@@ -494,7 +494,7 @@ EOF
 
     &handle_invitations();
     system("touch $fname");
-    $cpi_vars::USER = $cpi_vars::REALUSER;
+    $cpi_vars::USER ||= $cpi_vars::REALUSER;
     $cpi_vars::FORM{USER} = $cpi_vars::USER
 	if( !defined($cpi_vars::FORM{USER}) || $cpi_vars::FORM{USER} eq "" );
     if( $cpi_vars::FORM{USER} ne $cpi_vars::REALUSER )
