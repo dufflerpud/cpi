@@ -25,7 +25,7 @@ our @EXPORT = qw( all_prog_users all_users
  can can_cgroup can_cuser can_suser can_use can_admin
  check_com_field group_to_name
  groups groups_of_user handle_invitations in_group invite
- login logout logout_select name_to_group read_sid user_can
+ login logout logout_select name_to_group write_sid read_sid user_can
  user_name users_in_group who );
 use lib ".";
 
