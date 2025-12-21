@@ -146,9 +146,8 @@ sub handle_invitations
 #########################################################################
 sub read_sid
     {
-    my( $fname ) = @_;
     ( $cpi_vars::REALUSER, $cpi_vars::USER, $cpi_vars::LANG )
-	= &read_lines($fname);
+	= &read_lines( "$cpi_vars::SIDDIR/$cpi_vars::SID" );
     }
 
 #########################################################################
@@ -156,8 +155,7 @@ sub read_sid
 #########################################################################
 sub write_sid
     {
-    my( $fname ) = @_;
-    &write_lines( $fname,
+    &write_lines( "$cpi_vars::SIDDIR/$cpi_vars::SID",
 	$cpi_vars::REALUSER,
 	$cpi_vars::USER,
 	$cpi_vars::LANG
@@ -241,7 +239,7 @@ sub login
 	    if( !defined($cpi_vars::FORM{new_prog})
 		|| $cpi_vars::FORM{new_prog} eq "logout" )
 		{
-		&read_sid( "$cpi_vars::SIDDIR/$cpi_vars::SID" );
+		&read_sid();
 		&logout();
 		$msg = "XL(Please identify yourself definitively.)";
 		}
@@ -265,7 +263,7 @@ sub login
 	        { $msg="XL(User session has timed out.  Please identify yourself definitively again.)"; }
 	    else	# Wow a real live logged in user.  Read user info from
 		{	# SID file.
-		&read_sid( $fname );
+		&read_sid();
 		$cpi_vars::ANONYMOUS = ( $cpi_vars::anonymous_user && $cpi_vars::REALUSER eq $cpi_vars::anonymous_user );
 		if( ! $cpi_vars::anonymous_user &&
 		    ! $cpi_vars::allow_account_creation &&
@@ -401,9 +399,8 @@ sub login
 	    if( $let_him_in )
 		{
 		$cpi_vars::SID = &compress_integer( rand() );
-		$fname = "$cpi_vars::SIDDIR/$cpi_vars::SID";
 		$cpi_vars::USER = $cpi_vars::REALUSER = $cpi_vars::FORM{user};
-		&write_sid( $fname );
+		&write_sid();
 		&CGIheader( "$cpi_vars::SIDNAME=$cpi_vars::SID;path=/" );
 		&log("$cpi_vars::REALUSER logs in in $cpi_vars::LANG with SID ${cpi_vars::SID}.");
 		$msg = "";
