@@ -147,7 +147,8 @@ sub handle_invitations
 sub read_sid
     {
     my( $fname ) = @_;
-    ( $cpi_vars::REALUSER, $cpi_vars::LANG ) = &read_lines($fname);
+    ( $cpi_vars::REALUSER, $cpi_vars::USER, $cpi_vars::LANG )
+	= &read_lines($fname);
     }
 
 #########################################################################
@@ -158,6 +159,7 @@ sub write_sid
     my( $fname ) = @_;
     &write_lines( $fname,
 	$cpi_vars::REALUSER,
+	$cpi_vars::USER,
 	$cpi_vars::LANG
 	);
     }
@@ -576,7 +578,7 @@ sub all_prog_users
 #########################################################################
 #	Return list of non deleted groups.				#
 #########################################################################
-sub groups()
+sub groups
     {
     my( @ret ) = ();
     foreach my $g ( &dbget($cpi_vars::ACCOUNTDB,"groups" ) )
