@@ -1263,11 +1263,9 @@ sub logout_select
     push( @s, "<option value=logout>XL(Logout)</option></select>\n" );
     if( 1 )
 	{
-	my $dis_user =
-	    ( $cpi_vars::USER eq $cpi_vars::REALUSER
-	    ? $cpi_vars::USER
-	    : "$cpi_vars::USER/$cpi_vars::REALUSER" );
-	push( @s, "<br>$dis_user" );
+	push( @s, "<br>", $cpi_vars::USER );
+	push( @s, "/", $cpi_vars::REALUSER )
+	    if( $cpi_vars::USER ne $cpi_vars::REALUSER );
 	}
 
     return join("",@s);
