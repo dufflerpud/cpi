@@ -246,7 +246,7 @@ sub player
 	    push( @args, "--vo=".($file_dep_argp->{vo}||"null") )
 		if( ($file_dep_argp->{vo}||"") ne "" );
 
-	    push( @args, "--loop-playlist=".($file_dep_argp->{loop}?$file_dep_argp->{loop}:"inf") )
+	    push( @args, "--loop-playlist=".($file_dep_argp->{loop}=~/\d/?$file_dep_argp->{times}:"inf") )
 	        if( defined($file_dep_argp->{loop}) );
 	    push( @args, "--fs" )
 		if( $file_dep_argp->{fullscreen} || $file_dep_argp->{screen});
