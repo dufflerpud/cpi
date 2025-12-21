@@ -285,7 +285,11 @@ sub death_requested
 	{
 	foreach my $msg ( @msgs )
 	    {
-	    &log( ($cpi_vars::REALUSER||"?") ."(". ($cpi_vars::SID||"?") . ")"
+	    my $e_user = ($cpi_vars::USER || "?");
+	    my $e_ruser = ($cpi_vars::REALUSER || "?");
+	    $e_user = ( $e_user eq $e_ruser ? $e_user : "$e_user/$e_ruser" );
+
+	    &log( $e_user ."(". ($cpi_vars::SID||"?") . ")"
 		. " had fatal error:  $msg");
 	    }
 	}
