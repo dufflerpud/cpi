@@ -1261,6 +1261,14 @@ sub logout_select
 	}
     #push( @s,	"<option value=admin>XL(User settings)</option>",
     push( @s, "<option value=logout>XL(Logout)</option></select>\n" );
+    if( 1 )
+	{
+	my $dis_user =
+	    ( $cpi_vars::USER eq $cpi_vars::REALUSER
+	    ? $cpi_vars::USER
+	    : "$cpi_vars::USER/$cpi_vars::REALUSER" );
+	push( @s, "<br>$dis_user" );
+	}
 
     return join("",@s);
     }
