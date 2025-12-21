@@ -501,7 +501,7 @@ EOF
     if( $cpi_vars::FORM{USER} ne $cpi_vars::REALUSER )
         {
 	$cpi_vars::FORM{USER} = lc($cpi_vars::FORM{USER});
-	if( $cpi_vars::FORM{USER} !~ /^[a-z0-9\.\@]+$/ )
+	if( $cpi_vars::FORM{USER} !~ /^[\w\.\@]+$/ )
 	    { &autopsy("$cpi_vars::FORM{USER} contains illegal characters."); }
 	elsif( ! &dbget($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{USER},"inuse") )
 	    { &autopsy("$cpi_vars::FORM{USER} does not exist"); }
