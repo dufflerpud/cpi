@@ -194,6 +194,7 @@ sub login
 	{
 	my ( $primary_func ) = split(/,/,$cpi_vars::FORM{func});
 	if( $cpi_vars::anonymous_funcs
+	 && $primary_func
 	 && grep( $_ eq $primary_func, split(/,/,$cpi_vars::anonymous_funcs) ) )
 	    {
 	    $cpi_vars::SID = ( $cpi_vars::anonymous_user || "anonymous" );
