@@ -159,7 +159,7 @@ sub setup
     $cpi_vars::FAX_SERVER ||= "Unknown";
     $cpi_vars::BASE_SERVER ||= $ENV{SERVER_NAME};
     $cpi_vars::BASE_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
-    $cpi_vars::BASES_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
+    $cpi_vars::BASES_URL ||= "https://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
 
     if( $ENV{SCRIPT_NAME} && $ENV{SCRIPT_NAME} ne "" )
 	{
