@@ -226,7 +226,8 @@ sub cleanup
 #########################################################################
 sub echodo
     {
-    my( $cmd ) = @_;
+    my( @arguments ) = @_;
+    my $cmd = join(" ",@arguments);
     if( $cpi_vars::VERBOSITY )
 	{
 	if( $ENV{SCRIPT_NAME} )
