@@ -145,7 +145,7 @@ sub parse_arguments
 	    my( $lhe, $rhe );
 	    if( $arg =~ /^-(.+)=+(.*)$/ )
 	    	{ $lhe=$1; $rhe=$2; }
-	    elsif( $arg =~ /^-([a-zA-Z]+)([^a-zA-Z].*)/ &&
+	    elsif( $arg =~ /^-([A-Za-z_]+)([^A-Za-z_].*)/ &&
 		&abbrev( $1, keys %{$argp->{switches}} ) )
 	    	{ $lhe=$1; $rhe=$2; }
 	    elsif( $arg =~ /^-(.+)/ )
