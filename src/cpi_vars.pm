@@ -108,6 +108,7 @@ our $ACCOUNTING_LOG = "/var/log/common.log";
 #########################################################################
 # cpi_mime:
 our %EXT_TO_MIME_TYPE;
+our %EXT_TO_BASE_TYPE;
 our %MIME_TYPE_TO_EXTS;
 our %MIME_TYPE_TO_BASE_TYPE;
 

@@ -41,6 +41,7 @@ sub read_mime_types
     %cpi_vars::EXT_TO_MIME_TYPE = ();
     %cpi_vars::MIME_TYPE_TO_EXTS = ();
     %cpi_vars::MIME_TYPE_TO_BASE_TYPE = ();
+    %cpi_vars::EXT_TO_BASE_TYPE = ();
     foreach my $file_to_try ( grep( -r $_,
 	"/etc/mime.types",
 	"/etc/apache2/mime.types",
@@ -51,12 +52,14 @@ sub read_mime_types
 	    my( $mimestr, @exts ) = split(/\s+/,lc($_));
 	    grep( $cpi_vars::EXT_TO_MIME_TYPE{$_}=$mimestr, @exts );
 	    grep( $cpi_vars::MIME_TYPE_TO_EXTS{$mimestr}{$_}=1, @exts );
-	    $cpi_vars::MIME_TYPE_TO_BASE_TYPE{$mimestr} =
+	    my $base_type =
 		( $mimestr =~ /movie/		? "movie"
 		: $mimestr =~ /gif/		? "gif"
 		: $mimestr !~ m/(.*)\/(.*)/	? $mimestr
 		: $1 eq "application"		? $2
 		: $1 );
+	    $cpi_vars::MIME_TYPE_TO_BASE_TYPE{$mimestr} = $base_type;
+	    grep( $cpi_vars::EXT_TO_BASE_TYPE{$_} = $base_type, @exts );
 	    }
 	}
     return sort keys %cpi_vars::MIME_TYPE_TO_EXTS;
