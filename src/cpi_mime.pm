@@ -39,9 +39,11 @@ use cpi_vars;
 sub read_mime_types
     {
     %cpi_vars::EXT_TO_MIME_TYPE = ();
+    %cpi_vars::EXT_TO_BASE_TYPE = ();
     %cpi_vars::MIME_TYPE_TO_EXTS = ();
     %cpi_vars::MIME_TYPE_TO_BASE_TYPE = ();
-    %cpi_vars::EXT_TO_BASE_TYPE = ();
+    %cpi_vars::BASE_TYPE_TO_EXTS = ();
+    %cpi_vars::BASE_TYPE_TO_MIME_TYPES = ();
     foreach my $file_to_try ( grep( -r $_,
 	"/etc/mime.types",
 	"/etc/apache2/mime.types",
@@ -60,6 +62,8 @@ sub read_mime_types
 		: $1 );
 	    $cpi_vars::MIME_TYPE_TO_BASE_TYPE{$mimestr} = $base_type;
 	    grep( $cpi_vars::EXT_TO_BASE_TYPE{$_} = $base_type, @exts );
+	    grep( $cpi_vars::BASE_TYPE_TO_EXTS{$base_type}{$_}=1, @exts );
+	    $cpi_vars::BASE_TYPE_TO_MIME_TYPES{$base_type}{$mimestr} = 1;
 	    }
 	}
     return sort keys %cpi_vars::MIME_TYPE_TO_EXTS;

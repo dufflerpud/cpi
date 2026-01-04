@@ -111,6 +111,8 @@ our %EXT_TO_MIME_TYPE;
 our %EXT_TO_BASE_TYPE;
 our %MIME_TYPE_TO_EXTS;
 our %MIME_TYPE_TO_BASE_TYPE;
+our %BASE_TYPE_TO_EXTS;
+our %BASE_TYPE_TO_MIME_TYPES;
 
 #########################################################################
 # cpi_send_file:
