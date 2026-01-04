@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( pretty_qw );
+our @EXPORT = qw( pretty_qw quotes );
 use lib ".";
 
 #__END__
@@ -45,6 +45,15 @@ sub pretty_qw
 	    { $lines[$#lines] .= " $item"; }
 	}
     return join("\n ",@lines) . $end;
+    }
+
+#########################################################################
+#	Created a string from an array of quoted elements.		#
+#	Good for constructing command lines.				#
+#########################################################################
+sub quotes
+    {
+    return join( " ", (map{"'$_'"} @_) );
     }
 
 1;
