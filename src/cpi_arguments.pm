@@ -172,7 +172,7 @@ sub parse_arguments
 		    }
 		elsif( defined( $res{$switchname} ) )
 		    {
-		    push( @problems, "-$switchname specified multiple times ($res{$switchname}})." );
+		    push( @problems, "-$switchname specified multiple times ($res{$switchname})." );
 		    }
 		elsif( defined( $rhe ) )
 		    {
