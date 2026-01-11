@@ -24,7 +24,7 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( setup );
 use lib ".";
 
-use cpi_file qw( cleanup new_stderr );
+use cpi_file qw( fatal cleanup new_stderr );
 use cpi_cgi qw( CGIreceive );
 use cpi_copy_db qw( copydb dumpdb undumpdb );
 use cpi_db qw( dbread find_db new_sql_table dbnew );
