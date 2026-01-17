@@ -48,12 +48,11 @@ sub qrcode_of
         darkcolor     => Imager::Color->new(0, 0, 0)
 	);
     &autopsy("Imager::QRCode->new failed:  $!") if( ! $qrcode );
-    print STDERR "Going to write QR $fmt to ", ($argp->{file} || "UNDEF"), ".\n";
     my $img = $qrcode->plot($text);
     &autopsy("Imager::QRCode->plot($text) failed:  $!") if( ! $img );
 
     my $ret;
-    $img->write(data =>\$ret, type => $fmt);
+    $img->write( data=>\$ret, type=>($argp->{type}||"jpeg") );
 
     if( ! $ret )
         { &autopsy("image writer failed:  ".$img->errstr); }
