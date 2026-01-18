@@ -49,6 +49,7 @@ our $SAME_RELATIVE	= <<EOF;
 	input[type=checkbox]    	{height:1em; width:1em;}
 	input[type=radio]       	{height:1em; width:1em;}
 	textarea                	{font-size:0.8em;}
+	button				{font-size:1em;}
 	select                  	{font-size:1em;}
 EOF
 
