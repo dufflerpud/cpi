@@ -56,14 +56,14 @@ our @CSS_PER_DEVICE_TYPE	=
     (					# Set base font sizes
     "iPhone"		=> <<EOF,	# for devices we know about
 	body				{font-size:45px;}
-	input.fixed_width_button	{width:700;}
+	input.fixed_width_button	{width:700px;}
 $SAME_RELATIVE
 	input[type=checkbox]		{width:50px;height:50px;}
 	input[type=radio]		{width:50px;height:50px;}
 EOF
     "iPad"		=> <<EOF,
 	body                    	{font-size:10px;}
-	input.fixed_width_button	{width:700;}
+	input.fixed_width_button	{width:700px;}
 $SAME_RELATIVE
 EOF
     "."			=> <<EOF
