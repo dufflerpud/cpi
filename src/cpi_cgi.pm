@@ -88,10 +88,11 @@ my $CGIheader_flag = 0;
 sub CGIheader
     {
     my( @varvals ) = @_;
-    if( ! $cpi_vars::CGIheader_has_been_printed++ )
+    if( ! $cpi_vars::CGIheader_has_been_printed )
 	{
 	if(! exists &main::check_if_app_needs_header || &main::check_if_app_needs_header() )
 	    {
+	    $cpi_vars::CGIheader_has_been_printed++;
 	    print "Content-type:  text/html; charset=\"utf-8\"\n";
 	    while( my $vr = shift(@varvals) )
 		{
