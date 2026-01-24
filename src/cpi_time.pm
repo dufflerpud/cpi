@@ -529,7 +529,9 @@ sub time_string
 	    $month += 1;
 	    }
 	}
+no warnings 'redundant';
     return sprintf($fmt,$year,$month,$day,$hour||0,$min||0,$sec||0);
+use warnings 'redundant';
     }
 
 #########################################################################
