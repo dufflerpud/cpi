@@ -28,6 +28,7 @@ our @EXPORT = qw( at at_add_field at_dur at_dur_add
  time_string timestr );
 use lib ".";
 
+use Date::Parse;
 
 #__END__
 1;
