@@ -61,6 +61,7 @@ my $mf_FGCOLOR = "#000000";
 my %mf_type_map =
     (
     "heif"		=> "heic",
+    "jfif"		=> "jpeg",
     "jpg"		=> "jpeg",
     "riff"		=> "webp"
     );
