@@ -233,7 +233,7 @@ sub echodo
 	if( $ENV{SCRIPT_NAME} )
 	    { print "<pre>+ $cmd</pre>\n"; }
 	else
-	    { print "+ $cmd\n"; }
+	    { print STDERR "+ $cmd\n"; }
 	}
     return system( $cmd );
     }
