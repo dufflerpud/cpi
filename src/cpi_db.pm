@@ -233,7 +233,8 @@ sub dbget_hash
     push( @problems, "Database not specified") if( ! $dbname );
     push( @problems, "No arguments specified to dbget_hash")
 	if( ! @args || !defined( $args[0] ) );
-    return $cpi_vars::databases{$dbname}{join($cpi_vars::DBSEP,@args)} if( ! @problems );
+    return $cpi_vars::databases{$dbname}{join($cpi_vars::DBSEP,@args)}
+	if( ! @problems );
     &stack_trace( @problems );
     return undef;
     }
