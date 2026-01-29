@@ -42,8 +42,8 @@ sub setup
     {
     my( %args ) = @_;
 
-    if( $args{stderr} )		# Do early to make error checking easier
-        {
+    if( $args{stderr} && $ENV{SCRIPT_FILENAME} )
+        {	# Do early to make error checking easier
 	my $stderr_fname =
 	    ( $args{stderr} =~ /^\//
 	    ? $args{stderr}
