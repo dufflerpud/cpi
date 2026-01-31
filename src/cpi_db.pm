@@ -29,7 +29,7 @@ our @EXPORT = qw( db_cleanup db_gdbm db_gothere db_perlobj
  dbput_gdbm dbput_hash dbput_perlobj dbput_sql dbread
  dbread_gdbm dbread_perlobj dbread_sql dbtest dbtype dbupdate
  dbwrite find_db new_sql_table
- DBread DBwrite DBpop DBget DBput DBdelkey DBadd DBdel DBnewkey );
+ DBread DBwrite DBpop DBclose DBget DBput DBdelkey DBadd DBdel DBnewkey );
 use lib ".";
 
 use cpi_compress_integer qw( compress_integer );
@@ -704,6 +704,7 @@ sub db_cleanup
 sub DBread	{ return &dbread	( $cpi_vars::DB	);	}
 sub DBwrite	{ return &dbwrite	( $cpi_vars::DB	);	}
 sub DBpop	{ return &dbpop		( $cpi_vars::DB	);	}
+sub DBclose	{ return &dbclose	( $cpi_vars::DB	);	}
 sub DBget	{ return &dbget		( $cpi_vars::DB,@_);	}
 sub DBput	{ return &dbput		( $cpi_vars::DB,@_);	}
 sub DBdelkey	{ return &dbdelkey	( $cpi_vars::DB,@_);	}
