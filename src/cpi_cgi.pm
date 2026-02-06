@@ -250,13 +250,6 @@ sub CGIreceive
 	    push (@fields, $name) unless (grep(/^$name$/, @fields));
 	    }
 	}
-    foreach my $ind ( sort keys %cpi_vars::FORM )
-	{
-	my $topr = $cpi_vars::FORM{$ind};
-	$topr = substr($topr,0,40) . " ..." if( length($topr) > 40 );
-        $topr =~ s/([^ -z])/uc sprintf("\\%03o",ord($1))/eg;
-	print STDERR "    $ind = $topr\n";
-	}
     print STDERR "Form:\n";
     foreach my $k ( sort keys %cpi_vars::FORM )
         {
