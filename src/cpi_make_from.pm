@@ -1020,6 +1020,7 @@ sub mf_xml2dxml
 #########################################################################
 sub mf_path_recurse
     {
+no warnings 'recursion';
     my( $dest, $level ) = @_;
 
     return -1 if( $mf_defining{$dest}++ );
@@ -1116,6 +1117,7 @@ sub mf_setup_path
 	    = $mf_rule_map{$path};
 	push( @{$mf_possible_sources{$destext} }, $sorted_srcexts );
 	}
+no warnings 'recursion';
     return &mf_path_recurse( $dest, 0 );
     }
 
