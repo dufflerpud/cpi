@@ -257,7 +257,17 @@ sub CGIreceive
         $topr =~ s/([^ -z])/uc sprintf("\\%03o",ord($1))/eg;
 	print STDERR "    $ind = $topr\n";
 	}
-    print STDERR "Form:\n", map { "  $_ = [$cpi_vars::FORM{$_}]\n" } sort keys %cpi_vars::FORM;
+    print STDERR "Form:\n";
+    foreach my $k ( sort keys %cpi_vars::FORM )
+        {
+	if( length($cpi_vars::FORM{$k}) <= 50 )
+	    { print STDERR "  $k=[$cpi_vars::FORM{$k}]\n"; }
+	else
+	    {
+	    printf STDERR ( "  %s=[%.50s] (%db)\n",
+		$k, $cpi_vars::FORM{$k}, length( $cpi_vars::FORM{$k} ) );
+	    }
+	}
     }
 
 #########################################################################
