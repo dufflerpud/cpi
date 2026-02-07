@@ -86,9 +86,19 @@ sub read_lines
 #########################################################################
 sub write_file
     {
-    my( $fn, @contents ) = @_;
+    my( $out_string, @contents ) = @_;
+    my $fn = $out_string;
+    my $iotype = "create";
 
-    open( OUT, ">$fn" ) || &autopsy("Cannot write $fn:  $!");
+    if( $out_string =~ /^>>(.*)/ )
+	{ $fn = $2; $iotype="append to"; }
+    elsif( $out_string =~ /^>(.*)/ )
+	{ $fn = $2; $iotype="create"; }
+    elsif( $out_string =~ /^\|(.*)/ )
+	{ $fn = $2; $iotype="pipe to command"; }
+    else
+	{ $out_string=">$fn"; }
+    open( OUT, $out_string ) || &autopsy("Cannot $iotype $fn:  $!");
     binmode OUT;
     print OUT @contents;
     close( OUT );
@@ -109,11 +119,7 @@ sub write_lines
 sub append_file
     {
     my( $fn, @contents ) = @_;
-
-    open( OUT, ">>$fn" ) || &autopsy("Cannot append to $fn:  $!");
-    binmode OUT;
-    print OUT @contents;
-    close( OUT );
+    return &write_file( ">>$fn", @contents );
     }
 
 #########################################################################
