@@ -311,6 +311,7 @@ sub safe_url
 sub older_json
     {
     my( $str ) = @_;
+    my $ctr = 0;
 
     $str =~ s/\bconst\b/var/gms;	# Old javascript doesn't know "const"
 
