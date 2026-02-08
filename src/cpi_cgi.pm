@@ -26,6 +26,7 @@ our @EXPORT = qw( CGIheader CGIreceive embed_css note_to_html
 use lib ".";
 
 use cpi_file qw( read_file );
+use cpi_compress_integer qw( compress_integer );
 use cpi_vars;
 #__END__
 1;
