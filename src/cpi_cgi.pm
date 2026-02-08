@@ -22,7 +22,7 @@ our @ISA = qw /Exporter/;
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
 our @EXPORT = qw( CGIheader CGIreceive embed_css note_to_html
- embed_javascript safe_html safe_url show_vars starting_CSS );
+ embed_javascript safe_html safe_url show_vars older_json starting_CSS );
 use lib ".";
 
 use cpi_file qw( read_file );
@@ -303,6 +303,42 @@ sub safe_url
     my( $ret ) = @_;
     $ret =~ s/([^A-Za-z0-9])/uc sprintf("%%%02x",ord($1))/eg;
     return $ret;
+    }
+
+#########################################################################
+#	Remove various things that are not legal in old javascript.	#
+#########################################################################
+sub older_json
+    {
+    my( $str ) = @_;
+
+    $str =~ s/\bconst\b/var/gms;	# Old javascript doesn't know "const"
+
+    my @out_strings;
+
+    foreach my $pc ( split(/\b(for\s*\(.*?\)\s*{)/ms,$str) )
+        {
+	if( $pc !~ /for\s*\(\s*var\s+([\w_]+)\s+(of|in)\s+(.*?)\s*\)(\s*)\{/ms )
+	    { push( @out_strings, $pc ); }
+	else
+	    {
+	    my $varname = $1;
+	    my $inof = $2;
+	    my $arrayname = $3;
+	    my $whitespace = $4;
+	    my $instance = &compress_integer( $ctr++ );
+	    push( @out_strings,
+		"var ${arrayname}_keys${instance}=Object.keys($arrayname); for( var ${varname}_ojs${instance}=0; ${varname}_ojs${instance}<${arrayname}_keys${instance}.length; ${varname}_ojs${instance}++ )${whitespace}{ var $varname=",
+		( $inof eq "in"
+		? "${arrayname}_keys${instance}\[${varname}_ojs${instance}\];"
+		: "${arrayname}\[${arrayname}_keys${instance}\[${varname}_ojs${instance}\]\];"
+		) );
+	    }
+	}
+
+    # Yeah, we could just return the array and let write_file put it back
+    # together again.  I just prefer the idea of string-in => string-out.
+    return join("",@out_strings);
     }
 
 #########################################################################
