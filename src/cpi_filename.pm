@@ -21,7 +21,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( dirname filename_to_text text_to_filename no_ext_of
+our @EXPORT = qw( dirname basename filename_to_text text_to_filename no_ext_of
  just_ext_of same_ext);
 use lib ".";
 
@@ -62,6 +62,18 @@ sub dirname
     my( $str ) = @_;
     return "." if( $str !~ /\// );
     $str =~ s+/[^/]*$++;
+    return $str;
+    }
+
+#########################################################################
+#	Apparently perl's basename has gone away.			#
+#########################################################################
+sub basename
+    {
+    my( $str, @suffixes ) = @_;
+    $str =~ s+.*/++;
+    foreach my $toremove ( @suffixes )
+	{ $str =~ s+$toremove$++; }
     return $str;
     }
 
