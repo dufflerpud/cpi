@@ -73,8 +73,8 @@ sub user_can
     }
 
 sub can_cuser	{ return &user_can("create_user"); }
-sub can_suser	{ return &user_can("create_user"); }
 sub can_cgroup	{ return &user_can("create_group"); }
+sub can_suser	{ return &user_can("create_user"); }
 sub can_use	{ return &user_can(lc("${cpi_vars::PROG}_user")); }
 sub can_admin	{ return &user_can(lc("${cpi_vars::PROG}_admin")); }
 
@@ -192,7 +192,6 @@ sub login
     my( $form_login ) = @_;
     $form_login ||= $cpi_vars::DEFAULT_FORM;
     my $msg = "";
-    my $fname;
     my @toprint;
     my $check_group = &name_to_group( $cpi_vars::PROG . " user" );
 
@@ -275,15 +274,25 @@ sub login
 	    }
 	else	# If we're here, we have a legitimate SID.
 	    {	# Check if it's not too old.
-	    $fname = "$cpi_vars::SIDDIR/$cpi_vars::SID";
+	    print STDERR "CMC checking $cpi_vars::SIDDIR/$cpi_vars::SID.\n";
 	    my( $st_ino, $st_dev, $st_mode, $st_nlink,
 		$st_uid, $st_gid, $st_rdev, $st_size, $st_atime, $st_mtime,
-		$st_ctime, $st_blksize, $st_blocks) = lstat( $fname );
+		$st_ctime, $st_blksize, $st_blocks)
+		= lstat( "$cpi_vars::SIDDIR/$cpi_vars::SID" );
 	    if( (time - $st_mtime) > $cpi_vars::LOGIN_TIMEOUT )
 	        { $msg="XL(User session has timed out.  Please identify yourself definitively again.)"; }
 	    else	# Wow a real live logged in user.  Read user info from
 		{	# SID file.
+		print STDERR "Reading SID...\n";
 		&read_sid();
+		print STDERR "REALUSER=$cpi_vars::REALUSER, USER=$cpi_vars::USER, LANG=$cpi_vars::LANG\n";
+		if( $cpi_vars::FORM{switchuser} =~ /\w/
+		 && $cpi_vars::FORM{switchuser} ne $cpi_vars::USER
+		 && &can_suser() )
+		    {
+		    $cpi_vars::USER = $cpi_vars::FORM{user} = $cpi_vars::FORM{switchuser};
+		    &write_sid();
+		    }
 		$cpi_vars::ANONYMOUS = ( $cpi_vars::anonymous_user && $cpi_vars::REALUSER eq $cpi_vars::anonymous_user );
 		if( ! $cpi_vars::anonymous_user &&
 		    ! $cpi_vars::allow_account_creation &&
@@ -513,7 +522,7 @@ EOF
 	}
 
     &handle_invitations();
-    system("touch $fname");
+    system("touch $cpi_vars::SIDDIR/$cpi_vars::SID");
     $cpi_vars::USER ||= $cpi_vars::REALUSER;
     $cpi_vars::FORM{USER} = $cpi_vars::USER
 	if( !defined($cpi_vars::FORM{USER}) || $cpi_vars::FORM{USER} eq "" );
