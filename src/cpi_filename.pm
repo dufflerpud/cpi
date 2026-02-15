@@ -39,8 +39,8 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( dirname basename filename_to_text text_to_filename no_ext_of
- just_ext_of same_ext);
+our @EXPORT = qw( dirname basename filename_to_text text_to_filename
+ no_ext_of just_ext_of same_ext distill_filename glob_from );
 use lib ".";
 
 
@@ -122,5 +122,32 @@ sub same_ext
     {
     my( $fname1, $fname2 ) = @_;
     return &no_ext_of( $fname1 ) . "." . &just_exit_of( $fname2 );
+    }
+
+#########################################################################
+#	Get rid of ./s in filename.  This may get greedier (e.g.	#
+#	removing symlinks) but not for now.				#
+#########################################################################
+sub distill_filename
+    {
+    my ( $filename ) = @_;
+    $filename =~ s+/(\./)*+/+g;
+    $filename =~ s+^\./++;
+    return $filename;
+    }
+
+#########################################################################
+#	Just like the usual glob routine, but do it as if from another	#
+#	directory than CWD.						#
+#########################################################################
+sub glob_from
+    {
+    my( $expr, $dir ) = @_;
+    my $current_directory = $ENV{PWD};
+    chdir($dir) || &autopsy("Cannot chdir($dir):  $!");
+    my @ret = glob( $expr );
+    chdir( $current_directory )
+	|| &autopsy("Cannot chdir back to $current_directory:  $!");
+    return @ret;
     }
 1;
