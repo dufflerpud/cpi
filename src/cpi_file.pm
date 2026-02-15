@@ -116,6 +116,7 @@ sub write_file
 	{ $fn = $2; $iotype="pipe to command"; }
     else
 	{ $out_string=">$fn"; }
+    #print STDERR "out_string=[$out_string] fn=[$fn] contents[0]=$contents[0].\n";
     open( OUT, $out_string ) || &autopsy("Cannot $iotype $fn:  $!");
     binmode OUT;
     print OUT @contents;
