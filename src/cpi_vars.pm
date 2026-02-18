@@ -203,9 +203,9 @@ our $LANG_TRAN;
 our $WRITTEN_IN;
 
 #########################################################################
-# cpi_translate:
-our $KEY_CAPTCHA_PUBLIC	= "6LfWBgUAAAAAAGBpRAxhZTUixDVWVVRJBqnq-4_Q";
-our $KEY_CAPTCHA_PRIVATE	= "6LfWBgUAAAAAAH6d5yLV3pGUsxaruuh8JGfz0W2X";
+# cpi_user:
+our $KEY_CAPTCHA_PUBLIC		= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+our $KEY_CAPTCHA_PRIVATE	= "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY";
 
 our @CONFIRM_FIELDS =
     (
