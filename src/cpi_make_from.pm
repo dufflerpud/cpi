@@ -44,6 +44,7 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( convert_file generate_rules
  mf_all_enscript_rules mf_all_ffmpeg_rules
  mf_all_mf_obj2obj_rules mf_all_sox_rules
+ mf_all_qemu_img_rules
  mf_all_table_fun_rules mf_avivob mf_dump_maps mf_force_file
  mf_get_obj mf_movie2frame mf_obj2obj mf_one_rule
  mf_path_recurse mf_pnm2mpeg mf_pushtype mf_put_obj
@@ -53,7 +54,7 @@ our @EXPORT = qw( convert_file generate_rules
 use lib ".";
 
 use cpi_db qw( dbpop dbread );
-use cpi_file qw( echodo autopsy read_file write_file );
+use cpi_file qw( echodo autopsy read_file read_lines write_file first_in_path );
 use cpi_vars;
 use GDBM_File;
 use JSON;
@@ -437,6 +438,39 @@ sub mf_all_sox_rules
     }
 
 #########################################################################
+#	qemu_img has so many file types that we'll add them		#
+#	automatically.							#
+#########################################################################
+sub mf_all_qemu_img_rules
+    {
+    my %ext_hash;
+    my $in_format_list = 0;
+    foreach $_ ( &read_lines("qemu-img -h 2>&1 |" ) )
+	{
+	if( /^Supported image/ )
+	    { $in_format_list = 1; }
+	elsif( /^See / )
+	    { $in_format_list = 0; }
+	elsif( $in_format_list )
+	    {
+	    grep( $ext_hash{$_}=1, split(/\s+/,$_) );
+	    }
+	}
+    my @qemu_img_exts = keys %ext_hash;
+    foreach my $fext ( @qemu_img_exts )
+	{
+	foreach my $text ( @qemu_img_exts )
+	    {
+	    &mf_one_rule( $fext, $text, 1,
+	        "cat - > $mf_TMP.$fext"
+		. "; qemu-img convert -f $fext -O $text $mf_TMP.$fext $mf_TMP.$text"
+		. "; cat $mf_TMP.$text" )
+		if( $fext ne $text );
+	    }
+	}
+    }
+
+#########################################################################
 #	ffmpeg has so many file types that we'll add them automatically.#
 #########################################################################
 sub mf_all_ffmpeg_rules
@@ -631,7 +665,7 @@ sub mf_obj2obj
     }
 
 #########################################################################
-#	Generate all of the rules for mf_obj2obj				#
+#	Generate all of the rules for mf_obj2obj			#
 #########################################################################
 sub mf_all_mf_obj2obj_rules
     {
@@ -1148,10 +1182,11 @@ sub generate_rules
     {
     my( $destfile, @srcfiles ) = @_;
 
-    &mf_all_sox_rules();
-    &mf_all_ffmpeg_rules();
-    &mf_all_enscript_rules();
-    &mf_all_table_fun_rules();
+    &mf_all_sox_rules()		if( &first_in_path("sox") );
+    &mf_all_qemu_img_rules()	if( &first_in_path("qemu-img") );
+    &mf_all_ffmpeg_rules()	if( &first_in_path("ffmpeg") );
+    &mf_all_enscript_rules()	if( &first_in_path("enscript") );
+    &mf_all_table_fun_rules()	if( &first_in_path("table_fun") );
     &mf_all_mf_obj2obj_rules();
 
     &autopsy("Can't generate $destfile from ".join(",",@srcfiles).".")
