@@ -161,7 +161,7 @@ our $DAEMON_EMAIL;
 our $DOMAIN;
 our $THIS;
 our $BASEFILE;
-our $OFFSET = "/sto";
+our $WEBOFFSET = "/sto";
 our $WEBSITE;
 our $PROG;
 if ( defined($ENV{SCRIPT_FILENAME})

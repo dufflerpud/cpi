@@ -110,7 +110,7 @@ sub setup
     $cpi_vars::BASEFILE=~s+/\./+/+g;
     $cpi_vars::BASEFILE=~s+-test\.+.+g;
     $cpi_vars::BASEDIR=$cpi_vars::BASEFILE;
-    $cpi_vars::BASEDIR=~s+$cpi_vars::OFFSET/+/+;
+    $cpi_vars::BASEDIR=~s+$cpi_vars::WEBOFFSET/+/+;
     $cpi_vars::BASEDIR=~s+/index\.cgi$++;
     $cpi_vars::BASEDIR=~s+/app\.cgi$++;
     $cpi_vars::BASEDIR=~s+\.cgi$++;
@@ -170,16 +170,16 @@ sub setup
     $cpi_vars::PAYMENT_SYSTEM = $args{payment_system};
     $cpi_vars::DOMAIN||="Unknown";
     $cpi_vars::CSS_URL="/default.css";
-    $cpi_vars::PROG_CSS_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/$cpi_vars::PROG.css";
-    $cpi_vars::ICON_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.ico";
-    $cpi_vars::IOS_ICON_URL="$cpi_vars::OFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.png";
+    $cpi_vars::PROG_CSS_URL="$cpi_vars::WEBOFFSET/$cpi_vars::PROG/$cpi_vars::PROG.css";
+    $cpi_vars::ICON_URL="$cpi_vars::WEBOFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.ico";
+    $cpi_vars::IOS_ICON_URL="$cpi_vars::WEBOFFSET/$cpi_vars::PROG/".$cpi_vars::PROG."_icon.png";
     $cpi_vars::ANONYMOUS = 0;
     $cpi_vars::DAEMON_EMAIL ||= "$cpi_vars::PROG\@$cpi_vars::DOMAIN";
     $cpi_vars::FAX_SERVER ||= "Unknown";
     $cpi_vars::BASE_SERVER ||= $ENV{SERVER_NAME};
     $cpi_vars::BASE_SERVER ||= "localhost";
-    $cpi_vars::BASE_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
-    $cpi_vars::BASES_URL ||= "https://".$cpi_vars::BASE_SERVER.$cpi_vars::OFFSET;
+    $cpi_vars::BASE_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::WEBOFFSET;
+    $cpi_vars::BASES_URL ||= "https://".$cpi_vars::BASE_SERVER.$cpi_vars::WEBOFFSET;
 
     if( $ENV{SCRIPT_NAME} && $ENV{SCRIPT_NAME} ne "" )
 	{
