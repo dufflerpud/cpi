@@ -52,7 +52,7 @@ show_required_modules:
 	cpan -O $(REQUIRED_MODULES)
 
 install_required_modules:
-ifneq (,$wildcard( /usr/bin/vendor_perl/cpanm ))
+ifneq (,$(wildcard /usr/bin/vendor_perl/cpanm ))
 	-/usr/bin/vendor_perl/cpanm install $(REQUIRED_MODULES)
 else
 	-cpan install $(REQUIRED_MODULES)
