@@ -47,7 +47,7 @@ use cpi_db qw( dbclose dbnew dbput dbread dbwrite );
 use cpi_file qw( cleanup autopsy write_file );
 use cpi_vars;
 use Data::Dumper;
-use if( $^O ne "freebsd" ), GDBM_File;
+use if( $^O ne "freebsd" ), "GDBM_File";
 #__END__
 1;
 
