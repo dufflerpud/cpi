@@ -35,13 +35,14 @@ MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 INSTALLDIR=/usr/local/lib/perl
 CPI_USER_DIR=/usr/local/projects/common
 REQUIRED_MODULES=$(shell \
-    grep '^use ' cpi_*.pm | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
+    grep '^use ' cpi_*.pm | grep -v 'use if' | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
+    grep -v '^warnings' | \
     grep -v '^cpi_' | \
     grep -v '^lib' | \
     grep -v '^strict' | \
     grep -v '^Exporter' | \
     grep -v '^AutoLoader' | \
-    sort -u)
+    sort -u )
 
 No_argument_supplied:
 	id
@@ -49,6 +50,7 @@ No_argument_supplied:
 	@false
 
 show_required_modules:
+	@echo "Required modules seen:  " $(REQUIRED_MODULES)
 	cpan -O $(REQUIRED_MODULES)
 
 install_required_modules:
