@@ -61,7 +61,7 @@ endif
 install:
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
 	@id | grep uid=0 || (echo "Must install as root." && false)
-	install -d -m 0755 -o root -g root $(INSTALLDIR)
+	install -d -m 0755 -o 0 -g 0 $(INSTALLDIR)
 	rm -rf $(INSTALLDIR)/cpi_* $(INSTALLDIR)/auto/cpi_*
 	for m in *.pm; do \
 	    sed -e 's:use lib ".":use lib "$(INSTALLDIR)":' < $$m > $(INSTALLDIR)/$$m; \
