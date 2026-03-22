@@ -326,7 +326,7 @@ auto/cpi_send_file/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_mime/autosplit.ix\
 	auto/cpi_vars/autosplit.ix
-	perl cpi_send_file.pm
+	[ -x /usr/bin/freebsd_version ] || perl cpi_send_file.pm
 	[ -d auto/cpi_send_file ] || mkdir -p auto/cpi_send_file
 	mv cpi_send_file.pm cpi_send_file.compiling
 	sed -e 's/^#*__END__/__END__/' < cpi_send_file.compiling > cpi_send_file.pm
