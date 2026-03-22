@@ -58,7 +58,7 @@ use cpi_trace qw( stack_trace );
 use cpi_inlist qw( inlist );
 use cpi_vars;
 use Data::Dumper;
-use GDBM_File if( $^O ne "freebsd" );
+use if( $^O ne "freebsd" ), GDBM_File;
 use DBI;
 #__END__
 1;

@@ -56,7 +56,7 @@ use lib ".";
 use cpi_db qw( dbpop dbread );
 use cpi_file qw( echodo autopsy read_file read_lines write_file first_in_path );
 use cpi_vars;
-use GDBM_File if( $^O ne "freebsd" );
+use if( $^O ne "freebsd" ), GDBM_File;
 use JSON;
 use Data::Dumper;
 1;
