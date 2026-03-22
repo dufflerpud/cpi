@@ -67,11 +67,11 @@ install:
 	    sed -e 's:use lib ".":use lib "$(INSTALLDIR)":' < $$m > $(INSTALLDIR)/$$m; \
 	done
 	cp $(CURRENT_MAKEFILE) $(INSTALLDIR)/Makefile.cpi
-	cd $(INSTALLDIR); make -f Makefile.cpi all_modules
+	cd $(INSTALLDIR); $(MAKE) -f Makefile.cpi all_modules
 
 remake:
 	rm -rf auto/cpi_*
-	make -f $(CURRENT_MAKEFILE) all_modules
+	$(MAKE) -f $(CURRENT_MAKEFILE) all_modules
 
 all_modules:\
 	auto/cpi_vars/autosplit.ix\
