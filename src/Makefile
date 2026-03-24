@@ -139,6 +139,7 @@ auto/cpi_cache/autosplit.ix:\
 	mv cpi_cache.compiling cpi_cache.pm
 auto/cpi_cgi/autosplit.ix:\
 	auto/cpi_file/autosplit.ix\
+	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_vars/autosplit.ix
 	-perl cpi_cgi.pm
 	[ -d auto/cpi_cgi ] || mkdir -p auto/cpi_cgi
@@ -189,6 +190,7 @@ auto/cpi_copy_db/autosplit.ix:\
 auto/cpi_db/autosplit.ix:\
 	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_config/autosplit.ix\
+	auto/cpi_compress_integer/autosplit.ix\
 	auto/cpi_file/autosplit.ix\
 	auto/cpi_lock/autosplit.ix\
 	auto/cpi_inlist/autosplit.ix\
