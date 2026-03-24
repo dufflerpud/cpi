@@ -55,9 +55,13 @@ show_required_modules:
 
 install_required_modules:
 ifneq (,$(wildcard /usr/bin/vendor_perl/cpanm ))
-	-/usr/bin/vendor_perl/cpanm install $(REQUIRED_MODULES)
+	-@set +e; set -x; for pm in $(REQUIRED_MODULES) ; do; \
+	    /usr/bin/vendor_perl/cpanm install $$pm ; \
+	done
 else
-	-cpan install $(REQUIRED_MODULES)
+	-@set +e; set -x; for pm in $(REQUIRED_MODULES) ; do; \
+	    cpan install $$pm ; \
+	done
 endif
 
 install:
