@@ -63,6 +63,7 @@ else
 	    cpan install $$pm ; \
 	done
 endif
+	@true
 
 install:
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
