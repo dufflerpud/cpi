@@ -121,10 +121,13 @@ sub parse_arguments
     if( ! $argp )	# Backward compatibility
     	{
 	$argp = {};
+	%main::ONLY_ONE_DEFAULTS if( 0 );	# Get rid of used once errors
 	$argp->{switches} = \%main::ONLY_ONE_DEFAULTS
 	    ;#if( exists ( %main::ONLY_ONE_DEFAULTS ) );
+	%main::ARGS if( 0 );			# Get rid of used once errors
 	$copy_res_to = \%main::ARGS
 	    ;#if( exists( %main::ARGS ) );
+	@main::files if( 0 );			# Get rid of used once errors
 	$argp->{non_switches} = \@main::files
 	    ;#if exists( @main::files ) );
 	}
