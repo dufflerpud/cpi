@@ -44,6 +44,22 @@ REQUIRED_MODULES=$(shell \
     grep -v '^AutoLoader' | \
     sort -u )
 
+ifeq (,$(MAKE))
+    ifneq (,$(shell command -v gmake))
+        MAKE=gmake
+    else
+        MAKE=make
+    endif
+endif
+
+ifeq (,$(GNUINSTALL))
+    ifneq (,$(wildcard /usr/gnu/bin/install))
+	GNUINSTALL=/usr/gnu/bin/install
+    else
+	GNUINSTALL=install
+    endif
+endif
+
 No_argument_supplied:
 	id
 	@echo "You must specify either 'install', 'remake' or 'all_modules'"
@@ -68,7 +84,7 @@ endif
 install:
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
 	@id | grep uid=0 || (echo "Must install as root." && false)
-	install -d -m 0755 -o 0 -g 0 $(INSTALLDIR)
+	$(GNUINSTALL) -d -m 0755 -o 0 -g 0 $(INSTALLDIR)
 	rm -rf $(INSTALLDIR)/cpi_* $(INSTALLDIR)/auto/cpi_*
 	for m in *.pm; do \
 	    sed -e 's:use lib ".":use lib "$(INSTALLDIR)":' < $$m > $(INSTALLDIR)/$$m; \
