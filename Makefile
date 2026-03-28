@@ -1,7 +1,7 @@
 GIT?=git
 
 ifeq (,$(SUDO))
-    ifneq(0,$(shell id -u))
+    ifneq (0,$(shell id -u))
         SUDO=sudo
     endif
 endif
