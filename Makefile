@@ -1,3 +1,10 @@
+ifneq (,$(wildcard /boot/home/config/non-packaged))
+    USRLOCAL?=/boot/home/config/non-packaged
+else
+    USRLOCAL?=/usr/local
+endif
+
+SYSTEMBIN?=$(USRLOCAL)/bin
 GIT?=git
 
 ifeq (,$(SUDO))
@@ -25,9 +32,9 @@ endif
 install:
 	-cd src; $(SUDO) $(MAKE) install_required_modules
 	-cd src; $(SUDO) $(MAKE) install
-	$(GNUINSTALL) -d /usr/local/bin
-	$(GNUINSTALL) -m 0755 tests/cpi_user.pl /usr/local/bin/cpi_user
-	$(GNUINSTALL) -m 0755 tests/cpi_db.pl /usr/local/bin/cpi_db
+	$(GNUINSTALL) -d $(SYSTEMBIN)
+	$(GNUINSTALL) -m 0755 tests/cpi_user.pl $(SYSTEMBIN)/cpi_user
+	$(GNUINSTALL) -m 0755 tests/cpi_db.pl $(SYSTEMBIN)/cpi_db
 
 fresh:
 	@$(GIT) pull

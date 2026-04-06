@@ -32,8 +32,13 @@
 # Makefile to build CPI
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
 MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
-INSTALLDIR=/usr/local/lib/perl
-CPI_USER_DIR=/usr/local/projects/common
+ifneq (,$(wildcard /boot/home/config/non-packaged))
+    USRLOCAL?=/boot/home/config/non-packaged
+else
+    USRLOCAL?=/usr/local
+endif
+INSTALLDIR=$(USRLOCAL)/lib/perl
+CPI_USER_DIR=$(USRLOCAL)/projects/common
 REQUIRED_MODULES=$(shell \
     grep '^use ' cpi_*.pm | grep -v 'use if' | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
     grep -v '^warnings' | \
