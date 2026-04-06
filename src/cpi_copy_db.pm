@@ -47,7 +47,7 @@ use cpi_db qw( dbclose dbnew dbput dbread dbwrite );
 use cpi_file qw( cleanup autopsy write_file );
 use cpi_vars;
 use Data::Dumper;
-use GDBM_File;
+use if( $^O ne "haiku" ), "GDBM_File";
 #__END__
 1;
 

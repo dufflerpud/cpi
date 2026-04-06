@@ -58,7 +58,7 @@ use cpi_trace qw( stack_trace );
 use cpi_inlist qw( inlist );
 use cpi_vars;
 use Data::Dumper;
-use GDBM_File;
+use if( $^O ne "haiku" ), "GDBM_File";
 use DBI;
 #__END__
 1;

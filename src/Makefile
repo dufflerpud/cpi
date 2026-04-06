@@ -35,7 +35,7 @@ MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 INSTALLDIR=/usr/local/lib/perl
 CPI_USER_DIR=/usr/local/projects/common
 REQUIRED_MODULES=$(shell \
-    grep '^use ' cpi_*.pm | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
+    grep '^use ' cpi_*.pm | grep -v 'use if' | sed -e 's/.*:use //' -e 's/ .*//' -e 's/;//' | \
     grep -v '^warnings' | \
     grep -v '^cpi_' | \
     grep -v '^lib' | \
