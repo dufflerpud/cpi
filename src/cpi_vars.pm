@@ -43,6 +43,13 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( );
 use lib ".";
 
+our $USRLOCAL =
+    ( -d "/boot/home/config/non-packaged"
+    ? "/boot/home/config/non-packaged"
+    : "/usr/local" );
+our $SYSTEMBIN = "$USRLOCAL/bin";
+our $SYSTEMLIB = "$USRLOCAL/lib";
+our $SYSTEMETC = "$USRLOCAL/etc";
 
 #########################################################################
 # cpi_cache:
@@ -238,7 +245,7 @@ our $FULLNAME;
 our $DB;
 our $PAYMENT_SYSTEM;
 
-do "/etc/cpi_cfg.pl" if( -r "/etc/cpi_cfg.pl" );
+do "$SYSTEMETC/cpi_cfg.pl" if( -r "$SYSTEMETC/cpi_cfg.pl" );
 
 #__END__
 1;
