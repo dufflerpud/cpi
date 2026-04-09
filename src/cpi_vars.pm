@@ -163,7 +163,7 @@ our $LOCK_BREAK_STALE = 1;
 #########################################################################
 # cpi_setup:
 our $STDERR_LOG_DIR = "/var/log/stderr";
-our $PROJECTSDIR = "/usr/local/projects";
+our $PROJECTSDIR = "$cpi_vars::USRLOCAL/projects";
 our $DAEMON_EMAIL;
 our $DOMAIN;
 our $THIS;

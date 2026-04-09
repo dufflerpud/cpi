@@ -114,7 +114,7 @@ sub setup
     $cpi_vars::BASEDIR=~s+/index\.cgi$++;
     $cpi_vars::BASEDIR=~s+/app\.cgi$++;
     $cpi_vars::BASEDIR=~s+\.cgi$++;
-    $cpi_vars::BASEDIR=~s+/usr/local/bin+$cpi_vars::PROJECTSDIR+g;
+    $cpi_vars::BASEDIR=~s+$cpi_vars::USRLOCAL/bin+$cpi_vars::PROJECTSDIR+g;
     $cpi_vars::PROG=$cpi_vars::BASEDIR;
     $cpi_vars::PROG=~s+.*/++;
     $cpi_vars::WEBSITE="unknown";

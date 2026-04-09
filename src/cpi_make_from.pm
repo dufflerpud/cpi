@@ -75,7 +75,7 @@ my $mf_TMP = "$mf_TMPDIR/MF.$$";
 my $mf_OUTMODE = "";
 my $mf_DEFAULT_FONT = "Helvetica14";
 my $fm_FFMPEG_WARGS = "ffmpeg -loglevel 0";
-my $mf_TABLE_FUN = "/usr/local/bin/table_fun";
+my $mf_TABLE_FUN = "$cpi_vars::USRLOCAL/bin/table_fun";
 my $mf_BGCOLOR = "#ffffff";
 my $mf_FGCOLOR = "#000000";
 

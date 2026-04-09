@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 #
 #indx#	cpi_trans_shell.pm - Back-end to getting text translated
 #@HDR@	$Id$
