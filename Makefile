@@ -39,3 +39,9 @@ install:
 fresh:
 	@$(GIT) pull
 	@$(MAKE) install
+
+test:
+	@echo "Spot checking various perl modules.  This might get more thorough some day."
+	[ `echo "This is a test" | perl tests/cpi_hash.pl` = ff22941336956098ae9a564289d1bf1b ]
+	[ `perl tests/cpi_english.pl -plural fish` = fish ]
+	perl tests/cpi_arguments.pl > /dev/null
