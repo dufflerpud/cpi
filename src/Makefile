@@ -37,6 +37,18 @@ ifneq (,$(wildcard /boot/home/config/non-packaged))
 else
     USRLOCAL?=/usr/local
 endif
+
+ifneq (,$(wildcard /usr/bin/vendor_perl/cpanm))
+    CPAN=/usr/bin/vendor_perl/cpanm
+else
+ifneq (,$(shell command -v cpanm))
+    CPAN=$(shell command -v cpanm)
+else
+    CPAN=cpan
+endif
+endif
+endif
+
 INSTALLDIR=$(USRLOCAL)/lib/perl
 CPI_USER_DIR=$(USRLOCAL)/projects/common
 REQUIRED_MODULES=$(shell \
@@ -72,18 +84,12 @@ No_argument_supplied:
 
 show_required_modules:
 	@echo "Required modules seen:  " $(REQUIRED_MODULES)
-	cpan -O $(REQUIRED_MODULES)
+	$(CPAN) -O $(REQUIRED_MODULES)
 
 install_required_modules:
-ifneq (,$(wildcard /usr/bin/vendor_perl/cpanm ))
 	-@set +e; set -x; for pm in $(REQUIRED_MODULES) ; do \
-	    /usr/bin/vendor_perl/cpanm install $$pm ; \
+	    $(CPAN) install $$pm ; \
 	done
-else
-	-@set +e; set -x; for pm in $(REQUIRED_MODULES) ; do \
-	    cpan install $$pm ; \
-	done
-endif
 	@true
 
 install:
