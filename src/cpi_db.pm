@@ -39,7 +39,7 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( db_cleanup db_gdbm db_gothere db_perlobj
+our @EXPORT = qw( db_cleanup db_gdbm db_put_obj db_gothere db_perlobj
  db_readable db_sql db_status db_unique db_writable dbadd
  dbarr dbclose dbdel dbdelkey dbforget dbget dbisin dbget_gdbm
  dbget_hash dbget_perlobj dbget_sql dbnew dbnew_gdbm
@@ -467,6 +467,20 @@ sub db_gdbm
 	sleep(1);
 	&lock_file( $dbname );
 	}
+    }
+
+#########################################################################
+#	Copy the objected pointed to by $objp into the file in $dst.	#
+#########################################################################
+sub db_put_obj
+    {
+    my( $dst, $objp ) = @_;
+    open(TOUCHFILE,">$dst") || &autopsy("Cannot truncate $dst:  $!");
+    close(TOUCHFILE);
+    my %swallow_db;
+    tie( %swallow_db, 'GDBM_File', $dst, &GDBM_WRITER, 0666 );
+    %swallow_db = %{$objp};
+    untie %swallow_db;
     }
 
 #########################################################################

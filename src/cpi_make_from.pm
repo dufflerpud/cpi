@@ -53,10 +53,9 @@ our @EXPORT = qw( convert_file generate_rules
  mf_xml2dxml );
 use lib ".";
 
-use cpi_db qw( dbpop dbread );
+use cpi_db qw( dbpop dbread db_put_obj );
 use cpi_file qw( echodo autopsy read_file read_lines write_file first_in_path );
 use cpi_vars;
-use if( $^O ne "haiku" ), "GDBM_File";
 use JSON;
 use Data::Dumper;
 1;
@@ -628,14 +627,9 @@ sub mf_put_obj
     my( $text, $objp ) = @_;
     my $dst = "$mf_TMP.db";
     if( $text eq "db" )
-	{
-	open(TOUCHFILE,">$dst") || &autopsy("Cannot truncate $dst:  $!");
+        {
+	&db_put_obj( $dst, $objp );
 	chmod( 0666, $dst ) || &autopsy("Cannot chmod(0666,$dst):  $!");
-	close(TOUCHFILE);
-	my %swallow_db;
-	tie( %swallow_db, 'GDBM_File', $dst, &GDBM_WRITER, 0666 );
-	%swallow_db = %{$objp};
-	untie %swallow_db;
 	}
     else
     	{

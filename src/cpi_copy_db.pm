@@ -43,11 +43,10 @@ our @EXPORT = qw( copydb dumpdb undumpdb );
 use lib ".";
 
 use cpi_config qw( read_config );
-use cpi_db qw( dbclose dbnew dbput dbread dbwrite );
+use cpi_db qw( dbclose dbnew dbput dbread dbwrite db_put_obj );
 use cpi_file qw( cleanup autopsy write_file );
 use cpi_vars;
 use Data::Dumper;
-use if( $^O ne "haiku" ), "GDBM_File";
 #__END__
 1;
 
@@ -59,8 +58,7 @@ sub dumpdb
     my( $dbname, $outfile ) = @_;
     &autopsy("Must specify an output file") if(!defined($outfile));
     &dbread( $dbname );
-    &write_file( $outfile,
-	Dumper( \%{$cpi_vars::databases{$dbname}} ) );
+    &write_file( $outfile, Dumper( \%{$cpi_vars::databases{$dbname}} ) );
     &cleanup(0);
     }
 
@@ -72,17 +70,14 @@ sub undumpdb
     my( $dbname, $infile ) = @_;
     &autopsy("Must specify an input file") if(!defined($infile));
     my %swallow_db;
-    open(TOUCHFILE,">$dbname")|| &autopsy("Cannot truncate $dbname:  $!");
-    chmod( 0666, $dbname) || &autopsy("Cannot chmod(0666,$dbname):  $!");
-    close(TOUCHFILE);
-    tie( %swallow_db, 'GDBM_File', $dbname, &GDBM_WRITER, 0666 ) ||
-        &autopsy("undumpdb gdbm tie failed for ${dbname}:  $!");
     &read_config( $infile, \%swallow_db );
-    dbmclose( %swallow_db );
+    &db_put_obj( $dbname, \%swallow_db );
+    chmod( 0666, $dbname) || &autopsy("Cannot chmod(0666,$dbname):  $!");
     &cleanup(0);
     }
 
 #########################################################################
+#	Figure out what to do on the basis of filename extensions.	#
 #########################################################################
 sub copydb
     {
