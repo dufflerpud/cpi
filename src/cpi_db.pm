@@ -410,7 +410,7 @@ sub dbread_gdbm
     {
     my( $dbname ) = @_;
     until( tie( %{$cpi_vars::databases{$dbname}}, 'AnyDBM_File', $dbname,
-	&GDBM_READER, 0666 ) )
+	O_RDONLY, 0666 ) )
 	{
 	&autopsy("dbread_gdbm cannot tie $dbname for reading:  $!")
 	    if( $! ne "Resource temporarily unavailable" );
