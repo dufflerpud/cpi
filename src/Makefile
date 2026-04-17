@@ -47,7 +47,6 @@ else
     CPAN=cpan
 endif
 endif
-endif
 
 INSTALLDIR=$(USRLOCAL)/lib/perl
 CPI_USER_DIR=$(USRLOCAL)/projects/common
