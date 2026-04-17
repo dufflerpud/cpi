@@ -39,13 +39,13 @@ our @ISA = qw /Exporter/;
 #@ISA = qw( Exporter AutoLoader );
 ##use vars qw ( @ISA @EXPORT );
 our @EXPORT_OK = qw( );
-our @EXPORT = qw( db_cleanup db_gdbm db_put_obj db_gothere db_perlobj
+our @EXPORT = qw( db_cleanup db_anydbm db_put_obj db_gothere db_perlobj
  db_readable db_sql db_status db_unique db_writable dbadd
- dbarr dbclose dbdel dbdelkey dbforget dbget dbisin dbget_gdbm
- dbget_hash dbget_perlobj dbget_sql dbnew dbnew_gdbm
+ dbarr dbclose dbdel dbdelkey dbforget dbget dbisin dbget_anydbm
+ dbget_hash dbget_perlobj dbget_sql dbnew dbnew_anydbm
  dbnew_perlobj dbnew_sql dbnewkey dbopen_sql dbpop dbput
- dbput_gdbm dbput_hash dbput_perlobj dbput_sql dbread
- dbread_gdbm dbread_perlobj dbread_sql dbtest dbtype dbupdate
+ dbput_anydbm dbput_hash dbput_perlobj dbput_sql dbread
+ dbread_anydbm dbread_perlobj dbread_sql dbtest dbtype dbupdate
  dbwrite find_db new_sql_table
  DBread DBwrite DBpop DBclose DBget DBput DBdelkey DBadd DBdel DBnewkey );
 use lib ".";
@@ -81,10 +81,10 @@ sub dbarr
 #########################################################################
 my %DBTYPES =
     (
-    "gdbm"	=> {	"pat"	=>"\\.db\$",
-		    	"new"	=>\&dbnew_gdbm,
-		    	"read"	=>\&dbread_gdbm,
-		    	"write"	=>\&db_gdbm,
+    "anydbm"	=> {	"pat"	=>"\\.db\$",
+		    	"new"	=>\&dbnew_anydbm,
+		    	"read"	=>\&dbread_anydbm,
+		    	"write"	=>\&db_anydbm,
 		    	"get"	=>\&dbget_hash,
 		    	"put"	=>\&dbput_hash },
     "sql"	=> {	"pat"	=>"^DBI:.*:",
@@ -136,10 +136,10 @@ sub dbnew_perlobj
     }
 
 #########################################################################
-#	GDBM specific routine to create a new database.			#
+#	AnyDBM specific routine to create a new database.			#
 #	(An empty file will do)						#
 #########################################################################
-sub dbnew_gdbm
+sub dbnew_anydbm
     {
     my( $dbname ) = @_;
     &write_file( $dbname, "" ); 
@@ -244,7 +244,7 @@ sub dbisin
     }
 
 #########################################################################
-#	For perlobj or gdbm databases.					#
+#	For perlobj or anydbm databases.					#
 #########################################################################
 sub dbget_hash
     {
@@ -262,7 +262,7 @@ sub dbget_hash
 #########################################################################
 #	For completeness.  We actually just call dbget_hash directly.	#
 #########################################################################
-sub dbget_gdbm		{ return &dbget_hash( @_ ); }
+sub dbget_anydbm	{ return &dbget_hash( @_ ); }
 sub dbget_perlobj	{ return &dbget_hash( @_ ); }
 
 #########################################################################
@@ -342,7 +342,7 @@ sub dbupdate
     }
 
 #########################################################################
-#	Write data to gdbm or perlobj database.				#
+#	Write data to anydbm or perlobj database.				#
 #########################################################################
 sub dbput_hash
     {
@@ -356,8 +356,8 @@ sub dbput_hash
 #########################################################################
 #	For completeness.  We actually just call dbput_hash directly.	#
 #########################################################################
-sub dbput_gdbm { return &dbput_hash( @_ ); }
-sub dbput_perlobj { return &dbput_hash( @_ ); }
+sub dbput_anydbm	{ return &dbput_hash( @_ ); }
+sub dbput_perlobj	{ return &dbput_hash( @_ ); }
 
 #########################################################################
 #	For SQL:							#
@@ -404,15 +404,15 @@ sub dbread
     }
 
 #########################################################################
-#	GDBM specific routines to open a database for reading only.	#
+#	AnyDBM specific routines to open a database for reading only.	#
 #########################################################################
-sub dbread_gdbm
+sub dbread_anydbm
     {
     my( $dbname ) = @_;
     until( tie( %{$cpi_vars::databases{$dbname}}, 'AnyDBM_File', $dbname,
 	O_RDONLY, 0666 ) )
 	{
-	&autopsy("dbread_gdbm cannot tie $dbname for reading:  $!")
+	&autopsy("dbread_anydbm cannot tie $dbname for reading:  $!")
 	    if( $! ne "Resource temporarily unavailable" );
 	sleep(1);
 	}
@@ -453,9 +453,9 @@ sub dbwrite
     }
 
 #########################################################################
-#	GDBM specific routines to open a database for writing.		#
+#	AnyDBM specific routines to open a database for writing.		#
 #########################################################################
-sub db_gdbm
+sub db_anydbm
     {
     my( $dbname ) = @_;
     untie( %{$cpi_vars::databases{$dbname}} ) if( $cpi_vars::DBSTATUS{$dbname} );
@@ -464,7 +464,7 @@ sub db_gdbm
 	{
 	my $errcode = $!;
 	&unlock_file( $dbname );
-	&autopsy("db_gdbm cannot tie $dbname for writing:  $!")
+	&autopsy("db_anydbm cannot tie $dbname for writing:  $!")
 	    if( $errcode ne "Resource temporarily unavailable" );
 	sleep(1);
 	&lock_file( $dbname );
@@ -579,7 +579,7 @@ sub dbpop
 	    {
 	    if( $dbt eq "perlobj" )
 		{ }	# Nothing to do since object is in memory
-	    elsif( $dbt eq "gdbm" )
+	    elsif( $dbt eq "anydbm" )
 		{ dbmclose( %{ $cpi_vars::databases{$dbname} } ); }
 	    elsif( $dbt eq "sql" )
 		{ $cpi_vars::db_fh{$dbname}->disconnect(); }
@@ -597,7 +597,7 @@ sub dbpop
 		    Dumper(\%{$cpi_vars::databases{$dbname}}))
 		    if( $cpi_vars::DBWRITTEN{$dbname} > 0 );
 		}
-	    elsif( $dbt eq "gdbm" )
+	    elsif( $dbt eq "anydbm" )
 		{
 		dbmclose( %{ $cpi_vars::databases{$dbname} } );
  		if( grep(($_||"") eq "RO", @{$cpi_vars::db_stati{$dbname}}) )
