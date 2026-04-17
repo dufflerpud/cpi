@@ -58,8 +58,10 @@ use cpi_trace qw( stack_trace );
 use cpi_inlist qw( inlist );
 use cpi_vars;
 use Data::Dumper;
-use if( $^O ne "haiku" ), "GDBM_File";
+#use if( $^O ne "haiku" ), "AnyDBM_File";
+use AnyDBM_File;
 use DBI;
+use Fcntl;		# Required for O_ constants
 #__END__
 1;
 
@@ -407,7 +409,7 @@ sub dbread
 sub dbread_gdbm
     {
     my( $dbname ) = @_;
-    until( tie( %{$cpi_vars::databases{$dbname}}, 'GDBM_File', $dbname,
+    until( tie( %{$cpi_vars::databases{$dbname}}, 'AnyDBM_File', $dbname,
 	&GDBM_READER, 0666 ) )
 	{
 	&autopsy("dbread_gdbm cannot tie $dbname for reading:  $!")
@@ -457,8 +459,8 @@ sub db_gdbm
     {
     my( $dbname ) = @_;
     untie( %{$cpi_vars::databases{$dbname}} ) if( $cpi_vars::DBSTATUS{$dbname} );
-    until( tie( %{$cpi_vars::databases{$dbname}}, 'GDBM_File', $dbname,
-	&GDBM_WRITER, 0666 ) )
+    until( tie( %{$cpi_vars::databases{$dbname}}, 'AnyDBM_File', $dbname,
+	O_RDWR|O_CREAT, 0666 ) )
 	{
 	my $errcode = $!;
 	&unlock_file( $dbname );
@@ -478,7 +480,7 @@ sub db_put_obj
     open(TOUCHFILE,">$dst") || &autopsy("Cannot truncate $dst:  $!");
     close(TOUCHFILE);
     my %swallow_db;
-    tie( %swallow_db, 'GDBM_File', $dst, &GDBM_WRITER, 0666 );
+    tie( %swallow_db, 'AnyDBM_File', $dst, O_RDWR|O_CREAT, 0666 );
     %swallow_db = %{$objp};
     untie %swallow_db;
     }
@@ -601,8 +603,8 @@ sub dbpop
  		if( grep(($_||"") eq "RO", @{$cpi_vars::db_stati{$dbname}}) )
 		    {
 		    until(
-			tie(%{$cpi_vars::databases{$dbname}},'GDBM_File',$dbname,
-			    &GDBM_READER, 0666 ) )
+			tie(%{$cpi_vars::databases{$dbname}},'AnyDBM_File',$dbname,
+			    O_RDONLY, 0666 ) )
 			{
 			&autopsy("Cannot open $dbname for writing:  $!")
 		    	    if( $! ne "Resource temporarily unavailable" );
