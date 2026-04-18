@@ -33,6 +33,7 @@
 use strict;
 
 package cpi_db;
+
 use Exporter;
 use AutoLoader;
 our @ISA = qw /Exporter/;
@@ -59,6 +60,9 @@ use cpi_inlist qw( inlist );
 use cpi_vars;
 use Data::Dumper;
 #use if( $^O ne "haiku" ), "AnyDBM_File";
+
+# Usual order:  NDBM_File DB_File GDBM_File SDBM_File ODBM_File
+BEGIN { @AnyDBM_File::ISA = qw(GDBM_File DB_File NDBM_File SDBM_File ODBM_File); }
 use AnyDBM_File;
 use DBI;
 use Fcntl;
