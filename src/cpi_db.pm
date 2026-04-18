@@ -61,7 +61,7 @@ use Data::Dumper;
 #use if( $^O ne "haiku" ), "AnyDBM_File";
 use AnyDBM_File;
 use DBI;
-use Fcntl;		# Required for O_ constants
+use Fcntl;
 #__END__
 1;
 
