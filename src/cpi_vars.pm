@@ -102,6 +102,7 @@ EOF
 our %FORM;
 our $DEFAULT_FORM = "form";
 our $CGIheader_has_been_printed = 0;
+our $PROJECTS_URL;			# Hopefully set in cpi_cfg.pl
 
 #########################################################################
 # cpi_db:
@@ -246,6 +247,9 @@ our $DB;
 our $PAYMENT_SYSTEM;
 
 do "$SYSTEMETC/cpi_cfg.pl" if( -r "$SYSTEMETC/cpi_cfg.pl" );
+
+$URL = "$PROJECTS_URL . "/" . $PROG"
+    if( ! $URL && $PROJECTS_URL && $PROG );
 
 #__END__
 1;
