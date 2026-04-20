@@ -104,6 +104,9 @@ EOF
 our %FORM;
 our $DEFAULT_FORM ||= "form";
 our $CGIheader_has_been_printed = 0;
+our $WEBSERVER;
+our $WEBOFFSET;
+our $WEBTOP;
 our $PROJECTS_URL;			# Hopefully set in cpi_cfg.pl
 
 #########################################################################
@@ -155,9 +158,6 @@ our $SENDMAIL ||=
     ? "/usr/lib/sendmail"
     : "sendmail" );
 our $FAX_SERVER;
-our $BASE_SERVER;
-our $BASE_URL;
-our $BASES_URL;
 
 #########################################################################
 # cpi_lock:
@@ -172,7 +172,6 @@ our $DAEMON_EMAIL;
 our $DOMAIN;
 our $THIS;
 our $BASEFILE;
-our $WEBOFFSET = "/sto";
 our $WEBSITE;
 our $PROG;
 if ( defined($ENV{SCRIPT_FILENAME})
