@@ -584,7 +584,7 @@ sub mf_force_file
 #########################################################################
 #	Figures out how to read a file of specified extension and	#
 #	returns a pointer to its contents (in memory).			#
-#	Unfortunately, this leaves around an open database for GDBM.	#
+#	Unfortunately, this leaves around an open database.		#
 #########################################################################
 my $need_to_pop;
 sub mf_get_obj
