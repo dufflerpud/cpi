@@ -105,6 +105,8 @@ our %FORM;
 our $DEFAULT_FORM ||= "form";
 our $CGIheader_has_been_printed = 0;
 our $WEBSERVER;
+our $WEBPROTOCOL;
+our $WEBPORT;
 our $WEBOFFSET;
 our $WEBTOP;
 our $PROJECTS_URL;			# Hopefully set in cpi_cfg.pl

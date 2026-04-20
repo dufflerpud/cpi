@@ -176,10 +176,15 @@ sub setup
     $cpi_vars::ANONYMOUS = 0;
     $cpi_vars::DAEMON_EMAIL ||= "$cpi_vars::PROG\@$cpi_vars::DOMAIN";
     $cpi_vars::FAX_SERVER ||= "Unknown";
-    $cpi_vars::BASE_SERVER ||= $ENV{SERVER_NAME};
-    $cpi_vars::BASE_SERVER ||= "localhost";
-    $cpi_vars::BASE_URL ||= "http://".$cpi_vars::BASE_SERVER.$cpi_vars::WEBOFFSET;
-    $cpi_vars::BASES_URL ||= "https://".$cpi_vars::BASE_SERVER.$cpi_vars::WEBOFFSET;
+    $cpi_vars::WEBSERVER ||= $ENV{SERVER_NAME};
+    $cpi_vars::WEBSERVER ||= "localhost";
+    $cpi_vars::WEBPROTOCOL ||= ( $ENV{REQUEST_SCHEME} || "https" );
+    $cpi_vars::WEBPORT ||= ( $ENV{SERVER_PORT} || 80 );
+    my $portsuffix =
+        ( $cpi_vars::WEBPROTOCOL eq "https" && $cpi_vars::WEBPORT == 443	? ""
+	: $cpi_vars::WEBPROTOCOL eq "http" && $cpi_vars::WEBPORT == 80	? ""
+	:":$cpi_vars::WEBPORT" );
+    $cpi_vars::URL ||= "${cpi_vars::WEBPROTOCOL}://$cpi_vars::WEBSERVER$portsuffix$cpi_vars::WEBOFFSET";
 
     if( $ENV{SCRIPT_NAME} && $ENV{SCRIPT_NAME} ne "" )
 	{
