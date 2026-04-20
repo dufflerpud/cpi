@@ -248,7 +248,7 @@ our $PAYMENT_SYSTEM;
 
 do "$SYSTEMETC/cpi_cfg.pl" if( -r "$SYSTEMETC/cpi_cfg.pl" );
 
-$URL = "$PROJECTS_URL . "/" . $PROG"
+$URL = $PROJECTS_URL . "/" . $PROG
     if( ! $URL && $PROJECTS_URL && $PROG );
 
 #__END__
