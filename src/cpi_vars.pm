@@ -45,11 +45,13 @@ use lib ".";
 
 our $USRLOCAL =
     ( -d "/boot/home/config/non-packaged"
-    ? "/boot/home/config/non-packaged"
-    : "/usr/local" );
+    ? "/boot/home/config/non-packaged"		# Haiku
+    : "/usr/local" );				# EVERYBODY else
 our $SYSTEMBIN = "$USRLOCAL/bin";
 our $SYSTEMLIB = "$USRLOCAL/lib";
 our $SYSTEMETC = "$USRLOCAL/etc";
+
+do "$SYSTEMETC/cpi_cfg.pl" if( -r "$SYSTEMETC/cpi_cfg.pl" );
 
 #########################################################################
 # cpi_cache:
@@ -57,7 +59,7 @@ our $CACHEDIR;
 
 #########################################################################
 # cpi_cgi:
-our $SAME_RELATIVE	= <<EOF;
+our $SAME_RELATIVE	||= <<EOF;
 	table				{font-size:inherit;}
 	h1                      	{font-size:2em;}
 	h2                      	{font-size:1.6em;}
@@ -97,18 +99,18 @@ EOF
     	input.fixed_width_button	{width:300px;}
 	td input.fixed_width_button	{width:300px;}
 EOF
-    );
+    ) if( ! @CSS_PER_DEVICE_TYPE );
 
 our %FORM;
-our $DEFAULT_FORM = "form";
+our $DEFAULT_FORM ||= "form";
 our $CGIheader_has_been_printed = 0;
 our $PROJECTS_URL;			# Hopefully set in cpi_cfg.pl
 
 #########################################################################
 # cpi_db:
 
-our @DB_EXTS		= (".db",".sql",".po");
-our $DBSEP		= "\377";
+our @DB_EXTS		= (".db",".sql",".po") if( ! @DB_EXTS );
+our $DBSEP		||= "\377";
 our $SQLSEP;
 our %DBSTATUS;
 our %DBWRITTEN;
@@ -120,18 +122,19 @@ our %db_stati;
 #########################################################################
 # cpi_file:
 our $TEMP_DIR;
-our $VERBOSITY = 0;
+our $VERBOSITY = 0 if( ! defined($VERBOSITY) );
 
 #########################################################################
 # cpi_help:
-#my @HELP_EVENTS = ( "contextmenu", "touchstart", "touchend" );
-our @HELP_EVENTS = ( "contextmenu" );       # Help stuff sucks on iPhone
+#my @HELP_EVENTS ||= ( "contextmenu", "touchstart", "touchend" );
+our @HELP_EVENTS = ( "contextmenu" )       # Help stuff sucks on iPhone
+    if( ! @HELP_EVENTS );
 our $HELPDIR;
 our $HELP_IFRAME;
 
 #########################################################################
 # cpi_log:
-our $ACCOUNTING_LOG = "/var/log/common.log";
+our $ACCOUNTING_LOG ||= "/var/log/common.log";
 
 #########################################################################
 # cpi_mime:
@@ -144,10 +147,10 @@ our %BASE_TYPE_TO_MIME_TYPES;
 
 #########################################################################
 # cpi_send_file:
-our $HTML2PDF = "wkhtmltopdf";
-our $HTML2PS = "html2ps";
-our $PS2PDF = "ps2pdf";
-our $SENDMAIL =
+our $HTML2PDF ||= "wkhtmltopdf";
+our $HTML2PS ||= "html2ps";
+our $PS2PDF ||= "ps2pdf";
+our $SENDMAIL ||=
     ( -x "/usr/lib/sendmail"
     ? "/usr/lib/sendmail"
     : "sendmail" );
@@ -158,12 +161,12 @@ our $BASES_URL;
 
 #########################################################################
 # cpi_lock:
-our $LOCK_DEBUG = 1;
-our $LOCK_BREAK_STALE = 1;
+our $LOCK_DEBUG = 1 if( ! defined($LOCK_DEBUG) );
+our $LOCK_BREAK_STALE = 1 if( ! defined($LOCK_BREAK_STALE) );
 
 #########################################################################
 # cpi_setup:
-our $STDERR_LOG_DIR = "/var/log/stderr";
+our $STDERR_LOG_DIR ||= "/var/log/stderr";
 our $PROJECTSDIR = "$cpi_vars::USRLOCAL/projects";
 our $DAEMON_EMAIL;
 our $DOMAIN;
@@ -245,8 +248,6 @@ our $USER;
 our $FULLNAME;
 our $DB;
 our $PAYMENT_SYSTEM;
-
-do "$SYSTEMETC/cpi_cfg.pl" if( -r "$SYSTEMETC/cpi_cfg.pl" );
 
 $URL = $PROJECTS_URL . "/" . $PROG
     if( ! $URL && $PROJECTS_URL && $PROG );
