@@ -38,7 +38,7 @@ install:
 
 fresh:
 	@$(GIT) pull
-	@$(MAKE) install
+	@$(SUDO) $(MAKE) install
 
 test:
 	@echo "Spot checking various perl modules.  This might get more thorough some day."
