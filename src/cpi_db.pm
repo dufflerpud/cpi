@@ -527,8 +527,8 @@ sub db_status
     {
     my( $dbname ) = @_;
     my( $ind ) = 0;
-    my $nl = ( $cpi_vars::THIS ? "<br>\n" : "\n" );
-    my $spacing = ( $cpi_vars::THIS ? "<dd>" : "    " );
+    my $nl = ( $ENV{SCRIPT_FILENAME} ? "<br>\n" : "\n" );
+    my $spacing = ( $ENV{SCRIPT_FILENAME} ? "<dd>" : "    " );
 
     my @toprint =
 	( "${nl}DBWRITTEN{$dbname} = $cpi_vars::DBWRITTEN{$dbname}${nl}" );
