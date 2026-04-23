@@ -43,6 +43,19 @@ our @EXPORT_OK = qw( );
 our @EXPORT = qw( );
 use lib ".";
 
+our $PROG;
+our $PROJECT;
+
+if ( defined($ENV{SCRIPT_FILENAME})
+    && $ENV{SCRIPT_FILENAME} =~ m~/([^/]*)/index.cgi$~ )
+    { $PROG = $1; }
+elsif( $0 =~ m~([^/]*)\.\w+$~ )
+    { $PROG = $1; }
+elsif( $0 =~ m~([^/]*)$~ )
+    { $PROG = $1; }
+else
+    { $PROG = $0; }
+
 our $USRLOCAL =
     ( -d "/boot/home/config/non-packaged"
     ? "/boot/home/config/non-packaged"		# Haiku
@@ -50,8 +63,14 @@ our $USRLOCAL =
 our $SYSTEMBIN = "$USRLOCAL/bin";
 our $SYSTEMLIB = "$USRLOCAL/lib";
 our $SYSTEMETC = "$USRLOCAL/etc";
+our $PROJECTSDIR = "$cpi_vars::USRLOCAL/projects";
 
-do "$SYSTEMETC/cpi_cfg.pl" if( -r "$SYSTEMETC/cpi_cfg.pl" );
+if( $PROG && -e "$SYSTEMETC/${PROG}_cfg.pl" )
+    { do "$SYSTEMETC/${PROG}_cfg.pl"; }
+elsif( $PROJECT && -e "$SYSTEMETC/${PROJECT}_cfg.pl" )
+    { do "$SYSTEMETC/${PROJECT}_cfg.pl"; }
+elsif( -e "$SYSTEMETC/cpi_cfg.pl" )
+    { do "$SYSTEMETC/cpi_cfg.pl"; }
 
 #########################################################################
 # cpi_cache:
@@ -169,22 +188,11 @@ our $LOCK_BREAK_STALE = 1 if( ! defined($LOCK_BREAK_STALE) );
 #########################################################################
 # cpi_setup:
 our $STDERR_LOG_DIR ||= "/var/log/stderr";
-our $PROJECTSDIR = "$cpi_vars::USRLOCAL/projects";
 our $DAEMON_EMAIL;
 our $DOMAIN;
 our $THIS;
 our $BASEFILE;
 our $WEBSITE;
-our $PROG;
-if ( defined($ENV{SCRIPT_FILENAME})
-    && $ENV{SCRIPT_FILENAME} =~ m~/([^/]*)/index.cgi$~ )
-    { $PROG = $1; }
-elsif( $0 =~ m~([^/]*)\.\w+$~ )
-    { $PROG = $1; }
-elsif( $0 =~ m~([^/]*)$~ )
-    { $PROG = $1; }
-else
-    { $PROG = $0; }
 
 our $BASEDIR = "$PROJECTSDIR/$PROG";	$BASEDIR =~ s:\.\w+$::;
 our $COMMONDIR;
