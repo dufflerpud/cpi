@@ -526,43 +526,6 @@ sub at_string
     }
 
 #########################################################################
-#	Figures out what format its input is in and returns string	#
-#	that format is in.						#
-#########################################################################
-sub time_string
-    {
-    my( $fmt, $year, $month, $day, $hour, $min, $sec ) = @_;
-    if( ! defined($month) )
-	{
-	my $timevar = $year || time();
-	if( $timevar =~ m:^(20\d\d)([0-1]\d)([0-3]\d)$: )
-	    { $year=$1; $month=$2; $day=$3; }
-	elsif( $timevar =~ m:^([0-1]\d)/([0-3]\d)/(20\d\d): )
-	    { $year=$3; $month=$1; $day=$2; }
-	elsif( $timevar =~ m:^([0-1]\d)/([0-3]\d)/(\d\d)$: )
-	    { $year=$3+1900; $month=$1; $day=$2; }
-	else
-	    {
-	    return undef if( $timevar!~/^\d*$/ && !($timevar=str2time($timevar)) );
-	    ($sec,$min,$hour,$day,$month,$year) = localtime($timevar);
-	    $year += 1900;
-	    $month += 1;
-	    }
-	}
-no warnings 'redundant';
-    return sprintf($fmt,$year,$month,$day,$hour||0,$min||0,$sec||0);
-use warnings 'redundant';
-    }
-
-#########################################################################
-#	Return yyyymmdd for a specified offset from epoch.		#
-#########################################################################
-sub timestr
-    {
-    return &time_string("%4d%02d%02d",@_);
-    }
-
-#########################################################################
 #       Use binary search to convert min,hour,day,month,year to         #
 #       seconds from the epoch.                                         #
 #########################################################################
@@ -634,4 +597,56 @@ sub parsedate
     return &revlocaltime($nsec,$nmin,$nhour,$nmday,$nmonth,$nyear);
     }
 
+#########################################################################
+#	Return yyyymmdd for a specified offset from epoch.		#
+#########################################################################
+sub timestr
+    {
+    # time_string() defined immediately below (vs above) for reasons
+    # documented there.
+    return &time_string("%4d%02d%02d",@_);
+    }
+
+#########################################################################
+#	Figures out what format its input is in and returns string	#
+#	that format is in.						#
+#########################################################################
+sub time_string
+    {
+    my( $fmt, $year, $month, $day, $hour, $min, $sec ) = @_;
+    if( ! defined($month) )
+	{
+	my $timevar = $year || time();
+	if( $timevar =~ m:^(20\d\d)([0-1]\d)([0-3]\d)$: )
+	    { $year=$1; $month=$2; $day=$3; }
+	elsif( $timevar =~ m:^([0-1]\d)/([0-3]\d)/(20\d\d): )
+	    { $year=$3; $month=$1; $day=$2; }
+	elsif( $timevar =~ m:^([0-1]\d)/([0-3]\d)/(\d\d)$: )
+	    { $year=$3+1900; $month=$1; $day=$2; }
+	else
+	    {
+	    return undef if( $timevar!~/^\d*$/ && !($timevar=str2time($timevar)) );
+	    ($sec,$min,$hour,$day,$month,$year) = localtime($timevar);
+	    $year += 1900;
+	    $month += 1;
+	    }
+	}
+
+#OK, this is hideous.  I put it at the end of the module so that
+#we can use perl's warnings facility throughout the rest of the code.
+#But there is simply no way of turning off its redundancy warning
+#that works with older versions of perl (that don't actually have
+#a redundancy warning)..
+#So now, we have...
+no warnings;			# which will shut off redundancy warnings
+				# (ALONG WITH ALL OTHER WARNINGS!)
+				# if we support them but not generate an error
+				# if we don't.
+
+#no warnings 'redundant';	# (This won't work with older perls.)
+    return sprintf($fmt,$year,$month,$day,$hour||0,$min||0,$sec||0);
+#use warnings 'redundant';	# (This won't work with older perls.)
+
+use warnings;			# Not clear if there is any point in this
+    }				# since there's no intereseting code left.
 1;
