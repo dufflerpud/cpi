@@ -48,8 +48,9 @@ our @EXPORT = qw( pkg_configure_for_translation
 
 use lib ".";
 use cpi_file qw( tempfile read_file write_file read_lines );
+use cpi_vars;
 
-my $TRANS_BIN = "/bin/trans";
+my $TRANS_BIN;
 #__END__
 1;
 
@@ -59,6 +60,12 @@ my $TRANS_BIN = "/bin/trans";
 my $tmp_file;
 sub pkg_configure_for_translation
     {
+    if( ! $TRANS_BIN )
+        {
+	my( $trans_bin, @others ) = grep( -x $_, "$cpi_vars::SYSTEMBIN/trans", "/bin/trans" );
+	&fatal("Cannot find a translator") if( ! $trans_bin );
+	$TRANS_BIN = $trans_bin;
+	}
     $tmp_file = &tempfile( ".txt" ) if( ! $tmp_file );
     }
 
