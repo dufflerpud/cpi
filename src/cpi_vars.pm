@@ -49,6 +49,8 @@ our $PROJECT;
 if ( defined($ENV{SCRIPT_FILENAME})
     && $ENV{SCRIPT_FILENAME} =~ m~/([^/]*)/index.cgi$~ )
     { $PROG = $1; }
+elsif( $0 =~ m~/([^/]*)/index.cgi$~ )
+    { $PROG = $1; }
 elsif( $0 =~ m~([^/]*)\.\w+$~ )
     { $PROG = $1; }
 elsif( $0 =~ m~([^/]*)$~ )
