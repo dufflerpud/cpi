@@ -9,7 +9,9 @@ GIT?=git
 
 ifeq (,$(SUDO))
     ifneq (0,$(shell id -u))
-        SUDO=sudo
+        ifneq (Administrator,$(shell id -un))
+            SUDO=sudo
+	endif
     endif
 endif
 
