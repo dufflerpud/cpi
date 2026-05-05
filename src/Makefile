@@ -101,9 +101,9 @@ install_required_modules:
 
 install:
 ifneq (,$(CYGWIN))
-	@id -un | grep Administrator || (echo "Must install as Administrator." && false)
+	@[ `id -un` = Administrator ] || (echo "Must install as Administrator." && false)
 else
-	@id | grep uid=0 || (echo "Must install as root." && false)
+	@[ `id -u` = 0 ] || (echo "Must install as root." && false)
 endif
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
 	$(GNUINSTALL) -d -m 0755 -o $(SYSTEMUSER) -g $(SYSTEMGROUP) $(INSTALLDIR)
