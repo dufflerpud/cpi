@@ -76,7 +76,7 @@ ifeq (,$(GNUINSTALL))
     endif
 endif
 
-ifneq (,$(wildcard /cygdrive))
+ifneq (,$(wildcard /cygdrive/c))
     SYSTEMUSER=Administrator
     SYSTEMGROUP=Administrators
 else
@@ -100,7 +100,7 @@ install_required_modules:
 	@true
 
 install:
-ifneq (,$(wildcard /cygdrive))
+ifneq (,$(wildcard /cygdrive/c))
 	@[ `id -un` = Administrator ] || (echo "Must install as Administrator." && false)
 else
 	@[ `id -u` = 0 ] || (echo "Must install as root." && false)
