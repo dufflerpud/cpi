@@ -76,6 +76,14 @@ ifeq (,$(GNUINSTALL))
     endif
 endif
 
+ifneq (,$(CYGWIN))
+    SYSTEMUSER=Administrator
+    SYSTEMGROUP=Administrators
+else
+    SYSTEMUSER=0
+    SYSTEMGROUP=0
+endif
+
 No_argument_supplied:
 	id
 	@echo "You must specify either 'install', 'remake' or 'all_modules'"
@@ -92,9 +100,13 @@ install_required_modules:
 	@true
 
 install:
-	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
+ifneq (,$(CYGWIN))
+	@id -un | grep Administrator || (echo "Must install as Administrator." && false)
+else
 	@id | grep uid=0 || (echo "Must install as root." && false)
-	$(GNUINSTALL) -d -m 0755 -o 0 -g 0 $(INSTALLDIR)
+endif
+	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
+	$(GNUINSTALL) -d -m 0755 -o $(SYSTEMUSER) -g $(SYSTEMGROUP) $(INSTALLDIR)
 	rm -rf $(INSTALLDIR)/cpi_* $(INSTALLDIR)/auto/cpi_*
 	for m in *.pm; do \
 	    sed -e 's:use lib ".":use lib "$(INSTALLDIR)":' < $$m > $(INSTALLDIR)/$$m; \
