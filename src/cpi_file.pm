@@ -69,7 +69,13 @@ sub read_file
     {
     my( $fname, $ret ) = @_;
     &autopsy("read_file called with no filename.") if( ! defined($fname) );
-    if( open( INF, $fname ) )
+    if( $fname eq "/dev/stdin" && ! -r $fname )
+	{	# This is for non *IX OSs like Haiku and VMS
+	binmode STDIN;
+	$ret = join("",<STDIN>);
+	close( STDIN );
+	}
+    elsif( open( INF, $fname ) )
 	{
 	binmode INF;
 	$ret = join("",<INF>);
@@ -117,10 +123,17 @@ sub write_file
     else
 	{ $out_string=">$fn"; }
     #print STDERR "out_string=[$out_string] fn=[$fn] contents[0]=$contents[0].\n";
-    open( OUT, $out_string ) || &autopsy("Cannot $iotype $fn:  $!");
-    binmode OUT;
-    print OUT @contents;
-    close( OUT );
+    if( $fn eq "/dev/stdout" && ! -w $fn )	# For non *IX i/o
+        { print STDOUT @contents; }
+    elsif( $fn eq "/dev/stderr" && ! -w $fn )
+        { print STDERR @contents; }
+    else
+	{
+	open( OUT, $out_string ) || &autopsy("Cannot $iotype $fn:  $!");
+	binmode OUT;
+	print OUT @contents;
+	close( OUT );
+	}
     }
 
 #########################################################################
