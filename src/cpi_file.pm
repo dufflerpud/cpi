@@ -260,20 +260,58 @@ sub cleanup
     }
 
 #########################################################################
+#	Ask if user wants to do something or not.			#
+#########################################################################
+my $yorn_text;
+sub yorn
+    {
+    my( @arguments ) = @_;
+    my $answer;
+    if( grep( $arguments[0] eq $_, "yes", "no", "ask" ) )
+        { $answer = shift(@arguments); }
+    else
+        { $answer = "ask"; }
+
+    $yorn_text = join(" ",@arguments);
+    while( $answer eq "ask" )
+        {
+	print STDERR "$yorn_text (y or n)? ";
+	$_ = <STDIN> || return undef;
+	if( /^y/i )
+	    { $answer = "yes"; }
+	elsif( /^n/i )
+	    { $answer = "no"; }
+	else
+	    { print STDERR "You must answer 'yes' or 'no'.\n"; }
+	}
+    return ( $answer eq "yes" ? $yorn_text : 0 );
+    }
+
+#########################################################################
 #	Print a command and then execute it.				#
 #########################################################################
 sub echodo
     {
     my( @arguments ) = @_;
-    my $cmd = join(" ",@arguments);
-    if( $cpi_vars::VERBOSITY )
+    my $res =	# Default to yes rather than ask
+        ( grep( $arguments[0] eq $_, "yes", "no", "ask" )
+	? &yorn( @arguments )
+	: &yorn( "yes", @arguments ) );
+
+    if( ! defined($res) )
 	{
-	if( $ENV{SCRIPT_NAME} )
-	    { print "<pre>+ $cmd</pre>\n"; }
-	else
-	    { print STDERR "+ $cmd\n"; }
+	my $flag = ( ! $res ? "#" : $> ? "+" : "!" );
+
+	if( $cpi_vars::VERBOSITY || ! $res )
+	    {
+	    if( $ENV{SCRIPT_NAME} )
+		{ print "<pre>$flag $yorn_text</pre>\n"; }
+	    else
+		{ print STDERR "$flag $yorn_text\n"; }
+	    }
+	return system( $yorn_text ) if( $res );
 	}
-    return system( $cmd );
+    return undef;
     }
 
 #########################################################################
