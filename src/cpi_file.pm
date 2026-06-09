@@ -115,11 +115,11 @@ sub write_file
     my $iotype = "create";
 
     if( $out_string =~ /^>>(.*)/ )
-	{ $fn = $2; $iotype="append to"; }
+	{ $fn = $1; $iotype="append to"; }
     elsif( $out_string =~ /^>(.*)/ )
-	{ $fn = $2; $iotype="create"; }
+	{ $fn = $1; $iotype="create"; }
     elsif( $out_string =~ /^\|(.*)/ )
-	{ $fn = $2; $iotype="pipe to command"; }
+	{ $fn = $1; $iotype="pipe to command"; }
     else
 	{ $out_string=">$fn"; }
     #print STDERR "out_string=[$out_string] fn=[$fn] contents[0]=$contents[0].\n";
@@ -298,7 +298,7 @@ sub echodo
 	? &yorn( @arguments )
 	: &yorn( "yes", @arguments ) );
 
-    if( ! defined($res) )
+    if( defined($res) )
 	{
 	my $flag = ( ! $res ? "#" : $> ? "+" : "!" );
 
