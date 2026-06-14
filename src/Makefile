@@ -103,7 +103,11 @@ install:
 ifneq (,$(wildcard /cygdrive/c))
 	@[ `id -un` = Administrator ] || (echo "Must install as Administrator." && false)
 else
+ifneq (,$(wildcard /bin/vms_make.exe))
+	@[ `id -un` = SYSTEM ] || (echo "Must install as SYSTEM." && false)
+else
 	@[ `id -u` = 0 ] || (echo "Must install as root." && false)
+endif
 endif
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
 	$(GNUINSTALL) -d -m 0755 -o $(SYSTEMUSER) -g $(SYSTEMGROUP) $(INSTALLDIR)
