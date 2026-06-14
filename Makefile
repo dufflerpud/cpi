@@ -1,3 +1,5 @@
+SHELL=bash
+
 ifneq (,$(wildcard /boot/home/config/non-packaged))
     USRLOCAL?=/boot/home/config/non-packaged
 else

@@ -1,4 +1,3 @@
-#
 #indx#	Makefile - Build the CPI libraries
 #@HDR@	$Id$
 #@HDR@
@@ -30,6 +29,7 @@
 #doc#	Makefile - Build the CPI libraries
 ########################################################################
 # Makefile to build CPI
+SHELL=bash
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
 MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 ifneq (,$(wildcard /boot/home/config/non-packaged))
