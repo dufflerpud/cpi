@@ -31,6 +31,9 @@
 # Makefile to build CPI
 SHELL=bash
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
+ifeq ($(CURRENT_MAKEFILE))
+    CURRENT_MAKEFILE=Makefile
+endif
 MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
 ifneq (,$(wildcard /boot/home/config/non-packaged))
     USRLOCAL?=/boot/home/config/non-packaged
