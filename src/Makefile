@@ -111,7 +111,7 @@ endif
 endif
 	@[ "$(INSTALLDIR)" != "." ] || (echo "Cannot install to CWD." && false)
 	$(GNUINSTALL) -d -m 0755 -o $(SYSTEMUSER) -g $(SYSTEMGROUP) $(INSTALLDIR)
-	rm -rf $(INSTALLDIR)/cpi_* $(INSTALLDIR)/auto/cpi_*
+	-rm -rf $(INSTALLDIR)/cpi_* $(INSTALLDIR)/auto/cpi_*
 	for m in *.pm; do \
 	    sed -e 's:use lib ".":use lib "$(INSTALLDIR)":' < $$m > $(INSTALLDIR)/$$m; \
 	done
@@ -119,7 +119,7 @@ endif
 	cd $(INSTALLDIR); $(MAKE) -f Makefile.cpi all_modules
 
 remake:
-	rm -rf auto/cpi_*
+	-rm -rf auto/cpi_*
 	$(MAKE) -f $(CURRENT_MAKEFILE) all_modules
 
 all_modules:\
