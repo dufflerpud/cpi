@@ -31,7 +31,7 @@
 # Makefile to build CPI
 SHELL=bash
 CURRENT_MAKEFILE=$(lastword $(MAKEFILE_LIST))
-ifeq ($(CURRENT_MAKEFILE))
+ifeq (,$(CURRENT_MAKEFILE))
     CURRENT_MAKEFILE=Makefile
 endif
 MODULES=$(shell ls cpi_*.pm | sed -e 's/\.pm//')
