@@ -65,26 +65,18 @@ sub abbrev
     my $word_len = length( $word );
     $word =~ tr/A-Z/a-z/;
     my $result;
+    my $match_count = 0;
     foreach my $check ( @the_list )
         {
 	$_ = lc( $check );
 	if( $word eq $_ )
-	    {
-	    $result = $check;
-	    last;
-	    }
+	    { return $check; }
 	elsif( substr( $_, 0, $word_len ) eq $word )
 	    {
-	    if( defined($result) )
-	        {
-		$result = undef;
-		last;
-		}
 	    $result = $check;
+	    $match_count++;
 	    }
 	}
-#    print "abbrev($word,[",join(",",@the_list),"]) returns ",
-#        (defined($result)?"'$result'":"UNDEF"), ".\n";
-    return $result;
+    return ( $match_count == 1 ? $result : undef );
     }
 1;
