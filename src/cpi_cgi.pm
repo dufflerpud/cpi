@@ -113,6 +113,11 @@ sub CGIheader
 	    {
 	    $cpi_vars::CGIheader_has_been_printed++;
 	    print "Content-type:  text/html; charset=\"utf-8\"\n";
+	    print "Cache-Control:  no-cache\n",
+		"Cache-Control:  max-age=0\n",
+		"Cache-Control:  no-store\n"
+		if( $cpi_vars::setup->{httpcache}
+		 && $cpi_vars::setup->{httpcache} eq "disabled" );
 	    while( my $vr = shift(@varvals) )
 		{
 		if( $vr =~ /=/ )

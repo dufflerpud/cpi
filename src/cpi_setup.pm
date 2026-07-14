@@ -61,12 +61,14 @@ sub setup
     {
     my( %args ) = @_;
 
-    if( $args{stderr} && $ENV{SCRIPT_FILENAME} )
+    $cpi_vars::setup = \%args;
+
+    if( $cpi_vars::setup->{stderr} && $ENV{SCRIPT_FILENAME} )
         {	# Do early to make error checking easier
 	my $stderr_fname =
-	    ( $args{stderr} =~ /^\//
-	    ? $args{stderr}
-	    : join("/",$cpi_vars::STDERR_LOG_DIR,$args{stderr}) );
+	    ( $cpi_vars::setup->{stderr} =~ /^\//
+	    ? $cpi_vars::setup->{stderr}
+	    : join("/",$cpi_vars::STDERR_LOG_DIR,$cpi_vars::setup->{stderr}) );
 	my $open_parameter;
 	if( -f "$stderr_fname.truncate" )
 	    { $open_parameter = "> $stderr_fname"; }
@@ -78,21 +80,13 @@ sub setup
 	chmod( 0666, $stderr_fname );
 	}
 
-    $cpi_vars::require_captcha		= $args{require_captcha};
-    $cpi_vars::require_fullname		= $args{require_fullname};
-    $cpi_vars::preset_language		= $args{preset_language};
     foreach my $fld ( @cpi_vars::CONFIRM_FIELDS )
         {
-	$cpi_vars::FLDESC{$fld}{req} = $args{"require_valid_$fld"}
-	    if( defined($args{"require_valid_$fld"}) );
-	$cpi_vars::FLDESC{$fld}{ask} = $args{"ask_for_$fld"}
-	    if( defined($args{"ask_for_$fld"}) );
+	$cpi_vars::FLDESC{$fld}{req} = $cpi_vars::setup->{"require_valid_$fld"}
+	    if( defined($cpi_vars::setup->{"require_valid_$fld"}) );
+	$cpi_vars::FLDESC{$fld}{ask} = $cpi_vars::setup->{"ask_for_$fld"}
+	    if( defined($cpi_vars::setup->{"ask_for_$fld"}) );
 	}
-    $cpi_vars::anonymous_user	= $args{anonymous_user};
-    $cpi_vars::anonymous_funcs
-				= $args{anonymous_funcs};
-    $cpi_vars::allow_account_creation
-				= $args{allow_account_creation};
     $cpi_vars::LANG			= $cpi_vars::preset_language if( $cpi_vars::preset_language );
 
     #$cpi_vars::PROG=$0;
@@ -167,7 +161,6 @@ sub setup
     #$cpi_vars::LOGIN_TIMEOUT = 7200;
     $cpi_vars::LOGIN_TIMEOUT = 86400;
     $cpi_vars::NOW = time();
-    $cpi_vars::PAYMENT_SYSTEM = $args{payment_system};
     $cpi_vars::DOMAIN||="Unknown";
     $cpi_vars::CSS_URL="/default.css";
     $cpi_vars::PROG_CSS_URL="$cpi_vars::WEBOFFSET/$cpi_vars::PROG/$cpi_vars::PROG.css";

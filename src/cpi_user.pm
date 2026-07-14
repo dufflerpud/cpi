@@ -202,20 +202,20 @@ sub login
 	}
 
     $cpi_vars::ANONYMOUS =
-        (   $cpi_vars::anonymous_user			&&
+        (   $cpi_vars::setup->{anonymous_user}			&&
 	    defined($cpi_vars::FORM{user})		&&
-	    $cpi_vars::FORM{user} eq $cpi_vars::anonymous_user	);
+	    $cpi_vars::FORM{user} eq $cpi_vars::setup->{anonymous_user}	);
 
     $cpi_vars::FORM{func}="" if( ! defined( $cpi_vars::FORM{func} ) );
 
     if( $cpi_vars::FORM{func} ne "dologin" )
 	{
 	my ( $primary_func ) = split(/,/,$cpi_vars::FORM{func});
-	if( $cpi_vars::anonymous_funcs
+	if( $cpi_vars::setup->{anonymous_funcs}
 	 && $primary_func
-	 && grep( $_ eq $primary_func, split(/,/,$cpi_vars::anonymous_funcs) ) )
+	 && grep( $_ eq $primary_func, split(/,/,$cpi_vars::setup->{anonymous_funcs}) ) )
 	    {
-	    $cpi_vars::SID = ( $cpi_vars::anonymous_user || "anonymous" );
+	    $cpi_vars::SID = ( $cpi_vars::setup->{anonymous_user} || "anonymous" );
 	    $cpi_vars::USER = $cpi_vars::SID;
 	    $cpi_vars::ANONYMOUS = 1;
 	    &CGIheader();
@@ -293,9 +293,9 @@ sub login
 		    $cpi_vars::USER = $cpi_vars::FORM{user} = $cpi_vars::FORM{switchuser};
 		    &write_sid();
 		    }
-		$cpi_vars::ANONYMOUS = ( $cpi_vars::anonymous_user && $cpi_vars::REALUSER eq $cpi_vars::anonymous_user );
-		if( ! $cpi_vars::anonymous_user &&
-		    ! $cpi_vars::allow_account_creation &&
+		$cpi_vars::ANONYMOUS = ( $cpi_vars::setup->{anonymous_user} && $cpi_vars::REALUSER eq $cpi_vars::setup->{anonymous_user} );
+		if( ! $cpi_vars::setup->{anonymous_user} &&
+		    ! $cpi_vars::setup->{allow_account_creation} &&
 		    ! &can_use() )
 		    {	# Verify group still exists...
 		    $msg="XL(User [[{$cpi_vars::REALUSER}]] is not a member of group [[".
@@ -308,7 +308,7 @@ sub login
         {	# We'll check his answers and if they aren't sufficient
 		# Prompt him again.
 	my $captresult = "";
-	if( $cpi_vars::require_captcha					&&
+	if( $cpi_vars::setup->{require_captcha}					&&
 	    (	! $cpi_vars::FORM{create_account} || $cpi_vars::FORM{emailcode} ) )
 	    {
 	    if( $cpi_vars::FORM{recaptcha_challenge_field}	&&
@@ -385,7 +385,7 @@ sub login
 			    "users", $cpi_vars::FORM{user}, "inuse", 1 );
 			&dbput($cpi_vars::ACCOUNTDB,"users",$cpi_vars::FORM{user},
 			    "fullname",$cpi_vars::FORM{fullname})
-			    if( $cpi_vars::require_fullname );
+			    if( $cpi_vars::setup->{require_fullname} );
 			&dbput( $cpi_vars::ACCOUNTDB,
 			    "users", $cpi_vars::FORM{user}, "groups", $check_group );
 			foreach my $fld ( @cpi_vars::CONFIRM_FIELDS )
@@ -400,7 +400,7 @@ sub login
 		    }
 		elsif( ! ($new_password_encrypted=&match_password($cpi_vars::FORM{password},$oldp)) )
 		    { $msg = "XL(There are problems with these credentials.  Please identify yourself definitively again.)"; }
-		elsif( ! $cpi_vars::allow_account_creation &&
+		elsif( ! $cpi_vars::setup->{allow_account_creation} &&
 		    ! &in_group($cpi_vars::FORM{user},$check_group) )
 		    {
 		    $msg="XL(User [[$cpi_vars::FORM{user}]] is not a member of group [[".
@@ -468,7 +468,7 @@ EOF
 <tr help='COMMON_account_password_retyped'><th align=left>XL(Retype password:)</th>
     <td><input type=password name=password1></td></tr>
 EOF
-	    push( @toprint, <<EOF ) if( $cpi_vars::require_fullname );
+	    push( @toprint, <<EOF ) if( $cpi_vars::setup->{require_fullname} );
 <tr><th align=left>XL(Full name:)</th>
     <td><input type=text help='COMMON_account_fullname' name=fullname autocapitalize=words value="$cpi_vars::FORM{fullname}"></td></tr>
 EOF
@@ -483,7 +483,7 @@ EOF
 		}
 	    }
 	push( @toprint, $langstring );
-	if( $cpi_vars::require_captcha )
+	if( $cpi_vars::setup->{require_captcha} )
 	    {
 	    push( @toprint, "<tr help='COMMON_account_captcha'><th colspan=2><center>" );
 	    my $captchaptr = Captcha::reCAPTCHA->new;
@@ -494,7 +494,7 @@ EOF
 	push( @toprint, <<EOF );
 <tr help='COMMON_account_session'><th colspan=2><input type=submit value="XL(Begin session)"></th></tr>
 EOF
-	if( $cpi_vars::allow_account_creation &&
+	if( $cpi_vars::setup->{allow_account_creation} &&
 	    (!defined($cpi_vars::FORM{user}) ||
 		$cpi_vars::FORM{user} ne "anonymous") )
 	    {
@@ -1170,7 +1170,7 @@ EOF
 #</table></th>
 #EOF
 #
-#    if( $cpi_vars::PAYMENT_SYSTEM )
+#    if( $cpi_vars::setup->{payment_system} )
 #        {
 #	my($sec,$min,$hour,$mday,$month,$year) = localtime(time);
 #	my( $topay, $weight, $cardname, $cardnum, $cardonfile, $checknum, $certnum, $usecash );

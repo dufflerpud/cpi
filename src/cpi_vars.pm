@@ -241,12 +241,13 @@ our @CONFIRM_FIELDS =
 our %FLDESC = @CONFIRM_FIELDS;
 @CONFIRM_FIELDS = grep( defined($FLDESC{$_}{prompt}), @CONFIRM_FIELDS );
 
-our $anonymous_user;
-our $anonymous_funcs;
-our $allow_account_creation = 1;
-our $preset_language;
-our $require_captcha;
-our $require_fullname;
+our $setup;
+# our $anonymous_user;
+# our $anonymous_funcs;
+# our $allow_account_creation = 1;
+# our $preset_language;
+# our $require_captcha;
+# our $require_fullname;
 
 our $REALUSER;
 our $SID;
