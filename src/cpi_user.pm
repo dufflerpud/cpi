@@ -143,12 +143,17 @@ sub handle_invitations
 		{
 		push( @msgs, "XL(Invitation [[$activation_code]] already accepted.)" );
 		}
-	    else
+	    elsif( $cpi_vars::setup->{invitation_handler} )
 		{
 		&dbwrite( $cpi_vars::ACCOUNTDB ) if( $written++ == 0 );
 		&dbput($cpi_vars::ACCOUNTDB,
 		    "invitations",$activation_code,"used");
-		&invitation_handler( split($cpi_vars::DBSEP,$action_string) );
+		&{ $cpi_vars::setup->{invitation_handler} }
+		    ( split($cpi_vars::DBSEP,$action_string) );
+		}
+	    else
+	        {
+		&autopsy("No invitation handler for $cpi_vars::PROG.");
 		}
 	    }
 	}
@@ -299,7 +304,7 @@ sub login
 		    ! &can_use() )
 		    {	# Verify group still exists...
 		    $msg="XL(User [[{$cpi_vars::REALUSER}]] is not a member of group [[".
-			&group_to_name($check_group)."]])";
+			&group_to_name($check_group)." ($check_group)]])";
 		    }
 		}
 	    }
@@ -404,7 +409,7 @@ sub login
 		    ! &in_group($cpi_vars::FORM{user},$check_group) )
 		    {
 		    $msg="XL(User [[$cpi_vars::FORM{user}]] is not a member of group [[".
-			&group_to_name($check_group). "]].)";
+			&group_to_name($check_group). "($check_group)]].)";
 		    }
 		else
 		    {
@@ -442,6 +447,7 @@ sub login
     if( $msg )
         {
 	&log( ($cpi_vars::FORM{user}||"?") . ":  $msg" );
+	$cpi_vars::preset_language if( 0 );
 	my $langstring=($cpi_vars::preset_language ? "" : &gen_language_params());
 	push( @toprint, <<EOF );
 <title>$msg</title><body $cpi_vars::BODY_TAGS><center>
