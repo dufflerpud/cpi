@@ -291,7 +291,8 @@ sub login
 		print STDERR "Reading SID...\n";
 		&read_sid();
 		print STDERR "REALUSER=$cpi_vars::REALUSER, USER=$cpi_vars::USER, LANG=$cpi_vars::LANG\n";
-		if( $cpi_vars::FORM{switchuser} =~ /\w/
+		if( defined($cpi_vars::FORM{switchuser})
+		 && $cpi_vars::FORM{switchuser} =~ /\w/
 		 && $cpi_vars::FORM{switchuser} ne $cpi_vars::USER
 		 && &can_suser() )
 		    {
