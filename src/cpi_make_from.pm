@@ -1176,9 +1176,9 @@ sub generate_rules
     {
     my( $destfile, @srcfiles ) = @_;
 
+    &mf_all_ffmpeg_rules()	if( &first_in_path("ffmpeg") );
     &mf_all_sox_rules()		if( &first_in_path("sox") );
     &mf_all_qemu_img_rules()	if( &first_in_path("qemu-img") );
-    &mf_all_ffmpeg_rules()	if( &first_in_path("ffmpeg") );
     &mf_all_enscript_rules()	if( &first_in_path("enscript") );
     &mf_all_table_fun_rules()	if( &first_in_path("table_fun") );
     &mf_all_mf_obj2obj_rules();
