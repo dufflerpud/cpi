@@ -200,9 +200,11 @@ sub setup
 	$cpi_vars::LANG			||= $cpi_vars::FORM{LANG};
 	&init_phrases();
 
-	&dbread( $cpi_vars::ACCOUNTDB );
-
-	&login();
+	if( ! $cpi_vars::setup->{nologin} )
+	    {
+	    &dbread( $cpi_vars::ACCOUNTDB );
+	    &login();
+	    }
 	&dbread( $cpi_vars::DB ) if( $cpi_vars::DB && -f $cpi_vars::DB );
 	}
     # This should be handled by parse_arguments but history is long and evil.
