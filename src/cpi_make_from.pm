@@ -123,6 +123,18 @@ my %mf_rule_map =
 #    "mp3,wav"		=> [ 1, \&mf_shcmd,
 #				"lame --decode --mp3input - -" ],
 #    "wav,mp3"		=> [ 1, \&mf_shcmd, "lame -S - -" ],
+    "avis,jpg"		=> [ 1, \&mf_shcmd,
+    			    "cat > $mf_TMP.avis;".
+			    "ffmpeg -loglevel error ".
+			    "-i $mf_TMP.avis ".
+			    "$mf_TMP.jpg;".
+			    "cat $mf_TMP.jpg" ],
+    "jpg,avis"		=> [ 1, \&mf_shcmd,
+    			    "cat > $mf_TMP.jpg;".
+			    "ffmpeg -loglevel error ".
+			    "-i $mf_TMP.jpg ".
+			    "$mf_TMP.avis;".
+			    "cat $mf_TMP.avis" ],
     "m4a,mp3"		=> [ 1, \&mf_shcmd,
     			    "cat > $mf_TMP.m4a;".
 			    "ffmpeg -loglevel error ".
