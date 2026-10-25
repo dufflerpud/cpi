@@ -123,18 +123,18 @@ my %mf_rule_map =
 #    "mp3,wav"		=> [ 1, \&mf_shcmd,
 #				"lame --decode --mp3input - -" ],
 #    "wav,mp3"		=> [ 1, \&mf_shcmd, "lame -S - -" ],
-    "avis,jpg"		=> [ 1, \&mf_shcmd,
-    			    "cat > $mf_TMP.avis;".
+    "avif,jpg"		=> [ 1, \&mf_shcmd,
+    			    "cat > $mf_TMP.avif;".
 			    "ffmpeg -loglevel error ".
-			    "-i $mf_TMP.avis ".
+			    "-i $mf_TMP.avif ".
 			    "$mf_TMP.jpg;".
 			    "cat $mf_TMP.jpg" ],
-    "jpg,avis"		=> [ 1, \&mf_shcmd,
+    "jpg,avif"		=> [ 1, \&mf_shcmd,
     			    "cat > $mf_TMP.jpg;".
 			    "ffmpeg -loglevel error ".
 			    "-i $mf_TMP.jpg ".
-			    "$mf_TMP.avis;".
-			    "cat $mf_TMP.avis" ],
+			    "$mf_TMP.avif;".
+			    "cat $mf_TMP.avif" ],
     "m4a,mp3"		=> [ 1, \&mf_shcmd,
     			    "cat > $mf_TMP.m4a;".
 			    "ffmpeg -loglevel error ".
@@ -250,14 +250,14 @@ my %mf_rule_map =
     				"cat - > $mf_TMP.png; ".
 				"convert $mf_TMP.png $mf_TMP.webp; ".
 				"cat $mf_TMP.webp" ],
-    "avif,png"		=> [ 1, \&mf_shcmd,
-    				"cat - > $mf_TMP.avif; ".
-				"convert $mf_TMP.avif $mf_TMP.png; ".
-				"cat $mf_TMP.png" ],
-    "png,avif"		=> [ 1, \&mf_shcmd,
-    				"cat - > $mf_TMP.png; ".
-				"convert $mf_TMP.png $mf_TMP.avif; ".
-				"cat $mf_TMP.avif" ],
+#    "avif,png"		=> [ 1, \&mf_shcmd,
+#    				"cat - > $mf_TMP.avif; ".
+#				"convert $mf_TMP.avif $mf_TMP.png; ".
+#				"cat $mf_TMP.png" ],
+#    "png,avif"		=> [ 1, \&mf_shcmd,
+#    				"cat - > $mf_TMP.png; ".
+#				"convert $mf_TMP.png $mf_TMP.avif; ".
+#				"cat $mf_TMP.avif" ],
     "png,svg"		=> [ 1, \&mf_shcmd, "pamtosvg" ],
     "jpeg,pnm"		=> [ 1, \&mf_shcmd, "jpegtopnm -quiet" ],
     "png,pnm"		=> [ 1, \&mf_shcmd, "pngtopnm" ],
